@@ -1,0 +1,20 @@
+# --- TITANFALL DOTFILES IGNORE ---
+# Ignore system-specific state files that carry absolute paths
+
+# Wallpaper State
+core/wallpapers/.current_wallpaper
+core/wallpapers/.current_effect_image
+
+# --- Secrets & Personal Overrides ---
+home/.secrets.sh
+home/.zshrc.local
+
+# --- Cache ---
+*.cache/
+.DS_Store
+
+# --- Host Specific Protection ---
+# Ignore all personal host profiles to prevent accidental leaks
+# Only the template folder should be committed to the public repo.
+hosts/*/
+!hosts/_template/
