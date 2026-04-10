@@ -39,12 +39,28 @@ GRID_TILE="$CACHE_DIR/grid_tile.png"
 # Clean up old effects to prevent cache bloat
 rm -f "$CACHE_DIR"/current_wallpaper_effect_*.jpg 2>/dev/null
 
-# Helpers for Lastimosa V2 Optics (Pilot Helmet)
-generate_hex_tile() {
-    local color="$1"
-    # Create a small hexagonal honeycomb tile
-    magick -size 20x34 xc:none -stroke "$color" -strokewidth 1 -fill none \
-        -draw "path 'M 0,0 L 10,6 L 20,0 M 0,34 L 10,28 L 20,34 M 10,6 L 10,28'" "$GRID_TILE"
+# Helper for Dynamic Scaling
+# All geometry is calculated relative to a reference resolution
+get_geometry() {
+    local input="$1"
+    W=$(magick identify -format "%w" "$input")
+    H=$(magick identify -format "%h" "$input")
+    
+    # Scale factor relative to 1920px width
+    SCALE=$(awk "BEGIN {print $W / 1920}")
+    
+    # HUD Geometry
+    HALF_W=$((W/2))
+    HALF_H=$((H/2))
+    
+    # Reticle (Centered)
+    RW=$(awk "BEGIN {print int(40 * $SCALE)}")
+    RH=$(awk "BEGIN {print int(25 * $SCALE)}")
+    RL=$(awk "BEGIN {print int(15 * $SCALE)}")
+    
+    # Data Bars (Top/Bottom)
+    BAR_Y=$(awk "BEGIN {print int(40 * $SCALE)}")
+    BAR_MARGIN=$(awk "BEGIN {print int(300 * $SCALE)}")
 }
 
 apply_helmet_optics() {
@@ -52,29 +68,18 @@ apply_helmet_optics() {
     local output="$2"
     local color="#00E0FF" # Cyan-White Pilot HUD
     
-    local w=$(magick identify -format "%w" "$input")
-    local h=$(magick identify -format "%h" "$input")
-    local half_w=$((w/2))
-    local half_h=$((h/2))
-    
-    # 1. Draw Data Bars (Top/Bottom Compass) and BT-7274 Reticle
-    # Top Bar: y=40, Bottom Bar: y=H-40
-    # Central Reticle: 160x100 brackets around center
-    local rw=80  # Reticle half-width
-    local rh=50  # Reticle half-height
-    local rl=30  # Reticle corner length
+    get_geometry "$input"
     
     magick "$input" -stroke "$color" -strokewidth 2 -fill none \
-        -draw "line 400,40 $((w-400)),40" \
-        -draw "line 400,$((h-40)),$((w-400)),$((h-40))" \
-        -draw "line $((half_w-rw)),$((half_h-rh)) $((half_w-rw+rl)),$((half_h-rh)) line $((half_w-rw)),$((half_h-rh)) $((half_w-rw)),$((half_h-rh+rl))" \
-        -draw "line $((half_w+rw)),$((half_h-rh)) $((half_w+rw-rl)),$((half_h-rh)) line $((half_w+rw)),$((half_h-rh)) $((half_w+rw)),$((half_h-rh+rl))" \
-        -draw "line $((half_w-rw)),$((half_h+rh)) $((half_w-rw+rl)),$((half_h+rh)) line $((half_w-rw)),$((half_h+rh)) $((half_w-rw)),$((half_h+rh-rl))" \
-        -draw "line $((half_w+rw)),$((half_h+rh)) $((half_w+rw-rl)),$((half_h+rh)) line $((half_w+rw)),$((half_h+rh)) $((half_w+rw)),$((half_h+rh-rl))" \
+        -draw "line $BAR_MARGIN,$BAR_Y $((W-BAR_MARGIN)),$BAR_Y" \
+        -draw "line $BAR_MARGIN,$((H-BAR_Y)),$((W-BAR_MARGIN)),$((H-BAR_Y))" \
+        -draw "line $((HALF_W-RW)),$((HALF_H-RH)) $((HALF_W-RW+RL)),$((HALF_H-RH)) line $((HALF_W-RW)),$((HALF_H-RH)) $((HALF_W-RW)),$((HALF_H-RH+RL))" \
+        -draw "line $((HALF_W+RW)),$((HALF_H-RH)) $((HALF_W+RW-RL)),$((HALF_H-RH)) line $((HALF_W+RW)),$((HALF_H-RH)) $((HALF_W+RW)),$((HALF_H-RH+RL))" \
+        -draw "line $((HALF_W-RW)),$((HALF_H+RH)) $((HALF_W-RW+RL)),$((HALF_H+RH)) line $((HALF_W-RW)),$((HALF_H+RH)) $((HALF_W-RW)),$((HALF_H+RH-RL))" \
+        -draw "line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW-RL)),$((HALF_H+RH)) line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW)),$((HALF_H+RH-RL))" \
         "$CACHE_DIR/optics_flat.jpg"
 
-    # 2. Apply Barrel Distortion (Curved Visor)
-    # A=0, B=0.04 (Bulge), C=0, D=0.96 (Zoom to hide edges)
+    # 2. Apply Barrel Distortion (Curved Visor) - Baseline values
     magick "$CACHE_DIR/optics_flat.jpg" -virtual-pixel transparent -distort Barrel "0.0 0.04 0.0 0.96" "$output"
 }
 
@@ -107,19 +112,23 @@ case "$selected_effect" in
             -modulate 100,150,100 -sharpen 0x2 "$EFFECT_FILE"
         ;;
     "Glitch (Purge)")
-        # Chromatic aberration
+        # Dynamic Chromatic aberration shift based on width
+        local w=$(magick identify -format "%w" "$selected_path")
+        local shift=$(awk "BEGIN {print int(15 * $w / 1920)}")
         magick "$selected_path" \
-            \( -clone 0 -channel R -separate -roll +15+0 \) \
+            \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \
-            \( -clone 0 -channel B -separate -roll -15+0 \) \
+            \( -clone 0 -channel B -separate -roll -${shift}+0 \) \
             -channel RGB -combine "$EFFECT_FILE"
         ;;
     "CRT Retro")
-        # Generates colored analog TV scanlines with chromatic aberration (glitch)
+        # Generates colored analog TV scanlines with dynamic shift
+        local w=$(magick identify -format "%w" "$selected_path")
+        local shift=$(awk "BEGIN {print int(5 * $w / 1920)}")
         magick "$selected_path" \
-            \( -clone 0 -channel R -separate -roll +5+0 \) \
+            \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \
-            \( -clone 0 -channel B -separate -roll -5+0 \) \
+            \( -clone 0 -channel B -separate -roll -${shift}+0 \) \
             -delete 0 -channel RGB -combine \
             -modulate 100,120,100 \
             \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) \
@@ -132,7 +141,10 @@ case "$selected_effect" in
         magick "$selected_path" -scale 5% -scale 2000% "$EFFECT_FILE"
         ;;
     "Vignette")
-        magick "$selected_path" -background black -vignette 0x60 "$EFFECT_FILE"
+        # Baseline vignette with dynamic intensity scaling
+        local w=$(magick identify -format "%w" "$selected_path")
+        local v_sigma=$(awk "BEGIN {print int(60 * $w / 3200)}")
+        magick "$selected_path" -background black -vignette 0x${v_sigma} "$EFFECT_FILE"
         ;;
 esac
 
