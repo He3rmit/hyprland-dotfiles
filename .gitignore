@@ -4,6 +4,7 @@
 # Wallpaper State
 core/wallpapers/.current_wallpaper
 core/wallpapers/.current_effect_image
+hyprland/modules/colors.conf
 
 # --- Secrets & Personal Overrides ---
 home/.secrets.sh
