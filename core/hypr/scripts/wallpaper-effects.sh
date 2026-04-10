@@ -18,10 +18,10 @@ CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
 mkdir -p "$CACHE_DIR"
 
 # If it is an image, prompt the Effects Menu
-EFFECTS="Original\nBlur\nGrayscale\nNoir Blur\nBT-7274 Camo\nCyber Tint\nSynthwave\nSepia / Rust\nNeon Outline\nPixelate\nGlitch\nCRT Scanlines\nOil Paint\nCharcoal Sketch\nHalftone\nVignette"
-selected_effect=$(echo -e "$EFFECTS" | rofi -dmenu -i -p "󰸉 Effect" -theme "$HOME/.config/rofi/themes/runner.rasi")
+EFFECTS="Original\n[ PILOT VISION ]\nBloom (Cinematic)\nVanguard Tactical (Orange/Green)\nCyber HUD (Cyan/Magenta)\nNight Vision\n-\n[ DIGITAL MODES ]\nGlitch (Purge)\nCRT Retro\nNoir (High Contrast)\nPixelate\nVignette"
+selected_effect=$(echo -e "$EFFECTS" | rofi -dmenu -i -p "󰸉 Vision Mode" -theme "$HOME/.config/rofi/themes/runner.rasi")
 
-if [[ -z "$selected_effect" ]]; then
+if [[ -z "$selected_effect" || "$selected_effect" == "-" || "$selected_effect" == "[ "* ]]; then
     exit 0
 fi
 
@@ -30,67 +30,67 @@ if [[ "$selected_effect" == "Original" ]]; then
     exit 0
 fi
 
-notify-send -t 3000 -h string:x-canonical-private-synchronous:sys-notify -u normal "Wallpaper Engine" "Processing: $selected_effect..."
+notify-send -t 3000 -h string:x-canonical-private-synchronous:sys-notify -u normal "Wall-E" "Syncing Vision Mode: $selected_effect..."
 
 TIMESTAMP=$(date +%s)
 EFFECT_FILE="$CACHE_DIR/current_wallpaper_effect_${TIMESTAMP}.jpg"
+GRID_TILE="$CACHE_DIR/grid_tile.png"
 
 # Clean up old effects to prevent cache bloat
 rm -f "$CACHE_DIR"/current_wallpaper_effect_*.jpg 2>/dev/null
 
+# Helper for Grid Generation
+generate_grid() {
+    local color="$1"
+    magick -size 80x80 xc:none -draw "stroke $color stroke-width 1 line 0,0 80,0 line 0,0 0,80" "$GRID_TILE"
+}
+
 case "$selected_effect" in
-    "Blur")
-        magick "$selected_path" -blur 0x16 "$EFFECT_FILE"
+    "Bloom (Cinematic)")
+        # Create a dreamlike 'Glow' by screen-blending a blurred copy
+        magick "$selected_path" \( +clone -blur 0x12 -level 0,60% \) -compose Screen -composite "$EFFECT_FILE"
         ;;
-    "Grayscale")
-        magick "$selected_path" -colorspace gray "$EFFECT_FILE"
+    "Vanguard Tactical (Orange/Green)")
+        # Titanfall Colors: #1A2F1A (Dark Green) & #E55A00 (Militia Orange)
+        # Adds a subtle overlay grid for the 'HUD' feel
+        generate_grid "rgba(229,90,0,0.3)"
+        magick "$selected_path" -modulate 100,120,100 +level-colors "#1A2F1A","#E55A00" \
+            \( -clone 0 -tile "$GRID_TILE" -draw "color 0,0 reset" \) -compose Overlay -composite "$EFFECT_FILE"
         ;;
-    "Noir Blur")
-        magick "$selected_path" -colorspace gray -blur 0x16 "$EFFECT_FILE"
+    "Cyber HUD (Cyan/Magenta)")
+        # Cyberpunk Colors: #1B032A (Purple) & #00E0FF (Cyan)
+        generate_grid "rgba(0,224,255,0.4)"
+        magick "$selected_path" -modulate 110,140,100 +level-colors "#1B032A","#00E0FF" \
+            \( -clone 0 -tile "$GRID_TILE" -draw "color 0,0 reset" \) -compose Screen -composite "$EFFECT_FILE"
         ;;
-    "BT-7274 Camo")
-        # Vanguard Forest Green (#1A2F1A) & Militia Orange (#E55A00)
-        magick "$selected_path" -colorspace gray +level-colors "#1A2F1A","#E55A00" "$EFFECT_FILE"
+    "Night Vision")
+        magick "$selected_path" -colorspace gray +level-colors "#061A06","#00FF33" \
+            -modulate 100,150,100 -sharpen 0x2 "$EFFECT_FILE"
         ;;
-    "Cyber Tint")
-        # Deep Sea Cyan/Dark Blue (#001A22) & Terminal Cyan (#00E0FF)
-        magick "$selected_path" -colorspace gray +level-colors "#001A22","#00E0FF" "$EFFECT_FILE"
-        ;;
-    "Synthwave")
-        # Deep Purple (#1B032A) & Neon Pink (#FF00B3)
-        magick "$selected_path" -colorspace gray +level-colors "#1B032A","#FF00B3" "$EFFECT_FILE"
-        ;;
-    "Sepia / Rust")
-        magick "$selected_path" -sepia-tone 80% "$EFFECT_FILE"
-        ;;
-    "Neon Outline")
-        magick "$selected_path" -colorspace gray -edge 2 -negate -normalize -colorspace sRGB +level-colors "#000000","#00FFCC" "$EFFECT_FILE"
-        ;;
-    "Pixelate")
-        magick "$selected_path" -scale 5% -scale 2000% "$EFFECT_FILE"
-        ;;
-    "Glitch")
-        # Chromatic aberration (Channel offset by 15 pixels)
+    "Glitch (Purge)")
+        # Chromatic aberration
         magick "$selected_path" \
             \( -clone 0 -channel R -separate -roll +15+0 \) \
             \( -clone 0 -channel G -separate \) \
             \( -clone 0 -channel B -separate -roll -15+0 \) \
             -channel RGB -combine "$EFFECT_FILE"
         ;;
-    "CRT Scanlines")
-        # Terminal green tint + horizontal scanlines overlay
-        magick "$selected_path" -colorspace gray +level-colors "#001500","#00FF33" \
-            \( -size 1x4 pattern:horizontal2 -scale 4000x4000 \) \
+    "CRT Retro")
+        # Generates colored analog TV scanlines with chromatic aberration (glitch)
+        magick "$selected_path" \
+            \( -clone 0 -channel R -separate -roll +5+0 \) \
+            \( -clone 0 -channel G -separate \) \
+            \( -clone 0 -channel B -separate -roll -5+0 \) \
+            -delete 0 -channel RGB -combine \
+            -modulate 100,120,100 \
+            \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) \
             -compose multiply -composite "$EFFECT_FILE"
         ;;
-    "Oil Paint")
-        magick "$selected_path" -paint 4 "$EFFECT_FILE"
+    "Noir (High Contrast)")
+        magick "$selected_path" -colorspace gray -contrast-stretch 5%x5% "$EFFECT_FILE"
         ;;
-    "Charcoal Sketch")
-        magick "$selected_path" -colorspace gray -charcoal 2 "$EFFECT_FILE"
-        ;;
-    "Halftone")
-        magick "$selected_path" -ordered-dither h8x8o "$EFFECT_FILE"
+    "Pixelate")
+        magick "$selected_path" -scale 5% -scale 2000% "$EFFECT_FILE"
         ;;
     "Vignette")
         magick "$selected_path" -background black -vignette 0x60 "$EFFECT_FILE"
