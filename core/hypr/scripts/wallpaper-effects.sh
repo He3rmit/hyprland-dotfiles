@@ -47,8 +47,8 @@ generate_grid() {
 
 case "$selected_effect" in
     "Bloom (Cinematic)")
-        # Create a dreamlike 'Glow' by screen-blending a blurred copy
-        magick "$selected_path" \( +clone -blur 0x12 -level 0,60% \) -compose Screen -composite "$EFFECT_FILE"
+        # Cinematic Bloom V2: Catching more highlights with a wider, softer lens glow
+        magick "$selected_path" \( +clone -level 20,100% -blur 0x25 -modulate 100,120,100 \) -compose Screen -composite "$EFFECT_FILE"
         ;;
     "Vanguard Tactical (Orange/Green)")
         # Titanfall Colors: #1A2F1A (Dark Green) & #E55A00 (Militia Orange)
