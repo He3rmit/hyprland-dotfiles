@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+WALL_DIR="$HOME/.config/wallpapers/library"
+CURRENT_WALLPAPER_FILE="$HOME/.config/wallpapers/.current_wallpaper"
+
+apply_wallpaper() {
+    local wall="$1"
+    if [[ -z "$wall" || ! -f "$wall" ]]; then
+        return
+    fi
+    
+    # Save current wallpaper (Only if it is NOT an effect image)
+    if [[ ! "$wall" == *"current_wallpaper_effect"* ]]; then
+        echo "$wall" > "$CURRENT_WALLPAPER_FILE"
+        rm -f "$HOME/.config/wallpapers/.current_effect_image"
+    fi
+    
+    local monitors=$(hyprctl monitors -j | jq -r '.[].name')
+    
+    # Kill existing daemons
+    pkill mpvpaper 2>/dev/null
+    pkill swaybg 2>/dev/null
+    sleep 0.5
+    
+    # Determine type
+    local is_video=0
+    if [[ "$wall" =~ \.(mp4|webm|mkv)$ ]]; then
+        is_video=1
+    fi
+    
+    for monitor in $monitors; do
+        if [[ $is_video -eq 1 ]]; then
+            # Video settings (using existing fade script if it exists)
+            local fade_opt=""
+            if [[ -f "$HOME/.config/wallpapers/fade.lua" ]]; then
+                fade_opt="--script=$HOME/.config/wallpapers/fade.lua --script-opts=fade_duration=1.0"
+            fi
+            
+            # Using both loop-file and loop-playlist, plus keep-open to prevent premature exiting
+            mpvpaper -f "$monitor" "$wall" \
+                -o "--no-audio --loop-file=inf --loop-playlist=inf --keep-open=yes --fullscreen --panscan=1.0 --no-osc --no-osd-bar \
+                    --geometry=100%x100% $fade_opt"
+        else
+            # Static image settings (swaybg is lighter and more stable for images)
+            swaybg -o "$monitor" -i "$wall" -m fill &
+        fi
+    done
+    
+    # Disown swaybg if it was launched (shell bg)
+    if [[ $is_video -eq 0 ]]; then
+        disown -a
+    fi
+    
+    # Extract colors and theme the system
+    if command -v wal &>/dev/null; then
+        local wal_target="$wall"
+        
+        if [[ $is_video -eq 1 ]]; then
+             local cname=$(basename "$wall")
+             if [[ -f "$HOME/.cache/wallpaper-thumbnails/${cname}.jpg" ]]; then
+                 wal_target="$HOME/.cache/wallpaper-thumbnails/${cname}.jpg"
+             fi
+        fi
+        
+        # Run pywal silently, skip its own wallpaper setting (-n)
+        wal -q -n -i "$wal_target"
+        
+        # Copy the dynamically generated hyprland variables to the permanent source
+        cp "$HOME/.cache/wal/colors-hyprland.conf" "$HOME/.config/hypr/modules/colors.conf" 2>/dev/null
+        
+        # Hot reload UI to fetch new colors
+        pkill -SIGUSR2 waybar
+        swaync-client -rs 2>/dev/null
+    fi
+}
+
+if [[ "$1" == "--set" && -n "$2" ]]; then
+    apply_wallpaper "$2"
+    exit 0
+fi
+
+if [[ "$1" == "--init" ]]; then
+    if [[ -f "$HOME/.config/wallpapers/.current_effect_image" ]]; then
+        effect_wall=$(cat "$HOME/.config/wallpapers/.current_effect_image")
+        if [[ -f "$effect_wall" ]]; then
+            apply_wallpaper "$effect_wall"
+            exit 0
+        fi
+    fi
+
+    if [[ -f "$CURRENT_WALLPAPER_FILE" ]]; then
+        wall=$(cat "$CURRENT_WALLPAPER_FILE")
+        apply_wallpaper "$wall"
+    else
+        # Default fallback (Explicitly use static image to prevent pywal crashes)
+        wall="$WALL_DIR/Jack-Cooper-BT-7274.jpg"
+        if [[ ! -f "$wall" ]]; then
+            wall=$(find "$WALL_DIR" -type f | head -n 1)
+        fi
+        apply_wallpaper "$wall"
+    fi
+    exit 0
+fi
+
+# Show rofi menu
+CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
+mkdir -p "$CACHE_DIR"
+
+vids=$(find "$WALL_DIR" -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) 2>/dev/null)
+imgs=$(find "$WALL_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) 2>/dev/null)
+
+all_walls=$(echo -e "$vids\n$imgs" | grep -v '^[[:space:]]*$')
+
+# Generate input for rofi
+rofi_input=""
+while IFS= read -r wall; do
+    [[ -z "$wall" ]] && continue
+    name=$(basename "$wall")
+    
+    # Generate thumbnail
+    thumb="$CACHE_DIR/${name}.jpg"
+    if [[ ! -f "$thumb" ]]; then
+        if [[ "$wall" =~ \.(mp4|webm|mkv)$ ]]; then
+            ffmpegthumbnailer -i "$wall" -o "$thumb" -s 256 -q 8 -c jpeg >/dev/null 2>&1
+        else
+            magick "$wall[0]" -resize 256x256^ -gravity center -extent 256x256 "$thumb" >/dev/null 2>&1
+        fi
+    fi
+    
+    # Append to input list
+    rofi_input+="${name}\0icon\x1f${thumb}\n"
+done <<< "$all_walls"
+
+# Show in rofi
+selected_name=$(echo -en "$rofi_input" | rofi -dmenu -i -p "󰸉" -theme "$HOME/.config/rofi/themes/wallpaper-grid.rasi" -show-icons)
+
+if [[ -n "$selected_name" ]]; then
+    # Find full path mapping back to the name
+    selected_path=$(echo "$all_walls" | grep -F "/$selected_name")
+    if [[ -n "$selected_path" ]]; then
+        selected_path=$(echo "$selected_path" | head -n 1)
+        apply_wallpaper "$selected_path"
+    fi
+fi

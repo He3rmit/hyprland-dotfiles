@@ -1,0 +1,457 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   TITANFALL PILOT HUD - MARK 33 (ICON RESURRECTION)
+   Base: Mark 32 (Universal Protocol)
+   Fix: Forces the invisible icons inside the side ovals to manifest in Cyan.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@import "../../.cache/wal/colors-waybar.css";
+
+@define-color titan-cyan @color2;
+@define-color titan-dark alpha(@background, 0.95);
+@define-color titan-panel alpha(@background, 0.95);
+@define-color titan-border alpha(@color2, 0.5);
+
+* {
+    font-family: "Orbitron", "JetBrainsMono Nerd Font", monospace;
+    color: @titan-cyan;
+}
+
+/* 1. MAIN FRAME */
+.control-center {
+    background: @titan-panel;
+    border: 2px solid @titan-border;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    padding: 12px;
+}
+
+/* 2. MODULE CONTAINERS */
+.widget-title,
+.widget-dnd,
+.widget-mpris,
+.widget-buttons-grid,
+.widget-volume,
+.widget-backlight {
+    background: #05080a;
+    border: 1px solid alpha(@titan-cyan, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 3. TITLES & DND SWITCH */
+.widget-title > label {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-shadow: 0 0 2px @titan-cyan;
+}
+
+.widget-title > button {
+    background: @titan-dark;
+    border: 1px solid @titan-cyan;
+    color: #ffffff;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.widget-dnd switch {
+    background: #151a21;
+    border: 1px solid #334455;
+    border-radius: 12px;
+}
+
+.widget-dnd switch:checked {
+    background-image: none;
+    background: @titan-cyan;
+    border-color: #ffffff;
+}
+
+.widget-dnd switch slider {
+    background: #ffffff;
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* 4. PHYSICAL SWITCHES (Grid) */
+.widget-buttons-grid { padding: 8px; }
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+    background: #151a21;
+    border: 1px solid #334455;
+    border-radius: 4px;
+    margin: 4px;
+    min-height: 50px;
+    box-shadow: 0 2px 0 #000;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button label {
+    color: #556677;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Neutralize toggle :checked state — no persistent glow */
+.widget-buttons-grid > flowbox > flowboxchild > button:checked {
+    background-image: none;
+    background: #151a21;
+    border: 1px solid #334455;
+    box-shadow: 0 2px 0 #000;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:checked label {
+    color: #556677;
+}
+
+/* UNIVERSAL CLICK FEEDBACK — subtle press dimming */
+.widget-buttons-grid button:active,
+.widget-mpris button:active,
+.widget-volume button:active,
+.widget-title button:active {
+    opacity: 0.6;
+    transition: all 0.08s ease;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   5. MEDIA PLAYER (ICON FIX)
+   ────────────────────────────────────────────────────────────────────────── */
+.widget-mpris {
+    background: #000000;
+    border: 1px solid @titan-cyan;
+}
+
+.widget-mpris-title {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.widget-mpris-subtitle {
+    color: @titan-cyan;
+}
+
+/* STEP 1: STYLE THE BUTTONS (OVALS) */
+.widget-mpris button {
+    background: #000000;           /* Void Black */
+    border: 1px solid @titan-cyan; /* Cyan Border */
+    border-radius: 30px;           /* OVAL SHAPE */
+    min-width: 30px;               /* Width adjusted for sleekness */
+    min-height: 80px;              /* Tall */
+    margin: 0 5px;
+    padding: 0;
+    opacity: 1;                    /* Force Visible */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* STEP 2: THE ICON RESURRECTION (New Code) */
+/* This targets whatever is inside the button (image or label) and Forces Cyan */
+.widget-mpris button > * {
+    color: @titan-cyan;            /* FORCE CYAN COLOR */
+    opacity: 1;                    /* FORCE VISIBILITY */
+    -gtk-icon-shadow: 0 0 5px @titan-cyan; /* GLOW */
+}
+
+/* Handle Disabled State (Single Player Mode) */
+.widget-mpris button:disabled {
+    background: #0a0f14;
+    border-color: alpha(@titan-cyan, 0.4);
+    opacity: 1;
+}
+
+.widget-mpris button:disabled > * {
+    color: alpha(@titan-cyan, 0.4); /* Dim color for inactive arrows */
+    opacity: 0.8;
+}
+
+/* STEP 3: RESET MIDDLE BUTTONS TO SQUARES */
+.widget-mpris .widget-mpris-player button {
+    background: #151a21;
+    border-radius: 8px;            /* SQUARE */
+    min-width: 45px;
+    min-height: 45px;
+    margin: 5px;
+    box-shadow: none;
+}
+
+/* Hover Effects */
+.widget-mpris button:hover {
+    background: @titan-cyan;
+    color: #000000;
+    box-shadow: 0 0 15px @titan-cyan;
+}
+
+/* On hover, turn the icon black */
+.widget-mpris button:hover > * {
+    color: #000000;
+    -gtk-icon-shadow: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   6. VOLUME & SINK FIX
+   ────────────────────────────────────────────────────────────────────────── */
+.widget-volume > box > label,
+.widget-backlight > box > label {
+    color: @titan-cyan;
+    font-weight: bold;
+}
+
+/* Nuclear Transparency for Sink Label */
+.widget-volume > box > label {
+    background: transparent;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* Specific target for the "No active sink" state */
+.widget-volume list {
+    background-color: transparent;
+    border: none;
+}
+
+.widget-volume list row {
+    background: transparent;
+}
+
+.widget-volume list row:hover {
+    background: alpha(@titan-cyan, 0.2);
+}
+
+/* Expander Button */
+.widget-volume > box > button {
+    background: #151a21;
+    border: 1px solid @titan-cyan;
+    border-radius: 4px;
+    box-shadow: none;
+    min-width: 30px;
+    min-height: 30px; 
+}
+
+.widget-volume > box > button:hover {
+    background: @titan-cyan;
+}
+
+/* Sliders */
+scale trough {
+    min-height: 12px;
+    border-radius: 2px;
+    background: #151a21;
+    border: 1px solid #334455;
+    margin: 6px 0;
+}
+
+scale highlight {
+    background-image: none;
+    background-color: @titan-cyan;
+    border-radius: 2px;
+    min-height: 12px;
+}
+
+scale slider {
+    min-height: 20px;
+    min-width: 20px;
+    margin: -4px; 
+    background: #ffffff;
+    border: none;
+    border-radius: 2px;
+    box-shadow: 0 0 5px @titan-cyan;
+}
+
+scale slider:hover,
+scale slider:active,
+scale slider:focus {
+    background-image: none;
+    background: @titan-cyan;
+    box-shadow: 0 0 10px @titan-cyan;
+    outline: none;
+    border: none;
+}
+
+/* Scrollbars Fix */
+scrollbar slider {
+    background-color: alpha(@titan-cyan, 0.4);
+    background-image: none;
+    border-radius: 4px;
+}
+scrollbar slider:hover {
+    background-color: alpha(@titan-cyan, 0.8);
+    background-image: none;
+}
+scrollbar slider:active {
+    background-color: @titan-cyan;
+    background-image: none;
+}
+
+/* 7. NOTIFICATIONS - POPUP STYLE */
+.notification {
+    background: #0a0f14;
+    border-left: 4px solid @titan-cyan;
+    border-right: 1px solid #334455;
+    border-top: 1px solid #334455;
+    border-bottom: 1px solid #334455;
+    border-radius: 4px;
+    padding: 16px;
+    min-width: 400px;
+    min-height: 0;
+}
+
+.notification .summary {
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.notification .body {
+    color: #a0a0a0;
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+/* 7. NOTIFICATIONS - CONTROL CENTER HISTORY */
+.notification-row .notification {
+    background: #0a0f14;
+    border-left: 4px solid @titan-cyan;
+    border-right: 1px solid #334455;
+    border-top: 1px solid #334455;
+    border-bottom: 1px solid #334455;
+    border-radius: 4px;
+    margin: 6px 0;
+    padding: 12px;
+    min-height: 0;
+}
+
+.notification-row .notification .summary {
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.notification-row .notification .body {
+    color: #a0a0a0;
+
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MARK 33 ADDON: REACTOR CRITICAL OVERRIDE
+   This only affects notifications tagged as 'critical' (Battery Alert)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* 1. DEFINE THE ORANGE ALERT COLOR */
+@define-color titan-alert #ff8242;
+
+/* 2. THE NUCLEAR PULSE ANIMATION */
+@keyframes criticalPulse {
+    0%   { box-shadow: 0 0 4px rgba(255, 130, 66, 0.2); }
+    50%  { box-shadow: 0 0 20px rgba(255, 130, 66, 0.9); border-color: #ffffff; }
+    100% { box-shadow: 0 0 4px rgba(255, 130, 66, 0.2); }
+}
+
+/* CRITICAL NOTIFICATIONS - POPUP STYLE */
+.notification.critical {
+    background: rgba(40, 10, 10, 0.95);  /* Deep Red Background */
+    border-left: 4px solid @titan-alert; /* Orange Left Bar */
+    border-right: 1px solid @titan-alert;
+    border-top: 1px solid @titan-alert;
+    border-bottom: 1px solid @titan-alert;
+    color: @titan-alert;
+    padding: 16px;
+    min-width: 400px;
+    min-height: 0;
+    animation: criticalPulse 1s infinite ease-in-out; 
+}
+
+.notification.critical .summary {
+    color: #ffffff;       /* Title White */
+    text-shadow: 0 0 5px @titan-alert;
+    font-weight: 900;
+}
+
+.notification.critical .body {
+    color: @titan-alert;  /* Body Orange */
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+/* 3. OVERRIDE THE NOTIFICATION BOX */
+/* This specific selector targets the battery alert */
+.notification-row .notification.critical {
+    background: rgba(40, 10, 10, 0.95);  /* Deep Red Background */
+    border-left: 4px solid @titan-alert; /* Orange Left Bar */
+    border-right: 1px solid @titan-alert;
+    border-top: 1px solid @titan-alert;
+    border-bottom: 1px solid @titan-alert;
+    color: @titan-alert;
+    
+    /* Apply the heartbeat animation */
+    animation: criticalPulse 1s infinite ease-in-out; 
+}
+
+/* 4. OVERRIDE TEXT COLORS INSIDE THE ALERT */
+.notification-row .notification.critical .summary {
+    color: #ffffff;       /* Title White */
+    text-shadow: 0 0 5px @titan-alert;
+}
+
+.notification-row .notification.critical .body {
+    color: @titan-alert;  /* Body Orange */
+    font-weight: bold;
+}
+/* ──────────────────────────────────────────────────────────────────────────
+   8. TACTICAL CALENDAR MODULE
+   ────────────────────────────────────────────────────────────────────────── */
+.widget-calendar {
+    background: alpha(@background, 0.4);
+    margin: 8px 10px;
+    padding: 15px;
+    border: 1px solid alpha(@color2, 0.3);
+    border-radius: 8px;
+}
+
+.widget-calendar .calendar {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.widget-calendar .calendar header {
+    padding: 5px;
+}
+
+.widget-calendar .calendar header button {
+    color: @titan-cyan;
+    font-weight: bold;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.widget-calendar .calendar header label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: @titan-cyan;
+}
+
+.widget-calendar .calendar button {
+    padding: 6px;
+    color: @foreground;
+    background: transparent;
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+}
+
+.widget-calendar .calendar button:hover {
+    background: alpha(@titan-cyan, 0.2);
+}
+
+.widget-calendar .calendar button.today {
+    background: @titan-cyan;
+    color: @background;
+    font-weight: bold;
+}
+
+.widget-calendar .calendar button.today:hover {
+    background: alpha(@titan-cyan, 0.8);
+}
