@@ -74,28 +74,36 @@ The framework features a sophisticated ImageMagick-powered engine for cinematic 
 
 ---
 
-## 4. 🛠️ Migration Blueprint (For Legacy Users)
-If you are moving from a monolithic repository, follow these steps to "Harden" your install:
+## 4. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
+If you are moving from a legacy monolithic installation to this hardened framework, follow this guide to preserve your personal data.
 
-### Step 1: Initialize New Host
-Run the installer and create a new profile for your machine:
+### Phase 1: Identify Your Legacy Overrides
+In your old installation, your personal "soul" lived in these files:
+- `~/.config/hypr/modules/user-keybinds.conf` (Your app shortcuts)
+- `~/.config/hypr/modules/hypr-host.conf` (Touchpad, Sensitivity, Laptop rules)
+- `~/.config/hypr/modules/monitor.conf` (Old resolution rules)
+
+### Phase 2: Bootstrap Your New Identity
+Before moving files, you must create a new "Host Profile" in the new repository.
+1. Enter your new dotfile directory: `cd ~/dotfiles`
+2. Launch the deployment terminal: `./installer/install.sh`
+3. Select **"+ Create New Profile"** and name it (e.g., `pilot-precision`).
+
+### Phase 3: The Handover (Data Migration)
+Now, manually move your legacy data into your new protected host folder. 
+Replace `[your-profile]` with the name you just created:
+
 ```bash
+# 1. Move your personal keybinds
+cp ~/.config/hypr/modules/user-keybinds.conf ~/dotfiles/hosts/[your-profile]/
+
+# 2. Move your hardware-host rules
+cp ~/.config/hypr/modules/hypr-host.conf ~/dotfiles/hosts/[your-profile]/
+
+# 3. Final Deployment (Stow)
 ./installer/install.sh
-# Select: CREATE NEW PROFILE
-```
-
-### Step 2: Migrate Personal Files
-Move your machine-specific overrides into the newly created `hosts/[your-host]/` folder:
-```bash
-mv ~/.config/hypr/modules/user-keybinds.conf ~/dotfiles/hosts/[your-host]/
-mv ~/.config/hypr/modules/hypr-host.conf ~/dotfiles/hosts/[your-host]/
-```
-
-### Step 3: Deployment
-Re-run the installer to "Stow" the new modular structure:
-```bash
-./installer/install.sh
-# Select: [01-STOW-CONFIGS]
+# -> Select [your-profile]
+# -> Select [01-stow-configs]
 ```
 
 ---
