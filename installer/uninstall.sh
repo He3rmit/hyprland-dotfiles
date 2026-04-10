@@ -1,9 +1,8 @@
 #!/bin/bash
 # ==============================================================================
-# TITANFALL PILOT HUD — EJECT PROTOCOL
+# TITANFALL PILOT HUD — EJECT PROTOCOL (v1.1.0)
 # Purpose: Safely remove all dotfile symlinks, caches, overrides, and
-#          optionally uninstall Hyprland-specific packages while preserving
-#          system-critical components.
+#          optionally uninstall non-default packages.
 # ==============================================================================
 
 cd "$(dirname "$0")" || exit 1
@@ -32,7 +31,21 @@ gum style \
     "█████╗       ██║█████╗  ██║        ██║   " \
     "██╔══╝  ██   ██║██╔══╝  ██║        ██║   " \
     "███████╗╚█████╔╝███████╗╚██████╗   ██║   " \
-    "╚�# ── 3. MODULE SELECTION ───────────────────────────────────────────────────────
+    "╚══════╝ ╚════╝ ╚══════╝ ╚═════╝   ╚═╝   "
+
+gum style \
+    --foreground 244 \
+    --align center \
+    --margin "0 4" \
+    "PILOT HUD  //  EJECT PROTOCOL  //  v1.1.0"
+
+echo ""
+
+# ── 2. AUTHORIZATION ──────────────────────────────────────────────────────────
+gum style --foreground 214 --bold "[ PILOT AUTHORIZATION ]"
+keep_sudo_alive
+
+# ── 3. MODULE SELECTION ───────────────────────────────────────────────────────
 echo ""
 gum style --foreground 51 --bold "Select Eject Modules:"
 gum style --foreground 244 \
@@ -172,7 +185,6 @@ EXTRA_APPS=(
 
 if [[ "$MODULES" == *"Uninstall Core Rice"* ]] || [ "$FULL_EJECT" = true ]; then
     print_step ">> Removing Core Rice Components..."
-    # Only remove core UI tools
     for pkg in "${REMOVABLE_CORE[@]}"; do
         if pacman -Qi "$pkg" &>/dev/null; then
             echo "  📦 Removing: $pkg"
@@ -210,64 +222,3 @@ if [[ "$MODULES" == *"Uninstall Gum Engine"* ]] || [ "$FULL_EJECT" = true ]; the
     # This must be the very last command.
     sleep 1 && sudo pacman -Rns --noconfirm gum 2>/dev/null &
 fi
-lly installed
-    INSTALLED_REMOVABLE=()
-    for pkg in "${REMOVABLE_PACKAGES[@]}"; do
-        if pacman -Qi "$pkg" &>/dev/null; then
-            INSTALLED_REMOVABLE+=("$pkg")
-        fi
-    done
-
-    if [ ${#INSTALLED_REMOVABLE[@]} -eq 0 ]; then
-        print_success "No removable Hyprland packages found. Nothing to do."
-    else
-        echo ""
-        gum style --foreground 214 --bold "The following Hyprland-specific packages will be removed:"
-        echo ""
-        for pkg in "${INSTALLED_REMOVABLE[@]}"; do
-            echo "  📦 $pkg"
-        done
-        echo ""
-
-        gum style --foreground 244 \
-            "System packages (pipewire, networkmanager, bluez, kitty, dolphin," \
-            "zsh, fonts, etc.) will NOT be touched."
-        echo ""
-
-        # Second confirmation gate specifically for package removal
-        if gum confirm --prompt.foreground 196 "Proceed with package removal?"; then
-            print_step ">> Removing Hyprland-specific packages..."
-
-            # Use pacman -Rns to remove packages AND their orphaned dependencies.
-            # pacman will automatically refuse to remove anything that is still
-            # required by another installed package.
-            sudo pacman -Rns --noconfirm "${INSTALLED_REMOVABLE[@]}" 2>&1 | while read -r line; do
-                echo "  $line"
-            done
-
-            # Rebuild font cache after font removal
-            print_step ">> Rebuilding font cache..."
-            fc-cache -fv > /dev/null 2>&1
-
-            print_success "Hyprland packages removed."
-        else
-            print_warning "Package removal skipped."
-        fi
-    fi
-fi
-
-# ── 10. SIGN-OFF ──────────────────────────────────────────────────────────────
-echo ""
-gum style \
-    --border rounded \
-    --border-foreground 214 \
-    --foreground 214 \
-    --bold \
-    --padding "1 4" \
-    --margin "1 2" \
-    "EJECT COMPLETE" \
-    "" \
-    "All Titanfall configs have been removed." \
-    "System-critical packages remain untouched." \
-    "" \
-    "Protocol 3: Protect the Pilot."
