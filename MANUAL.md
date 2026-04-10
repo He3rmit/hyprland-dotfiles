@@ -9,18 +9,55 @@ Your desktop is split into two layers to ensure total portability and privacy:
 
 ---
 
-## 2. Keybind Reference ($mainMod = SUPER)
+## 2. Keybind Lexicon (mainMod = SUPER)
+
+The Pilot's hand never leaves the tactical clusters. Shortcuts are organized into logical zones for high-speed operation.
 
 ### 🧩 Positional Workspace Logic (International Support)
-The workspace binds in this framework use **Physical Keycodes**, not characters. Result: your muscle memory remains identical regardless of layout.
+The workspace binds use **Physical Keycodes**, not characters. Result: your hand movement is identical regardless of keyboard layout (QWERTY, AZERTY, etc.).
 - **Super + [1-0]**: Switch to Workspaces 1-10.
 - **Super + [F1-F12]**: Switch to Special Workspaces 11-22.
 - **Super + Shift + [1-0]**: Move window to workspace.
 
-### 🛰️ The Pilot HUD (SwayNC) — `Super + N`
-Your notification center acts as a tactical control panel:
-- **WiFi Indicator**: Click to toggle (managed by `nm-applet`).
-- **Power Modes**: Balanced / Power Saver / Performance.
+### 🚀 Cluster 1: The Launchpad (Launching & Optics)
+| Key | Action |
+|:---|:---|
+| `Super + Q` | **Terminal** (Foot) |
+| `Super + E` | **File Manager** (Thunar) |
+| `Super + R` | **App Launcher** (Rofi Drun) |
+| `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
+| `Super + Alt + W` | **Wallpaper Selector** |
+| `Super + Alt + E` | **Pilot Vision / Effects Menu** |
+
+### 🎯 Cluster 2: The Buckets (Special Workspaces)
+*The Home Row (A-S-D-F-G) provides instant access to categorical "scratchpads".*
+| Key | Action |
+|:---|:---|
+| `Super + S` | **Standard** (Daily tasks) |
+| `Super + W` | **Work** (Code/Dev) |
+| `Super + H` | **Hobby** (Creation/Art) |
+| `Super + G` | **Gaming** (Steam/Social) |
+| `Super + T` | **Tools** (System/Terminals) |
+
+### 🪟 Cluster 3: Window State (Bottom Left)
+| Key | Action |
+|:---|:---|
+| `Super + C` | **Kill Active** Window |
+| `Super + V` | Toggle **Floating** |
+| `Super + F` | Toggle **Fullscreen** |
+| `Super + J` | Toggle **Split/Join** (Master Layout) |
+| `Super + P` | Toggle **Pseudo** |
+
+### 🛰️ Cluster 4: System & UI (Right Hand)
+| Key | Action |
+|:---|:---|
+| `Super + N` | **Notification Center** (Pilot HUD) |
+| `Super + L` | **Screen Lock** (Hyprlock) |
+| `Super + B` | **Cycle Waybar** Layout |
+| `Super + Alt + B` | **Waybar Theme** Switcher |
+| `Super + Shift + V` | **Clipboard History** (Rofi) |
+| `Ctrl + Shift + S` | **Screenshot** (Area/Annotate) |
+| `Print` | **Screenshot** (Full/Clipboard) |
 
 ---
 
