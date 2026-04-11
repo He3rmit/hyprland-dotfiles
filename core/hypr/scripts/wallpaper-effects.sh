@@ -18,7 +18,7 @@ CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
 mkdir -p "$CACHE_DIR"
 
 # If it is an image, prompt the Effects Menu
-EFFECTS="Original\n[ PILOT VISION ]\nBloom (Cinematic)\nVanguard Tactical (Orange/Green)\nBT-7274 Thermal (Red/Yellow)\nCyber HUD (Cyan/Magenta)\nNight Vision\n-\n[ DIGITAL MODES ]\nGlitch (Purge)\nCRT Retro\nNoir (High Contrast)\nPixelate\nVignette"
+EFFECTS="Original\n[ PILOT VISION ]\nBloom (Cinematic)\nVanguard Tactical (Orange/Green)\nBT-7274 Thermal (Red/Yellow)\nCyber HUD (Cyan/Magenta)\nNight Vision\n-\n[ DIGITAL MODES ]\nGlitch (Purge)\nCRT Retro\nNoir (High Contrast)\nPixelate"
 selected_effect=$(echo -e "$EFFECTS" | rofi -dmenu -i -p "󰸉 Vision Mode" -theme "$HOME/.config/rofi/themes/runner.rasi")
 
 if [[ -z "$selected_effect" || "$selected_effect" == "-" || "$selected_effect" == "[ "* ]]; then
@@ -79,8 +79,11 @@ apply_helmet_optics() {
         -draw "line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW-RL)),$((HALF_H+RH)) line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW)),$((HALF_H+RH-RL))" \
         "$CACHE_DIR/optics_flat.jpg"
 
-    # 2. Apply Barrel Distortion (Curved Visor) - Baseline values
-    magick "$CACHE_DIR/optics_flat.jpg" -virtual-pixel transparent -distort Barrel "0.0 0.04 0.0 0.96" "$output"
+    # 2. Apply Barrel Distortion + Soft-but-Dark Vignette
+    # -virtual-pixel edge prevents the black ring from distortion
+    # sigmoidal-contrast steepens the gradient curve: dark corners, bright center
+    magick "$CACHE_DIR/optics_flat.jpg" -virtual-pixel edge -distort Barrel "0.0 0.04 0.0 0.96" \
+        \( -size ${W}x${H} radial-gradient:white-black -sigmoidal-contrast 4,60% \) -compose multiply -composite "$output"
 }
 
 case "$selected_effect" in
@@ -139,12 +142,6 @@ case "$selected_effect" in
         ;;
     "Pixelate")
         magick "$selected_path" -scale 5% -scale 2000% "$EFFECT_FILE"
-        ;;
-    "Vignette")
-        # Baseline vignette with dynamic intensity scaling
-        local w=$(magick identify -format "%w" "$selected_path")
-        local v_sigma=$(awk "BEGIN {print int(60 * $w / 3200)}")
-        magick "$selected_path" -background black -vignette 0x${v_sigma} "$EFFECT_FILE"
         ;;
 esac
 
