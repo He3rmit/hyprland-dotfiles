@@ -8,7 +8,7 @@ CACHE_DIR="/tmp/cliphist-thumbnails"
 mkdir -p "$CACHE_DIR"
 
 # Keybind cheat sheet shown at the bottom of the popup
-KEYBIND_HINTS="Enter: Paste  |  Alt+P: Preview  |  Alt+Del: Delete  |  Alt+Shift+Del: Wipe  |  Alt+T: Type  |  Alt+O: URL  |  Alt+E: Edit"
+KEYBIND_HINTS="Enter: Paste  |  Alt+P: Preview  |  Alt+Del: Delete | Shift+Enter: Select Items |  Alt+Shift+Del: Wipe  |  Alt+T: Type  |  Alt+O: URL  |  Alt+E: Edit"
 
 notify_pilot() {
     notify-send -u normal -a "Titanfall Systems" -i "terminal" "$1" "$2"
