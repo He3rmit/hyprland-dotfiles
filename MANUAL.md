@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v1.1.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v1.2.0)
 
 > *"The HUD is modular. The Pilot is agnostic. The Titan is universal."*
 
@@ -15,8 +15,8 @@ The Pilot's hand never leaves the tactical clusters. Shortcuts are organized int
 
 ### 🧩 Positional Workspace Logic (International Support)
 The workspace binds use **Physical Keycodes**, not characters. Result: your hand movement is identical regardless of keyboard layout (QWERTY, AZERTY, etc.).
-- **Super + [1-0]**: Switch to Workspaces 1-10.
-- **Super + [F1-F12]**: Switch to Special Workspaces 11-22.
+- **Super + [1-0]**: Switch to Workspaces 1-10 (Global Engine).
+- **Super + [F1-F12]**: Switch to Special Workspaces 11-22 (Personal Vault — see Section 4).
 - **Super + Shift + [1-0]**: Move window to workspace.
 
 ### 🚀 Cluster 1: The Launchpad (Launching & Optics)
@@ -29,15 +29,15 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Alt + W` | **Wallpaper Selector** |
 | `Super + Alt + E` | **Pilot Vision / Effects Menu** |
 
-### 🎯 Cluster 2: The Buckets (Special Workspaces)
-*The Home Row (A-S-D-F-G) provides instant access to categorical "scratchpads".*
-| Key | Action |
-|:---|:---|
-| `Super + S` | **Standard** (Daily tasks) |
-| `Super + W` | **Work** (Code/Dev) |
-| `Super + H` | **Hobby** (Creation/Art) |
-| `Super + G` | **Gaming** (Steam/Social) |
-| `Super + T` | **Tools** (System/Terminals) |
+### 🎯 Cluster 2: The Buckets (Personal Workspace Vault)
+*These are now host-specific personal shortcuts. Templates are provided in the global config.*
+| Key | Action | Location |
+|:---|:---|:---|
+| `Super + S` | **Standard** (Daily tasks) | `hosts/[profile]/user-keybinds.conf` |
+| `Super + W` | **Work** (Code/Dev) | `hosts/[profile]/user-keybinds.conf` |
+| `Super + H` | **Hobby** (Creation/Art) | `hosts/[profile]/user-keybinds.conf` |
+| `Super + G` | **Gaming** (Steam/Social) | `hosts/[profile]/user-keybinds.conf` |
+| `Super + T` | **Tools** (System/Terminals) | `hosts/[profile]/user-keybinds.conf` |
 
 ### 🪟 Cluster 3: Window State (Bottom Left)
 | Key | Action |
@@ -74,20 +74,19 @@ The framework features a sophisticated ImageMagick-powered engine for cinematic 
 
 ---
 
-## 4. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
+# 4. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
 If you are moving from a legacy monolithic installation to this hardened framework, follow this guide to preserve your personal data.
 
-### Phase 1: Identify Your Legacy Overrides
-In your old installation, your personal "soul" lived in these files:
-- `~/.config/hypr/modules/user-keybinds.conf` (Your app shortcuts)
-- `~/.config/hypr/modules/hypr-host.conf` (Touchpad, Sensitivity, Laptop rules)
-- `~/.config/hypr/modules/monitor.conf` (Old resolution rules)
+### Phase 1: Identify Your Personal Vaults
+In this framework, your "soul" lives in your host-specific folder:
+- `hosts/[profile]/user-keybinds.conf`: Stores Cluster 2 (The Buckets) and Cluster 6 (F-Keys).
+- `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and paths.
+- `hosts/[profile]/hypr-host.conf`: Hardware-specific rules (Monitor, Touchpad).
 
-### Phase 2: Bootstrap Your New Identity
-Before moving files, you must create a new "Host Profile" in the new repository.
-1. Enter your new dotfile directory: `cd ~/dotfiles`
+### Phase 2: Active Deployment
+1. Enter your dotfile directory: `cd ~/dotfiles`
 2. Launch the deployment terminal: `./installer/install.sh`
-3. Select **"+ Create New Profile"** and name it (e.g., `pilot-precision`).
+3. The installer now features the **Hardware Trinity** engine—it will auto-detect your GPU and deploy the correct Vulkan/VA-API acceleration modules for NVIDIA, Intel, or AMD.
 
 ### Phase 3: The Handover (Data Migration)
 Now, manually move your legacy data into your new protected host folder. 
