@@ -141,6 +141,16 @@ for pkg in "${CORE_PACKAGES[@]}"; do
     install_pkg "$pkg"
 done
 
+# --- NVIDIA HARDWARE DETECTION ---
+if lspci | grep -qi "nvidia"; then
+    print_warning "NVIDIA GPU detected. Enhancing with hardware acceleration..."
+    NVIDIA_DEPS=("nvidia-utils" "libva-nvidia-driver" "nvidia-settings")
+    for pkg in "${NVIDIA_DEPS[@]}"; do
+        install_pkg "$pkg"
+    done
+    print_success "NVIDIA Essentials deployed."
+fi
+
 # Smart Detection: Are we running alongside Plasma?
 if pacman -Qi "plasma-desktop" &> /dev/null; then
     print_success "KDE Plasma detected. Skipping redundant daemons (Polkit, Keyring)."
