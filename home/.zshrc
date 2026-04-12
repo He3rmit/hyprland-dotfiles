@@ -33,7 +33,6 @@ export PATH=$HOME/.local/bin:$HOME/.config/hypr/scripts:$PATH
 
 # 6. 🔗 Universal Aliases (Safe on ALL Arch-based distros)
 alias battery='upower -i /org/freedesktop/UPower/devices/battery_BAT0'
-alias wifi='nmtui'
 alias refresh='hyprctl reload && killall waybar; waybar & disown && killall swaync && rm -rf ~/.cache/swaync && swaync & disown'
 alias logout='hyprctl dispatch exit'
 
