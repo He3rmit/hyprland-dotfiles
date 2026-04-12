@@ -3,15 +3,17 @@
 This is a fully declarative, hardware-agnostic ricing project for Arch Linux and Hyprland, heavily inspired by the Titanfall "Pilot HUD" aesthetic. It has evolved into a production-ready, multi-host framework with dynamic display scaling, international layout support, and a cinematic vision engine.
 
 ## 🔗 Repository Notice
-This is the **PRODUCTION HARDENED** version (v1.1.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
+This is the **PRODUCTION HARDENED** version (v1.2.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
+
+> [!IMPORTANT]
+> **OPERATOR NOTICE**: Keybinds and configurations are heavily at the user's discretion and require personal research. Use this project at your own risk and pace. Enjoy the flight! — **He3rmit**
 
 ## 🛠️ Key Features
+- **Hardware Trinity**: Intelligent installer that auto-detects and deploys Vulkan/VA-API acceleration for NVIDIA, Intel, and AMD hardware profiles.
 - **Display Agnostic**: Built-in scaling wizard and resolution-agnostic optics ensure the HUD looks perfect on everything from 1080p desktops to 4K laptops and Ultrawide displays.
-- **Pilot Vision Optics**: A specialized ImageMagick-powered engine that provides 10+ cinematic vision modes (Vanguard, Thermal, Cyber HUD, etc.) that adapt to your resolution.
 - **International Ready**: Strategic use of **Physical Keycodes** ensures your navigation works natively on QWERTY, AZERTY, QWERTZ, and more without changing a single line of code.
 - **Pure Modularity**: Clean separation of `core/` logic and `hosts/` personalization folders.
-- **Glassmorphic HUD**: Custom SwayNC control panel with quick-action grid and Pywal dynamic theming.
-- **Modular Installer**: A `gum`-based interactive TUI that handles dependencies, stowing, and first-run hardware calibration.
+- **Shell Agnosticism**: Native `shell.local` support for machine-specific aliases and environment variables.
 
 ---
 
@@ -53,9 +55,13 @@ dotfiles/
 
 ---
 
-## 🏅 Release History
+### [v1.2.0] — Production Hardened "The Hardened Trinity" (Current)
+- **Hardware Trinity**: Implemented auto-detection and driver deployment for various GPU architectures (NVIDIA/Intel/AMD).
+- **Cluster Isolation**: Migrated high-workflow workspace clusters to host-specific vaults.
+- **Shell Hardening**: Implemented the machine-agnostic `shell.local` profile hook.
+- **Labeling**: Added human-readable labels to all physical keycode binds for easier pilot maintenance.
 
-### [v1.1.0] — Production Hardened "The Generation 1" (Current)
+### [v1.1.0] — The Generation 1
 - **Pilot Vision**: Implemented the cinematic optics engine with 11 vision modes.
 - **Hardware Agnostic**: Fully decoupled all HUD geometry from hardcoded pixel values.
 - **Hardening**: Completed the `hosts/` isolation and `.gitignore` security logic.
