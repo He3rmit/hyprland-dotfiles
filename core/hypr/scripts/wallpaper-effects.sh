@@ -39,6 +39,16 @@ GRID_TILE="$CACHE_DIR/grid_tile.png"
 # Clean up old effects to prevent cache bloat
 rm -f "$CACHE_DIR"/current_wallpaper_effect_*.jpg 2>/dev/null
 
+# Stage 1: Tactical HUD Assets
+generate_micro_grid() {
+    local color="$1"
+    # Create the 'Micro-Box' tactical grid (Tiny 10px technical boxes)
+    # This provides a 'Digital Dither' feel that reacts to light
+    magick -size 10x10 xc:none -stroke "$color" -strokewidth 1 -fill none \
+        -draw "line 0,0 10,0 line 0,0 0,10" \
+        "$GRID_TILE"
+}
+
 # Helper for Dynamic Scaling
 # All geometry is calculated relative to a reference resolution
 get_geometry() {
@@ -46,8 +56,11 @@ get_geometry() {
     W=$(magick identify -format "%w" "$input")
     H=$(magick identify -format "%h" "$input")
     
-    # Scale factor relative to 1920px width
+    # Scale factor relative to 1920px (Dynamic resolution support)
     SCALE=$(awk "BEGIN {print $W / 1920}")
+    
+    # Aspect ratio check for ultra-wide vs portrait hardening
+    RATIO=$(awk "BEGIN {print $W / $H}")
     
     # HUD Geometry
     HALF_W=$((W/2))
@@ -79,11 +92,12 @@ apply_helmet_optics() {
         -draw "line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW-RL)),$((HALF_H+RH)) line $((HALF_W+RW)),$((HALF_H+RH)) $((HALF_W+RW)),$((HALF_H+RH-RL))" \
         "$CACHE_DIR/optics_flat.jpg"
 
-    # 2. Apply Barrel Distortion + Soft-but-Dark Vignette
-    # -virtual-pixel edge prevents the black ring from distortion
-    # sigmoidal-contrast steepens the gradient curve: dark corners, bright center
-    magick "$CACHE_DIR/optics_flat.jpg" -virtual-pixel edge -distort Barrel "0.0 0.04 0.0 0.96" \
-        \( -size ${W}x${H} radial-gradient:white-black -sigmoidal-contrast 4,60% \) -compose multiply -composite "$output"
+    # 2. Apply Lens Distortion + Brighter Tactical Vignette
+    # - d=0.94: Zooms in slightly to hide corner 'voids' (Agnostic hardening)
+    # - virtual-pixel mirror: prevents edge artifacts
+    # - white-gray(10%): Keeps corners from getting pitch black
+    magick "$CACHE_DIR/optics_flat.jpg" -virtual-pixel mirror -distort Barrel "0.0 0.04 0.0 0.94" \
+        \( -size ${W}x${H} radial-gradient:white-gray\(10%\) -sigmoidal-contrast 3,50% \) -compose multiply -composite "$output"
 }
 
 case "$selected_effect" in
@@ -92,21 +106,22 @@ case "$selected_effect" in
         magick "$selected_path" \( +clone -level 20,100% -blur 0x25 -modulate 100,120,100 \) -compose Screen -composite "$EFFECT_FILE"
         ;;
     "Vanguard Tactical (Orange/Green)")
-        # Lastimosa V2: Curved Visor + Teal/Orange + Subtle Ghost Hex + Reticle
-        generate_hex_tile "rgba(0,224,255,0.1)" # Even more subtle
-        magick "$selected_path" -modulate 100,120,100 +level-colors "#1A2F1A","#E55A00" \
+        # Lastimosa V2: Curved Visor + Teal/Orange + Dynamic Micro-Grid + Reticle
+        # Neutral white-alpha allows 'Overlay' to adapt its contrast to the wall colors
+        generate_micro_grid "rgba(255,255,255,0.08)" 
+        magick "$selected_path" -modulate 115,130,100 +level-colors "#1A2F1A","#E55A00" \
             \( -clone 0 -tile "$GRID_TILE" -draw "color 0,0 reset" \) -compose Overlay -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
     "BT-7274 Thermal (Red/Yellow)")
         # BT Cockpit: Curved Visor + Red/Yellow + Scanlines + Reticle
-        magick "$selected_path" -modulate 100,150,100 +level-colors "#330000","#FFB400" \
+        magick "$selected_path" -modulate 120,160,100 +level-colors "#330000","#FFB400" \
             \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) -compose multiply -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
     "Cyber HUD (Cyan/Magenta)")
         # Digital Optics: Neon Purple + Sleek Scanlines + Cyan Glow + Reticle
-        magick "$selected_path" -modulate 110,140,100 +level-colors "#1B032A","#00E0FF" \
+        magick "$selected_path" -modulate 130,150,100 +level-colors "#1B032A","#00E0FF" \
             \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) -compose Screen -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
