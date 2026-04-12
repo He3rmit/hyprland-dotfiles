@@ -58,7 +58,7 @@ selection=$(generate_list | rofi -dmenu \
     -mesg "$KEYBIND_HINTS" \
     -display-columns 2 \
     -show-icons \
-    -multi-select \
+    -multi-select "Shift+Enter" \
     -kb-custom-1 "Alt+Delete" \
     -kb-custom-2 "Alt+Shift+Delete" \
     -kb-custom-3 "Alt+t" \
