@@ -124,11 +124,23 @@ else
     print_success "Pywal cache already exists. Skipping bootstrap."
 fi
 
-# 8. USER KEYBINDS — Link host user-keybinds.conf
+# 8. USER VAULT — Link personal modules (Keybinds, Rules, Visuals)
 USER_BINDS="$DOTFILES_DIR/hosts/$TARGET/user-keybinds.conf"
 if [[ -f "$USER_BINDS" ]]; then
     print_step ">> Linking user keybinds for $TARGET..."
     safe_link "$USER_BINDS" "$HOME/.config/hypr/user-keybinds.conf"
+fi
+
+USER_RULES="$DOTFILES_DIR/hosts/$TARGET/user-windowrules.conf"
+if [[ -f "$USER_RULES" ]]; then
+    print_step ">> Linking user window rules for $TARGET..."
+    safe_link "$USER_RULES" "$HOME/.config/hypr/user-windowrules.conf"
+fi
+
+USER_VISUALS="$DOTFILES_DIR/hosts/$TARGET/user-visuals.conf"
+if [[ -f "$USER_VISUALS" ]]; then
+    print_step ">> Linking user visual overrides for $TARGET..."
+    safe_link "$USER_VISUALS" "$HOME/.config/hypr/user-visuals.conf"
 fi
 
 # 9. SHELL PERSONALIZATION — Link host shell.local
