@@ -115,7 +115,7 @@ CORE_PACKAGES=(
     "breeze-icons"
     "starship"
     "fastfetch"
-    "kservice6"
+    "kservice"
 )
 
 # Fallback packages only needed if we are NOT running alongside KDE Plasma
