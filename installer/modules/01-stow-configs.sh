@@ -32,8 +32,16 @@ print_step ">> Stowing Core Configs..."
 stow -v -R -t "$HOME/.config" core
 
 # 3. Handle Host-Specific Config Overrides
-print_step ">> Applying Host-Specific Overrides for $TARGET..."
-safe_link "$DOTFILES_DIR/hosts/$TARGET/.config/swaync/config.json" "$HOME/.config/swaync/config.json"
+print_step ">> Applying Global Intelligence with Host Overrides for $TARGET..."
+# Always link the core config first as a universal baseline
+GLOBAL_SWAYNC="$DOTFILES_DIR/core/swaync/config.json"
+HOST_SWAYNC="$DOTFILES_DIR/hosts/$TARGET/.config/swaync/config.json"
+
+if [[ -f "$HOST_SWAYNC" ]]; then
+    safe_link "$HOST_SWAYNC" "$HOME/.config/swaync/config.json"
+else
+    safe_link "$GLOBAL_SWAYNC" "$HOME/.config/swaync/config.json"
+fi
 
 # 4. Link Hyprland Environment
 print_step ">> Stowing Hyprland Environment..."
@@ -106,9 +114,9 @@ if [[ ! -f "$HOME/.cache/wal/colors-hyprland.conf" ]] && command -v wal &>/dev/n
             cp "$HOME/.cache/wal/colors-hyprland.conf" "$HOME/.config/hypr/modules/colors.conf"
         fi
         
-        # Save explicit wallpaper state so init doesn't guess
+        # Save explicit wallpaper state using a universal path relative to HOME
         mkdir -p "$HOME/.config/wallpapers"
-        echo "$DEFAULT_WALL" > "$HOME/.config/wallpapers/.current_wallpaper"
+        echo "$HOME/.config/wallpapers/library/$(basename "$DEFAULT_WALL")" > "$HOME/.config/wallpapers/.current_wallpaper"
         rm -f "$HOME/.config/wallpapers/.current_effect_image"
         
         print_success "Pywal bootstrapped with default wallpaper."
@@ -119,7 +127,7 @@ else
     # Safeguard: Even if colors exist, ensure the state file exists for a fresh clone
     if [[ ! -f "$HOME/.config/wallpapers/.current_wallpaper" ]]; then
         mkdir -p "$HOME/.config/wallpapers"
-        echo "$DEFAULT_WALL" > "$HOME/.config/wallpapers/.current_wallpaper"
+        echo "$HOME/.config/wallpapers/library/$(basename "$DEFAULT_WALL")" > "$HOME/.config/wallpapers/.current_wallpaper"
     fi
     print_success "Pywal cache already exists. Skipping bootstrap."
 fi

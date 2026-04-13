@@ -78,12 +78,22 @@
         "tooltip-format": "{:%A\n%B %d\n%Y}",
         "on-click": "env GDK_SCALE=2 gsimplecal"
     },
-    "clock": {
-        "format": "{:%H\n%M}",
-        "tooltip": true,
-        "tooltip-format": "{:%A\n%B %d\n%Y}",
-        "on-click": "env GDK_SCALE=2 gsimplecal"
-    },    "tray": {
+    "backlight": {
+        "format": "LIT\n{percent}%",
+        "format-icons": ["", "", "", "", "", "", "", "", ""]
+    },
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "BAT\n{capacity}%",
+        "format-charging": "CHG\n{capacity}%",
+        "format-plugged": "PWR\n{capacity}%",
+        "format-alt": "{icon} {time}",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰁀", "󰁁", "󰁂", "󰁃"]
+    },
+    "tray": {
         "icon-size": 21,
         "spacing": 5
     },
