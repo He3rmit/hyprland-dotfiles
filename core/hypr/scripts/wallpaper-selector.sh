@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-WALL_DIR="$HOME/.config/wallpapers/library"
+CORE_WALL_DIR="$HOME/.config/wallpapers/library"
+USER_WALL_DIR="$HOME/Pictures/Wallpapers"
 CURRENT_WALLPAPER_FILE="$HOME/.config/wallpapers/.current_wallpaper"
+
+# Create user directory if missing to prevent find errors
+mkdir -p "$USER_WALL_DIR"
 
 apply_wallpaper() {
     local wall="$1"
@@ -92,10 +96,10 @@ if [[ "$1" == "--init" ]]; then
         wall=$(cat "$CURRENT_WALLPAPER_FILE")
         apply_wallpaper "$wall"
     else
-        # Default fallback (Explicitly use static image to prevent pywal crashes)
-        wall="$WALL_DIR/Jack-Cooper-BT-7274.jpg"
+        # Default fallback (Explicitly use static image from core)
+        wall="$CORE_WALL_DIR/Jack-Cooper-BT-7274.jpg"
         if [[ ! -f "$wall" ]]; then
-            wall=$(find "$WALL_DIR" -type f | head -n 1)
+            wall=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f 2>/dev/null | head -n 1)
         fi
         apply_wallpaper "$wall"
     fi
@@ -106,8 +110,8 @@ fi
 CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
 mkdir -p "$CACHE_DIR"
 
-vids=$(find "$WALL_DIR" -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) 2>/dev/null)
-imgs=$(find "$WALL_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) 2>/dev/null)
+vids=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) 2>/dev/null)
+imgs=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) 2>/dev/null)
 
 all_walls=$(echo -e "$vids\n$imgs" | grep -v '^[[:space:]]*$')
 
