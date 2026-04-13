@@ -78,7 +78,12 @@
         "tooltip-format": "{:%A\n%B %d\n%Y}",
         "on-click": "env GDK_SCALE=2 gsimplecal"
     },
-    "tray": {
+    "clock": {
+        "format": "{:%H\n%M}",
+        "tooltip": true,
+        "tooltip-format": "{:%A\n%B %d\n%Y}",
+        "on-click": "env GDK_SCALE=2 gsimplecal"
+    },    "tray": {
         "icon-size": 21,
         "spacing": 5
     },
@@ -117,5 +122,10 @@
         "format": "⏻",
         "tooltip": false,
         "on-click": "wlogout"
+    },
+    "custom/hint": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "~/.config/hypr/scripts/keybinds-hint.sh"
     }
 }
