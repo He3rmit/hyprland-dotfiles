@@ -59,13 +59,9 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
             fi
         fi
         
-        # Backup if it's not a symlink
-        if [[ -f "$CONFIG_FILE" && ! -L "$CONFIG_FILE" ]]; then
-            mv "$CONFIG_FILE" "${CONFIG_FILE}.bak"
-        fi
-        
-        # Create new symlink
-        ln -sf "$target_file" "$CONFIG_FILE"
+        # Copy template to active config instead of symlinking to protect the repo source
+        cp "$target_file" "$CONFIG_FILE"
+        chmod 644 "$CONFIG_FILE"
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
         # Hot reload waybar
@@ -87,13 +83,9 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
     if [[ -n "$selected_name" ]]; then
         target_file="$STYLES_DIR/${selected_name}.css"
         
-        # Backup if it's not a symlink
-        if [[ -f "$STYLE_FILE" && ! -L "$STYLE_FILE" ]]; then
-            mv "$STYLE_FILE" "${STYLE_FILE}.bak"
-        fi
-        
-        # Create new symlink
-        ln -sf "$target_file" "$STYLE_FILE"
+        # Copy template to active style instead of symlinking
+        cp "$target_file" "$STYLE_FILE"
+        chmod 644 "$STYLE_FILE"
         notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name"
         
         # Hot reload waybar
@@ -113,9 +105,10 @@ elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
     fi
     
     if [[ -n "$DIRECTION" ]]; then
-        if [[ -f "$REAL_CONFIG" ]]; then
+        if [[ -f "$CONFIG_FILE" ]]; then
             # Override whatever position the JSONC holds with the new one
-            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$DIRECTION"'"/' "$REAL_CONFIG"
+            # Targeted at the local active config only
+            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$DIRECTION"'"/' "$CONFIG_FILE"
             notify-send -t 2000 "Waybar Engine" "Direction updated: $DIRECTION"
             
             # Hot reload waybar
