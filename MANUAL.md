@@ -13,6 +13,12 @@ Your desktop is split into two layers to ensure total portability and privacy:
 
 The Pilot's hand never leaves the tactical clusters. Shortcuts are organized into logical zones for high-speed operation.
 
+### 🧩 Tactical Discovery (Hints for Pilots)
+To quickly learn the cockpit's operational binds without reading the manual:
+1.  **Searchable Briefing**: Press `Super + Alt + /` to launch the **Tactical Briefing**.
+2.  **Visual Discovery**: Click the **Question Mark (``)** in your Waybar stack.
+3.  **Real-Time Parsing**: This menu scans your actual configuration—it always reflects your current active binds.
+
 ### 🧩 Positional Workspace Logic (International Support)
 The workspace binds use **Physical Keycodes**, not characters. Result: your hand movement is identical regardless of keyboard layout (QWERTY, AZERTY, etc.).
 - **Super + [1-0]**: Switch to Workspaces 1-10 (Global Engine).
@@ -28,6 +34,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
 | `Super + Alt + W` | **Wallpaper Selector** |
 | `Super + Alt + E` | **Pilot Vision / Effects Menu** |
+| `Super + Alt + /` | **Tactical Briefing** (Searchalble Cheat Sheet) |
 
 ### 🎯 Cluster 2: The Buckets (Personal Workspace Vault)
 *These are now host-specific personal shortcuts. Templates are provided in the global config.*
@@ -80,8 +87,10 @@ If you are moving from a legacy monolithic installation to this hardened framewo
 ### Phase 1: Identify Your Personal Vaults
 In this framework, your "soul" lives in your host-specific folder:
 - `hosts/[profile]/user-keybinds.conf`: Stores Cluster 2 (The Buckets) and Cluster 6 (F-Keys).
-- `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and paths.
+- `hosts/[profile]/user-windowrules.conf`: Machine-specific app behavior and gaming rules.
+- `hosts/[profile]/user-visuals.conf`: Hardware-specific rendering and visual comfort.
 - `hosts/[profile]/hypr-host.conf`: Hardware-specific rules (Monitor, Touchpad).
+- `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
 1. Enter your dotfile directory: `cd ~/dotfiles`
