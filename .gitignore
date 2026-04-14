@@ -19,3 +19,8 @@ home/.zshrc.local
 # Only the template folder should be committed to the public repo.
 hosts/*/
 !hosts/_template/
+
+# Hardware Specific Modules (Handled by Installer/Vault)
+hyprland/modules/monitor.conf
+hyprland/modules/nvidia.conf
+hyprland/modules/touchpad.conf
