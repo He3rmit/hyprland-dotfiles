@@ -50,18 +50,15 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
             [[ "$CURRENT_NAME" == *"Topbar"* || "$CURRENT_NAME" == *"Bottom"* ]] && IS_CURRENT_TOPBAR=1
             [[ "$target_file" == *"Topbar"* || "$target_file" == *"Bottom"* ]] && IS_TARGET_TOPBAR=1
             
-            # Sync memory if axes match
-            if [[ $IS_CURRENT_SIDEBAR -eq 1 && $IS_TARGET_SIDEBAR -eq 1 && -n "$CURRENT_POS" ]]; then
-                sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$target_file"
-            fi
-            if [[ $IS_CURRENT_TOPBAR -eq 1 && $IS_TARGET_TOPBAR -eq 1 && -n "$CURRENT_POS" ]]; then
-                sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$target_file"
-            fi
-        fi
-        
         # Copy template to active config instead of symlinking to protect the repo source
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
+
+        # Apply remembered position to the LOCAL active config ONLY
+        if [[ -n "$CURRENT_POS" ]]; then
+            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$CONFIG_FILE"
+        fi
+
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
         # Hot reload waybar
