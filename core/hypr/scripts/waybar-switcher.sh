@@ -15,6 +15,12 @@ ROFI_THEME="$HOME/.config/rofi/themes/runner.rasi"
 # Ensure origin directories exist just in case
 mkdir -p "$LAYOUTS_DIR" "$STYLES_DIR"
 
+# 0. ENGINE RESTART PROTOCOL
+reload_waybar() {
+    killall waybar
+    waybar -c "$CONFIG_FILE" -s "$STYLE_FILE" & disown
+}
+
 # 1. Ask what to change
 MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)\nChange Direction (Top/Bottom/Left/Right)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
 
@@ -37,6 +43,11 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
     if [[ -n "$selected_name" ]]; then
         target_file="$LAYOUTS_DIR/${selected_name}.jsonc"
         
+        if [[ ! -f "$target_file" ]]; then
+            notify-send "Waybar Engine" "ERROR: Source layout not found!"
+            exit 1
+        fi
+        
         # If preserving the same Axis, sync the position memory!
         if [[ -f "$CONFIG_FILE" ]]; then
             CURRENT_POS=$(grep -Eo '"position": *"[a-zA-Z]+"' "$CONFIG_FILE" | cut -d'"' -f4 | head -n 1)
@@ -49,8 +60,11 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
             IS_CURRENT_TOPBAR=0; IS_TARGET_TOPBAR=0
             [[ "$CURRENT_NAME" == *"Topbar"* || "$CURRENT_NAME" == *"Bottom"* ]] && IS_CURRENT_TOPBAR=1
             [[ "$target_file" == *"Topbar"* || "$target_file" == *"Bottom"* ]] && IS_TARGET_TOPBAR=1
-            
+        fi
+        
         # Copy template to active config instead of symlinking to protect the repo source
+        # BREAK THE LINK: Ensure the active config is a real file, not a symlink to the repo
+        rm -f "$CONFIG_FILE"
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
@@ -61,8 +75,8 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
 
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
-        # Hot reload waybar
-        pkill -SIGUSR2 waybar
+        # ENGINE RESTART
+        reload_waybar
     fi
 
 elif [[ "$MODE" == "Change Style (CSS)" ]]; then
@@ -80,13 +94,20 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
     if [[ -n "$selected_name" ]]; then
         target_file="$STYLES_DIR/${selected_name}.css"
         
+        if [[ ! -f "$target_file" ]]; then
+            notify-send "Waybar Engine" "ERROR: Source style not found!"
+            exit 1
+        fi
+        
         # Copy template to active style instead of symlinking
+        # BREAK THE LINK: Ensure the active style is a real file, not a symlink to the repo
+        rm -f "$STYLE_FILE"
         cp "$target_file" "$STYLE_FILE"
         chmod 644 "$STYLE_FILE"
         notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name"
         
-        # Hot reload waybar
-        pkill -SIGUSR2 waybar
+        # ENGINE RESTART
+        reload_waybar
     fi
 elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
     # 2c. Ask for direction based on layout type
@@ -108,8 +129,8 @@ elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
             sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$DIRECTION"'"/' "$CONFIG_FILE"
             notify-send -t 2000 "Waybar Engine" "Direction updated: $DIRECTION"
             
-            # Hot reload waybar
-            pkill -SIGUSR2 waybar
+            # ENGINE RESTART
+            reload_waybar
         fi
     fi
 fi
