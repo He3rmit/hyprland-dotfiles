@@ -1,11 +1,11 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v1.2.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v1.3.0)
 
 > *"The HUD is modular. The Pilot is agnostic. The Titan is universal."*
 
-## 1. Core Architecture — Modular vs. Personal
+## 1. Core Architecture — The Vault Standard
 Your desktop is split into two layers to ensure total portability and privacy:
-- **Core (`core/`, `hyprland/`)**: The shared "Engine" and "Visuals" that everyone uses.
-- **Host (`hosts/`)**: Your machine's specific "Neuro-Link". This stores your private monitor resolution, scaling preferences, and personal keybinds.
+- **Core (`core/`, `hyprland/`)**: The shared "Engine" and "Visuals" that everyone uses. This code remains 100% hardware-agnostic and "Read-Only."
+- **Host (`hosts/`)**: Your machine-specific "Neuro-Link". This stores your private monitor resolution, scaling preferences, world-exclusive keybinds, and hardware drivers in a Git-ignored vault.
 
 ---
 
@@ -61,14 +61,37 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + N` | **Notification Center** (Pilot HUD) |
 | `Super + L` | **Screen Lock** (Hyprlock) |
 | `Super + B` | **Cycle Waybar** Layout |
-| `Super + Alt + B` | **Waybar Theme** Switcher |
+| `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
 | `Super + Shift + V` | **Clipboard History** (Rofi) |
 | `Ctrl + Shift + S` | **Screenshot** (Area/Annotate) |
 | `Print` | **Screenshot** (Full/Clipboard) |
 
 ---
 
-## 3. 📺 Pilot Vision Optics Engine
+## 3. Pilot-Control Suite (The Management Chassis)
+The HUD includes a unified management tool called `pilot-control`. It handles high-level system states that standard keybinds cannot reach.
+
+### 🎮 The GUI (Tactile Interface)
+Launch the **Pilot Control Center** by clicking the **Settings** or **Power** icon in Waybar, or run:
+`~/.config/hypr/scripts/pilot-control-gui.sh`
+
+### ⌨️ The CLI (Terminal Access)
+For advanced operators, the `pilot-control` binary provides direct system hooks:
+- `pilot-control sddm --disengage`: Safely restores default SDDM visuals (removes cinematic video overrides).
+- `pilot-control bluetooth --toggle`: Tactical peripheral control.
+- `pilot-control help`: Displays the full command manifest.
+
+---
+
+## 4. 📺 Pilot Vision & Waybar Engine
+The HUD features two primary "Intelligence Layers" that adapt to your specific hardware.
+
+### 🧩 Waybar "Generation 2" Engine
+The switcher now operates on a **Link-Break Protocol** to ensure that switching themes or layouts never modifies your Git repository.
+- **Axis-Lock Intelligence**: The switcher recognizes if you are using a **Sidebar** (Vertical) or **Topbar** (Horizontal). It automatically restricts "Direction" choices and position memory to prevent rendering glitches.
+- **Engine Restart**: The HUD performs a full "Engine Restart" during switches to guarantee 100% configuration persistence.
+
+### 🧩 Pilot Vision Optics
 The framework features a sophisticated ImageMagick-powered engine for cinematic wallpaper effects. This is resolution-agnostic and scales to your hardware.
 
 **Key Modes:**
@@ -81,7 +104,7 @@ The framework features a sophisticated ImageMagick-powered engine for cinematic 
 
 ---
 
-# 4. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
+## 5. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
 If you are moving from a legacy monolithic installation to this hardened framework, follow this guide to preserve your personal data.
 
 ### Phase 1: Identify Your Personal Vaults
@@ -89,7 +112,9 @@ In this framework, your "soul" lives in your host-specific folder:
 - `hosts/[profile]/user-keybinds.conf`: Stores Cluster 2 (The Buckets) and Cluster 6 (F-Keys).
 - `hosts/[profile]/user-windowrules.conf`: Machine-specific app behavior and gaming rules.
 - `hosts/[profile]/user-visuals.conf`: Hardware-specific rendering and visual comfort.
-- `hosts/[profile]/hypr-host.conf`: Hardware-specific rules (Monitor, Touchpad).
+- `hosts/[profile]/monitor.conf`: Your machine's specific monitor/resolution rules.
+- `hosts/[profile]/nvidia.conf`: (Optional) NVIDIA driver environmental variables.
+- `hosts/[profile]/hypr-host.conf`: Hardware-specific triggers (Volume, Power, etc.).
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
@@ -116,16 +141,16 @@ cp ~/.config/hypr/modules/hypr-host.conf ~/dotfiles/hosts/[your-profile]/
 
 ---
 
-## 5. Display Calibration & Scaling
-Your monitor rule is now **Dynamic**. 
+## 6. Display Calibration & Scaling (Optics Protocol)
+Your monitor rule is now **Dynamic** and part of your Vault.
 
-1.  **Monitor Wizard**: During installation, select your monitor and the script will generate a custom `monitor.conf`.
-2.  **Scale Factor**: If icons look too small, re-run the wizard and choose a higher scale (e.g. 1.25 or 1.5). 
+1.  **Monitor Wizard**: During installation, select your monitor and the script will generate a custom `monitor.conf` in your vault.
+2.  **Resolution Agnosticism**: Waybar is a native Wayland client. If you are on a 4K screen, set your `scale` to `2` in `monitor.conf`. Waybar will automatically follow this multiplier, ensuring your HUD maintains perfect "Visual Weight" without code changes.
 3.  **Optics Sync**: The Wallpaper Effects engine reads this scale factor to ensure HUD reticles and scanlines look correctly sized on your specific display.
 
 ---
 
-## 6. Security & Git Hygiene
+## 7. Security & Git Hygiene
 The project uses a **Black-Hole .gitignore** strategy:
 - All folders in `hosts/` (except `_template`) are automatically ignored.
 - The `hyprland/modules/colors.conf` (Pywal output) is ignored.

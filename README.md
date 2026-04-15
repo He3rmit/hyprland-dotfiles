@@ -9,11 +9,12 @@ This is the **PRODUCTION HARDENED** version (v1.2.0). It features a completely m
 > **OPERATOR NOTICE**: Keybinds and configurations are heavily at the user's discretion and require personal research. Use this project at your own risk and pace. Enjoy the flight! — **He3rmit**
 
 ## 🛠️ Key Features
-- **Hardware Trinity**: Intelligent installer that auto-detects and deploys Vulkan/VA-API acceleration for NVIDIA, Intel, and AMD hardware profiles.
-- **Display Agnostic**: Built-in scaling wizard and resolution-agnostic optics ensure the HUD looks perfect on everything from 1080p desktops to 4K laptops and Ultrawide displays.
-- **International Ready**: Strategic use of **Physical Keycodes** ensures your navigation works natively on QWERTY, AZERTY, QWERTZ, and more without changing a single line of code.
-- **Pure Modularity**: Clean separation of `core/` logic and `hosts/` personalization folders.
-- **Shell Agnosticism**: Native `shell.local` support for machine-specific aliases and environment variables.
+- **The Hardware Vault**: Total separation of `core/` logic and `hosts/` machine configurations. Your monitor, GPU drivers, and local tweaks are kept in a private, Git-ignored vault.
+- **Generation 2 Switcher Engine**: A logic-aware Waybar switcher featuring the **Axis-Lock** protocol (prevents Sidebar/Topbar rendering failures) and **Link-Break** source protection.
+- **Hardware Trinity**: Intelligent installer that auto-detects NVIDIA hardware and deploys vault-aware configuration modules.
+- **Resolution-Agnostic Optics**: Leveraging the Host-Vault scaling protocol, the HUD renders perfectly across 1080p, 1440p, 4K, and Ultrawide displays without code changes.
+- **Dual-Library Discovery**: The Wallpaper Engine merges your Git-tracked library with a private local wallpaper directory (`~/Pictures/Wallpapers/`) for a seamless, private collection.
+- **International Ready**: Strategic use of **Physical Keycodes** ensures your navigation works natively on QWERTY, AZERTY, QWERTZ, and more.
 
 ---
 
@@ -55,11 +56,16 @@ dotfiles/
 
 ---
 
-### [v1.2.0] — Production Hardened "The Hardened Trinity" (Current)
+### [v1.3.0] — Total Architectural Re-Alignment (Current)
+- **Generation 2 Engine**: Refactored `waybar-switcher.sh` with **Axis-Lock** intelligence and **Link-Break** source protection.
+- **Vault Centralization**: Migrated all machine-specific identity (`monitor.conf`, `nvidia.conf`, `touchpad.conf`) into isolated host vaults.
+- **Pilot-Control Suite**: Implemented the `pilot-control` CLI and GUI for tactile system management.
+- **Discovery Engine**: Refactored the Wallpaper Selector to support dual-library discovery for personal assets.
+
+### [v1.2.0] — Production Hardened "The Hardened Trinity"
 - **Hardware Trinity**: Implemented auto-detection and driver deployment for various GPU architectures (NVIDIA/Intel/AMD).
 - **Cluster Isolation**: Migrated high-workflow workspace clusters to host-specific vaults.
 - **Shell Hardening**: Implemented the machine-agnostic `shell.local` profile hook.
-- **Labeling**: Added human-readable labels to all physical keycode binds for easier pilot maintenance.
 
 ### [v1.1.0] — The Generation 1
 - **Pilot Vision**: Implemented the cinematic optics engine with 11 vision modes.
