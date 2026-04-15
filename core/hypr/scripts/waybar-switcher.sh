@@ -6,6 +6,7 @@
 WAYBAR_DIR="$HOME/.config/waybar"
 CONFIG_FILE="$WAYBAR_DIR/config.jsonc"
 STYLE_FILE="$WAYBAR_DIR/style.css"
+TYPE_FILE="$WAYBAR_DIR/.current_layout_type"
 
 # Look inside the dotfiles source to avoid Stow symlink issues
 LAYOUTS_DIR="$HOME/.config/waybar/layouts"
@@ -68,13 +69,26 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
-        # Apply remembered position to the LOCAL active config ONLY
+        # Apply remembered position ONLY if the Axis matches (Sidebar to Sidebar or Topbar to Topbar)
         if [[ -n "$CURRENT_POS" ]]; then
-            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$CONFIG_FILE"
+            SHOULD_SYNC=0
+            [[ $IS_CURRENT_SIDEBAR -eq 1 && $IS_TARGET_SIDEBAR -eq 1 ]] && SHOULD_SYNC=1
+            [[ $IS_CURRENT_TOPBAR -eq 1 && $IS_TARGET_TOPBAR -eq 1 ]] && SHOULD_SYNC=1
+
+            if [[ $SHOULD_SYNC -eq 1 ]]; then
+                sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$CONFIG_FILE"
+            fi
         fi
 
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
+        # Save Identity for Axis-Locked Direction menus
+        if [[ "$selected_name" == *"Sidebar"* ]]; then
+            echo "Sidebar" > "$TYPE_FILE"
+        else
+            echo "Topbar" > "$TYPE_FILE"
+        fi
+
         # ENGINE RESTART
         reload_waybar
     fi
@@ -110,15 +124,15 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         reload_waybar
     fi
 elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
-    # 2c. Ask for direction based on layout type
-    REAL_CONFIG=$(readlink -f "$CONFIG_FILE")
-    NAME=$(basename "$REAL_CONFIG")
+    # 2c. Ask for direction based on layout type (from Identity Memory)
+    LAYOUT_TYPE=$(cat "$TYPE_FILE" 2>/dev/null)
     
-    if [[ "$NAME" == *"Sidebar"* ]]; then
+    if [[ "$LAYOUT_TYPE" == "Sidebar" ]]; then
         DIRECTION=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Direction (Sidebar Mode)" -theme "$ROFI_THEME")
-    elif [[ "$NAME" == *"Topbar"* ]] || [[ "$NAME" == *"Bottom"* ]]; then
+    elif [[ "$LAYOUT_TYPE" == "Topbar" ]]; then
         DIRECTION=$(echo -e "top\nbottom" | rofi -dmenu -i -p "󰸉 Direction (Topbar Mode)" -theme "$ROFI_THEME")
     else
+        # Fallback if no identity found
         DIRECTION=$(echo -e "top\nbottom\nleft\nright" | rofi -dmenu -i -p "󰸉 Direction" -theme "$ROFI_THEME")
     fi
     
