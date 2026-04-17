@@ -20,19 +20,32 @@ generate_list() {
         id="${line%%$'\t'*}"
         content="${line#*$'\t'}"
         
-        if [[ "$content" =~ binary.*data ]]; then
-            preview_file="$CACHE_DIR/${id}.png"
-            if [ ! -f "$preview_file" ]; then
-                # Run heavily blocking thumbnail generation in background, output redirected so bash substitute doesn't wait
-                # Generates a premium 64x64 center-cropped square instead of squished aspect ratios
-                (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
-            fi
-            
-            # Extract dimensions directly from cliphist output (e.g., "[[ binary data 198 KiB png 412x1010 ]]")
-            if [[ "$content" =~ ([0-9]+x[0-9]+) ]]; then
-                label="[Image ${BASH_REMATCH[1]}]"
+        if [[ "$content" =~ binary.*data ]] || [[ "$content" =~ file://.* ]]; then
+            # Extract path if it's a URI, otherwise use ID for binary
+            if [[ "$content" =~ file://(.*) ]]; then
+                raw_path="${BASH_REMATCH[1]}"
+                # Ensure we handle spaces/special chars in URI
+                image_source=$(echo -e "${raw_path//%/\\x}")
+                preview_file="$CACHE_DIR/uri_$(echo -n "$image_source" | md5sum | cut -d' ' -f1).png"
+                label="[File: $(basename "$image_source")]"
             else
-                label="[Image]"
+                image_source="-" # Read from stdin (cliphist decode)
+                preview_file="$CACHE_DIR/${id}.png"
+                
+                # Extract dimensions directly from cliphist output
+                if [[ "$content" =~ ([0-9]+x[0-9]+) ]]; then
+                    label="[Bin: ${BASH_REMATCH[1]}]"
+                else
+                    label="[Binary Image]"
+                fi
+            fi
+
+            if [ ! -f "$preview_file" ]; then
+                if [ "$image_source" == "-" ]; then
+                    (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                else
+                    (magick "$image_source"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                fi
             fi
             
             echo -en "${id}\t${label}\0icon\x1f${preview_file}\n"
@@ -73,7 +86,13 @@ clip_ids=$(echo "$selection" | awk '{print $1}')
 case $exit_code in
     0)  # ENTER — Paste (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
-        cliphist decode "$first_id" | wl-copy
+        decoded=$(cliphist decode "$first_id")
+        if [[ "$decoded" == file://* ]]; then
+            # Re-copy as text/uri-list so apps treat it as a file upload (not raw text)
+            printf '%s' "$decoded" | wl-copy --type text/uri-list
+        else
+            printf '%s' "$decoded" | wl-copy
+        fi
         notify_pilot "Buffer Updated" "Data sequence ready."
         ;;
     15) # Alt+P — Preview Image (First item only)
@@ -83,14 +102,24 @@ case $exit_code in
         xdg-open "$tmp_img" &
         notify_pilot "Visual Feed Active" "Opening image preview..."
         ;;
-    10) # Alt+Delete — Delete Entry (Native bulk)
-        cliphist delete <<< "$selection"
-        notify_pilot "Entry Purged" "Item(s) removed from history."
+    10) # Alt+Delete — Delete Entry (Deep Purge)
+        echo "$clip_ids" | while read -r id; do
+            # Decode the real content (not the synthetic label rofi returns)
+            decoded=$(cliphist decode "$id" 2>/dev/null)
+            # If it's a Hydra cache URI, shred the physical file
+            if [[ "$decoded" =~ ^file://(.+/.cache/pilot-hydra/ck_[^[:space:]]+) ]]; then
+                rm -f "${BASH_REMATCH[1]}"
+            fi
+            # Fetch the real cliphist list line by ID and pipe to delete
+            cliphist list | awk -F'\t' -v id="$id" '$1 == id { print; exit }' | cliphist delete
+        done
+        notify_pilot "Entry Purged" "Clipboard item and cache file removed."
         ;;
-    11) # Alt+Shift+Delete — Wipe All
+    11) # Alt+Shift+Delete — Wipe All (Nuke)
         cliphist wipe
         rm -rf "$CACHE_DIR"/*
-        notify-send -u critical -a "Titanfall Systems" "DATABASE PURGED" "All clipboard records erased."
+        rm -rf "$HOME/.cache/pilot-hydra"/*
+        notify-send -u critical -a "Titanfall Systems" "DATABASE PURGED" "History and Hydra Cache erased."
         ;;
     12) # Alt+T — Auto-Type
         echo "$clip_ids" | while read -r id; do
