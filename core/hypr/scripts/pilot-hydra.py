@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import time
+import hashlib
 import threading
 import subprocess
 import requests
@@ -117,6 +119,7 @@ class HydraHub(Gtk.Window):
         self.show_all()
 
         # Background loaders
+        self._cleanup_cache()
         self._load_vault()
         threading.Thread(target=self._load_emojis, daemon=True).start()
 
@@ -334,20 +337,55 @@ class HydraHub(Gtk.Window):
 
     def _capture_url(self, url):
         try:
-            path = os.path.join(CACHE_DIR, "payload.gif")
-            data = requests.get(url, timeout=10).content
-            with open(path, "wb") as f:
-                f.write(data)
-            subprocess.run(["wl-copy", "--type", "image/gif"],
-                           stdin=open(path, "rb"))
-            self._notify("Captured", "GIF ready — Ctrl+V to deploy.")
+            url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+            cache_dir = os.path.expanduser("~/.cache/pilot-hydra")
+            os.makedirs(cache_dir, exist_ok=True)
+            cache_gif = os.path.join(cache_dir, f"ck_{url_hash}.gif")
+
+            # 1. Download full animated GIF (only if not already cached)
+            if not os.path.exists(cache_gif):
+                data = requests.get(url, timeout=10).content
+                with open(cache_gif, "wb") as f:
+                    f.write(data)
+
+            # 2. Copy as a File URI (The "Attachment Protocol")
+            # This makes Ctrl+V trigger a file upload in Discord/Telegram/Browsers
+            file_uri = f"file://{cache_gif}"
+            subprocess.run(
+                ["wl-copy", "--type", "text/uri-list"],
+                input=file_uri.encode()
+            )
+
+            self._notify(
+                "Payload Ready",
+                f"Animation cached → Ctrl+V to Upload"
+            )
         except Exception as e:
             print(f"[Hydra] capture error: {e}")
 
+    def _cleanup_cache(self):
+        """Purge cached files older than 24 hours to keep the pilot hub lean."""
+        try:
+            cache_dir = os.path.expanduser("~/.cache/pilot-hydra")
+            if not os.path.exists(cache_dir):
+                return
+            now = time.time()
+            for f in os.listdir(cache_dir):
+                path = os.path.join(cache_dir, f)
+                if os.stat(path).st_mtime < now - 86400:
+                    os.remove(path)
+        except Exception as e:
+            print(f"[Hydra] cleanup error: {e}")
+
+
     def _on_click_local(self, btn, path):
-        mime = "image/png" if path.lower().endswith(".png") else "image/gif"
-        subprocess.run(["wl-copy", "--type", mime], stdin=open(path, "rb"))
-        self._notify("Captured", "Sticker ready — Ctrl+V to deploy.")
+        # Using File URI protocol for widest compatibility with chat apps
+        file_uri = f"file://{os.path.abspath(path)}"
+        subprocess.run(
+            ["wl-copy", "--type", "text/uri-list"],
+            input=file_uri.encode()
+        )
+        self._notify("Captured", "Vault item ready — Ctrl+V to upload.")
 
     def _copy_text(self, text):
         subprocess.run(["wl-copy"], input=text.encode())
