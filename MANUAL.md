@@ -62,8 +62,9 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + L` | **Screen Lock** (Hyprlock) |
 | `Super + B` | **Cycle Waybar** Layout |
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
-| `Super + Shift + V` | **Clipboard History** (Rofi) |
-| `Ctrl + Shift + S` | **Screenshot** (Area/Annotate) |
+| `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
+| `Super + Shift + E` | **Media Hub** | Launch the Hydra (Emoji/GIF/Stickers) picker. |
+| `Super + N` | **Notifications** | Toggle the swaync notification panel. |
 | `Print` | **Screenshot** (Full/Clipboard) |
 
 ---
