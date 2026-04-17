@@ -96,6 +96,7 @@ class HydraHub(Gtk.Window):
 
         # Notebook
         self.notebook = Gtk.Notebook()
+        self.notebook.connect("switch-page", self._on_tab_switched)
         root.pack_start(self.notebook, True, True, 0)
 
         # Tabs
@@ -149,6 +150,22 @@ class HydraHub(Gtk.Window):
         if self.debounce_id:
             GLib.source_remove(self.debounce_id)
         self.debounce_id = GLib.timeout_add(450, self._dispatch, entry.get_text().strip())
+
+    def _on_tab_switched(self, notebook, page, page_num):
+        """Re-fire the search when switching tabs so the grid is never stale."""
+        query = self.search.get_text().strip()
+        if query:
+            if self.debounce_id:
+                GLib.source_remove(self.debounce_id)
+            self.debounce_id = GLib.timeout_add(100, self._dispatch_page, query, page_num)
+
+    def _dispatch_page(self, query, page):
+        self.debounce_id = None
+        if page == 0:
+            threading.Thread(target=self._fetch_gifs, args=(query,), daemon=True).start()
+        elif page == 1:
+            threading.Thread(target=self._fetch_stickers, args=(query,), daemon=True).start()
+        return False
 
     def _dispatch(self, query):
         self.debounce_id = None
