@@ -348,18 +348,17 @@ class HydraHub(Gtk.Window):
                 with open(cache_gif, "wb") as f:
                     f.write(data)
 
-            # 2. Copy as a File URI (The "Attachment Protocol")
-            # This makes Ctrl+V trigger a file upload in Discord/Telegram/Browsers
-            file_uri = f"file://{cache_gif}"
-            subprocess.run(
-                ["wl-copy", "--type", "text/uri-list"],
-                input=file_uri.encode()
-            )
+            # 2. Copy as image/gif binary — Popen so thread never blocks
+            with open(cache_gif, "rb") as f:
+                proc = subprocess.Popen(
+                    ["wl-copy", "--type", "image/gif"],
+                    stdin=f,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                proc.wait()  # wl-copy forks after reading — this returns quickly
 
-            self._notify(
-                "Payload Ready",
-                f"Animation cached → Ctrl+V to Upload"
-            )
+            self._notify("GIF Copied", "Ctrl+V to paste")
         except Exception as e:
             print(f"[Hydra] capture error: {e}")
 
@@ -379,20 +378,28 @@ class HydraHub(Gtk.Window):
 
 
     def _on_click_local(self, btn, path):
-        # Using File URI protocol for widest compatibility with chat apps
-        file_uri = f"file://{os.path.abspath(path)}"
-        subprocess.run(
-            ["wl-copy", "--type", "text/uri-list"],
-            input=file_uri.encode()
-        )
-        self._notify("Captured", "Vault item ready — Ctrl+V to upload.")
+        mime = "image/png" if path.lower().endswith(".png") else "image/gif"
+        with open(path, "rb") as f:
+            proc = subprocess.Popen(
+                ["wl-copy", "--type", mime],
+                stdin=f,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            proc.wait()
+        self._notify("Captured", "Ctrl+V to paste")
 
     def _copy_text(self, text):
         subprocess.run(["wl-copy"], input=text.encode())
         self._notify("Captured", f"Emoji {text} copied.")
 
     def _notify(self, title, body):
-        subprocess.run(["notify-send", "-t", "2000", "-a", "Hydra Hub", title, body])
+        """Dispatch to GTK main thread — safe from any background thread."""
+        GLib.idle_add(
+            lambda: subprocess.run(
+                ["notify-send", "-t", "2000", "-a", "Hydra Hub", title, body]
+            ) and False
+        )
 
 
 # ─── LAUNCH ──────────────────────────────────────────────────────────────────
