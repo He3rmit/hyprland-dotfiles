@@ -4,8 +4,8 @@
 # The file that holds the state
 STATE_FILE="$HOME/.config/hypr/touchpad.conf"
 
-# Auto-detect the touchpad device
-DEVICE=$(hyprctl devices -j 2>/dev/null | jq -r '.mice[] | select(.name | test("touchpad"; "i")) | .name' | head -1)
+# Auto-detect the touchpad device (Universal: ASUS, MSI, Synaptics, Elan, etc.)
+DEVICE=$(hyprctl devices -j | jq -r '.mice[] | select(.name | test("touchpad|synaptics|asif|elan|asue"; "i")) | .name' | head -1)
 
 if [ -z "$DEVICE" ]; then
     notify-send -u low -i input-touchpad-off "Touchpad" "No touchpad device detected"
