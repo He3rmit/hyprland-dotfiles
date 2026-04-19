@@ -11,15 +11,16 @@ BRCTL="/usr/bin/brightnessctl"
 NOTIFY="/usr/bin/notify-send"
 
 case "$1" in
-  up)  $BRCTL -d "$DEVICE" set +"$STEP" >/dev/null 2>&1 ;;
-  down) $BRCTL -d "$DEVICE" set "$STEP"- >/dev/null 2>&1 ;;
+  up)  $BRCTL --class=backlight set +"$STEP" >/dev/null 2>&1 ;;
+  down) $BRCTL --class=backlight set "$STEP"- >/dev/null 2>&1 ;;
   *) echo "Usage: $0 {up|down}" >&2; exit 1 ;;
 esac
 
 sleep 0.08
 
-BRIGHT=$($BRCTL -d "$DEVICE" get 2>/dev/null)
-MAX=$($BRCTL -d "$DEVICE" m 2>/dev/null)
+# Get current state from the backlight class (universal)
+BRIGHT=$($BRCTL --class=backlight get | head -n 1 2>/dev/null)
+MAX=$($BRCTL --class=backlight max | head -n 1 2>/dev/null)
 if [ -z "$BRIGHT" ] || [ -z "$MAX" ] || [ "$MAX" -eq 0 ]; then
   $NOTIFY -u critical "Brightness" "Unable to read brightness"
   exit 1
