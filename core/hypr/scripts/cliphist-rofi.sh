@@ -86,18 +86,12 @@ clip_ids=$(echo "$selection" | awk '{print $1}')
 case $exit_code in
     0)  # ENTER — Paste (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
-        # Use list (text-safe) to detect type — never capture binary into a shell variable
-        raw_content=$(cliphist list | awk -F'\t' -v id="$first_id" '$1 == id { print $2; exit }')
-        if [[ "$raw_content" == file://*/.cache/pilot-hydra/ck_*.gif ]]; then
-            # Hydra GIF — copy actual image/gif binary so Ctrl+V works in apps
-            gif_path="${raw_content#file://}"
-            [ -f "$gif_path" ] && wl-copy --type image/gif < "$gif_path"
-        elif [[ "$raw_content" == file://* ]]; then
-            # Other file URI
-            printf '%s' "$raw_content" | wl-copy --type text/uri-list
+        decoded=$(cliphist decode "$first_id")
+        if [[ "$decoded" == file://* ]]; then
+            # Re-copy as text/uri-list so apps treat it as a file upload (not raw text)
+            printf '%s' "$decoded" | wl-copy --type text/uri-list
         else
-            # Binary or plain text — safe pipe, no shell variable capture
-            cliphist decode "$first_id" | wl-copy
+            printf '%s' "$decoded" | wl-copy
         fi
         notify_pilot "Buffer Updated" "Data sequence ready."
         ;;
@@ -110,18 +104,17 @@ case $exit_code in
         ;;
     10) # Alt+Delete — Delete Entry (Deep Purge)
         echo "$clip_ids" | while read -r id; do
-            # Use list (text-safe) to check content type — no binary decoding
-            raw_content=$(cliphist list | awk -F'\t' -v id="$id" '$1 == id { print $2; exit }')
-            # If it's a Hydra cache URI, shred the physical file too
-            if [[ "$raw_content" == file://*/.cache/pilot-hydra/ck_* ]]; then
-                rm -f "${raw_content#file://}"
+            # Decode the real content (not the synthetic label rofi returns)
+            decoded=$(cliphist decode "$id" 2>/dev/null)
+            # If it's a Hydra cache URI, shred the physical file
+            if [[ "$decoded" =~ ^file://(.+/.cache/pilot-hydra/ck_[^[:space:]]+) ]]; then
+                rm -f "${BASH_REMATCH[1]}"
             fi
-            # Delete using the real cliphist list entry (full line, not synthetic label)
+            # Fetch the real cliphist list line by ID and pipe to delete
             cliphist list | awk -F'\t' -v id="$id" '$1 == id { print; exit }' | cliphist delete
         done
-        notify_pilot "Entry Purged" "Clipboard item removed."
+        notify_pilot "Entry Purged" "Clipboard item and cache file removed."
         ;;
-
     11) # Alt+Shift+Delete — Wipe All (Nuke)
         cliphist wipe
         rm -rf "$CACHE_DIR"/*
