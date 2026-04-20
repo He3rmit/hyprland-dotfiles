@@ -36,6 +36,23 @@ These are empty by default! They exist to "hook" into the Core.
 
 ---
 
+## 🎭 Powering the Media Hub (Hydra)
+
+The Hydra Media Hub requires an API key to search for GIFs and Stickers. By default, it looks for this key in a hidden file in your home directory.
+
+### 1. The Secrets File
+Create or edit `~/.secrets.sh` and add your Klipy API key:
+```bash
+export KLIPY_API_KEY="your_actual_key_here"
+```
+
+### 2. Obtaining a Key
+*   The script uses **Klipy** (api.klipy.co).
+*   Search results are limited to the Klipy database.
+*   If you don't have a key, the hub will still work for your **Local Vault** and **Emojis**, but the Search tabs will remain empty or print a warning in the terminal.
+
+---
+
 ## 🚀 How to Apply This Template to a New Machine
 1. Create a new folder for your machine: `mkdir -p ~/dotfiles/hosts/my-new-laptop`
 2. Copy these templates over: `cp -r ~/dotfiles/hosts/_template/laptop/* ~/dotfiles/hosts/my-new-laptop/`
