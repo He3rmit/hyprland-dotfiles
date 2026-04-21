@@ -74,8 +74,8 @@
           "interval": 2
         },
         {
-          "label": "󰄀",
-          "command": "bash -c '~/.config/hypr/scripts/screenshot-swappy.sh'",
+          "label": "󰃭",
+          "command": "gsimplecal",
           "active": false
         },
         {
