@@ -20,6 +20,7 @@ STICKER_DIR  = os.path.expanduser("~/Pictures/Stickers")
 CACHE_DIR    = "/tmp/pilot-hydra"
 
 os.makedirs(CACHE_DIR, exist_ok=True)
+EMOJI_CACHE = os.path.join(os.path.expanduser("~/.cache/pilot-hydra"), "emojis.cache")
 
 # ─── THEME ───────────────────────────────────────────────────────────────────
 
@@ -204,6 +205,7 @@ class HydraHub(Gtk.Window):
                     GLib.idle_add(self._add_animated, self.gif_grid, data, full)
                 except Exception as e:
                     print(f"[Hydra/GIF] item error: {e}")
+            GLib.idle_add(self.gif_grid.show_all)
         except Exception as e:
             print(f"[Hydra/GIF] fetch error: {e}")
 
@@ -234,6 +236,7 @@ class HydraHub(Gtk.Window):
                     GLib.idle_add(self._add_animated, self.sticker_grid, data, full_url)
                 except Exception as e:
                     print(f"[Hydra/STK] item error: {e}")
+            GLib.idle_add(self.sticker_grid.show_all)
         except Exception as e:
             print(f"[Hydra/STK] fetch error: {e}")
 
@@ -252,6 +255,7 @@ class HydraHub(Gtk.Window):
             for f in sorted(files):
                 path = os.path.join(STICKER_DIR, f)
                 GLib.idle_add(self._add_local, path)
+            GLib.idle_add(self.vault_grid.show_all)
 
     def _add_local(self, path):
         btn = Gtk.Button()
@@ -260,7 +264,6 @@ class HydraHub(Gtk.Window):
             pb = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 130, 110)
             btn.add(Gtk.Image.new_from_pixbuf(pb))
             self.vault_grid.add(btn)
-            self.vault_grid.show_all()
         except Exception as e:
             print(f"[Hydra/VLT] {e}")
 
@@ -272,28 +275,51 @@ class HydraHub(Gtk.Window):
                 "🚀","🛡️","🦾","✨","💎","🎯","🎉","👀","💀","🫡"]
         for e in core:
             GLib.idle_add(self._add_emoji, e)
+        
+        # 1. Check for cached emojis (refresh once every 30 days)
+        cached_data = None
         try:
-            r = requests.get(
-                "https://unicode.org/Public/emoji/15.0/emoji-test.txt",
-                timeout=10)
-            seen = set(core)
-            for line in r.text.splitlines():
-                if "; fully-qualified" in line:
-                    try:
-                        e = line.split("#")[1].split(" ")[1]
-                        if e not in seen:
-                            seen.add(e)
-                            GLib.idle_add(self._add_emoji, e)
-                    except: pass
-        except Exception as e:
-            print(f"[Hydra/EMJ] {e}")
+            if os.path.exists(EMOJI_CACHE):
+                mtime = os.path.getmtime(EMOJI_CACHE)
+                if (time.time() - mtime) < (86400 * 30):
+                    with open(EMOJI_CACHE, "r") as f:
+                        cached_data = f.read()
+        except: pass
+
+        if cached_data:
+            emojis = cached_data.strip().split(" ")
+            for e in emojis:
+                if e not in core:
+                    GLib.idle_add(self._add_emoji, e)
+        else:
+            # 2. Fetch from web and save to cache
+            try:
+                r = requests.get("https://unicode.org/Public/emoji/15.0/emoji-test.txt", timeout=10)
+                seen = set(core)
+                new_emojis = []
+                for line in r.text.splitlines():
+                    if "; fully-qualified" in line:
+                        try:
+                            e = line.split("#")[1].split(" ")[1]
+                            if e not in seen:
+                                seen.add(e)
+                                new_emojis.append(e)
+                                GLib.idle_add(self._add_emoji, e)
+                        except: pass
+                # Save results to cache
+                os.makedirs(os.path.dirname(EMOJI_CACHE), exist_ok=True)
+                with open(EMOJI_CACHE, "w") as f:
+                    f.write(" ".join(new_emojis))
+            except Exception as e:
+                print(f"[Hydra/EMJ] {e}")
+        
+        GLib.idle_add(self.emoji_grid.show_all)
 
     def _add_emoji(self, emoji):
         btn = Gtk.Button(label=emoji)
         btn.get_style_context().add_class("emoji-btn")
         btn.connect("clicked", lambda b, x=emoji: self._copy_text(x))
         self.emoji_grid.add(btn)
-        self.emoji_grid.show_all()
 
     # ─── GTK GRID HELPERS ────────────────────────────────────────────────────
 
@@ -322,7 +348,6 @@ class HydraHub(Gtk.Window):
 
             btn.add(widget)
             grid.add(btn)
-            grid.show_all()
         except Exception as e:
             print(f"[Hydra] pixbuf error: {e}")
 
