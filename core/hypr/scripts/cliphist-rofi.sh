@@ -15,7 +15,8 @@ notify_pilot() {
 }
 
 generate_list() {
-    cliphist list | while IFS= read -r line; do
+    local img_count=0
+    cliphist list | head -n 150 | while IFS= read -r line; do
         # Extract ID and Content instantaneously using bash native substring splitting
         id="${line%%$'\t'*}"
         content="${line#*$'\t'}"
@@ -41,10 +42,14 @@ generate_list() {
             fi
 
             if [ ! -f "$preview_file" ]; then
-                if [ "$image_source" == "-" ]; then
-                    (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
-                else
-                    (magick "$image_source"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                # Performance Throttle: Only spawn background magick for first 20 images
+                if [ $img_count -lt 20 ]; then
+                    img_count=$((img_count + 1))
+                    if [ "$image_source" == "-" ]; then
+                        (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                    else
+                        (magick "$image_source"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                    fi
                 fi
             fi
             
