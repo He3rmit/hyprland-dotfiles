@@ -146,6 +146,11 @@ class HydraHub(Gtk.Window):
         fb.set_selection_mode(Gtk.SelectionMode.NONE)
         scrolled.add(fb)
         self.notebook.append_page(scrolled, Gtk.Label(label=title))
+        
+        # Setup Emoji Filter if it's the emoji grid
+        if title == "Emojis":
+            fb.set_filter_func(self._emoji_filter_func)
+            
         return fb
 
     # ─── SEARCH DISPATCH ─────────────────────────────────────────────────────
@@ -158,7 +163,7 @@ class HydraHub(Gtk.Window):
     def _on_tab_switched(self, notebook, page, page_num):
         """Re-fire the search when switching tabs so the grid is never stale."""
         query = self.search.get_text().strip()
-        if query:
+        if query or page_num == 3:
             if self.debounce_id:
                 GLib.source_remove(self.debounce_id)
             self.debounce_id = GLib.timeout_add(100, self._dispatch_page, query, page_num)
@@ -169,17 +174,21 @@ class HydraHub(Gtk.Window):
             threading.Thread(target=self._fetch_gifs, args=(query,), daemon=True).start()
         elif page == 1:
             threading.Thread(target=self._fetch_stickers, args=(query,), daemon=True).start()
+        elif page == 3:
+            self.emoji_grid.invalidate_filter()
         return False
 
     def _dispatch(self, query):
         self.debounce_id = None
         page = self.notebook.get_current_page()
-        if not query:
+        if not query and page != 3:
             return False
         if page == 0:
             threading.Thread(target=self._fetch_gifs, args=(query,), daemon=True).start()
         elif page == 1:
             threading.Thread(target=self._fetch_stickers, args=(query,), daemon=True).start()
+        elif page == 3:
+            self.emoji_grid.invalidate_filter()
         return False
 
     # ─── KLIPY GIFs  (v2: results[].media_formats) ───────────────────────────
@@ -275,50 +284,80 @@ class HydraHub(Gtk.Window):
                 "🚀","🛡️","🦾","✨","💎","🎯","🎉","👀","💀","🫡"]
         for e in core:
             GLib.idle_add(self._add_emoji, e)
+        GLib.idle_add(self.emoji_grid.show_all)
         
         # 1. Check for cached emojis (refresh once every 30 days)
         cached_data = None
         try:
             if os.path.exists(EMOJI_CACHE):
-                mtime = os.path.getmtime(EMOJI_CACHE)
-                if (time.time() - mtime) < (86400 * 30):
-                    with open(EMOJI_CACHE, "r") as f:
-                        cached_data = f.read()
+                with open(EMOJI_CACHE, "r") as f:
+                    first_line = f.readline()
+                    # If the cache is old (no colon mapping), delete it
+                    if first_line and ":" not in first_line:
+                        os.remove(EMOJI_CACHE)
+                    else:
+                        mtime = os.path.getmtime(EMOJI_CACHE)
+                        if (time.time() - mtime) < (86400 * 30):
+                            f.seek(0)
+                            cached_data = f.read()
         except: pass
 
         if cached_data:
-            emojis = cached_data.strip().split(" ")
-            for e in emojis:
-                if e not in core:
-                    GLib.idle_add(self._add_emoji, e)
+            lines = cached_data.strip().split("\n")
+            for i, line in enumerate(lines):
+                if ":" in line:
+                    e, n = line.split(":", 1)
+                    if e not in core:
+                        GLib.idle_add(self._add_emoji, e, n)
+                # Refresh UI every 100 emojis so it feels progressive
+                if i % 100 == 0:
+                    GLib.idle_add(self.emoji_grid.show_all)
         else:
             # 2. Fetch from web and save to cache
             try:
                 r = requests.get("https://unicode.org/Public/emoji/15.0/emoji-test.txt", timeout=10)
                 seen = set(core)
-                new_emojis = []
+                cache_lines = []
                 for line in r.text.splitlines():
                     if "; fully-qualified" in line:
                         try:
-                            e = line.split("#")[1].split(" ")[1]
+                            # 1F600 ; fully-qualified # 😀 E1.0 grinning face
+                            parts = line.split("#")[1].strip().split(" ")
+                            e = parts[0]
+                            n = " ".join(parts[2:]) # Skip the version number like E1.0
                             if e not in seen:
                                 seen.add(e)
-                                new_emojis.append(e)
-                                GLib.idle_add(self._add_emoji, e)
+                                cache_lines.append(f"{e}:{n}")
+                                GLib.idle_add(self._add_emoji, e, n)
+                                # Refresh UI periodically during initial download
+                                if len(cache_lines) % 100 == 0:
+                                    GLib.idle_add(self.emoji_grid.show_all)
                         except: pass
                 # Save results to cache
                 os.makedirs(os.path.dirname(EMOJI_CACHE), exist_ok=True)
                 with open(EMOJI_CACHE, "w") as f:
-                    f.write(" ".join(new_emojis))
+                    f.write("\n".join(cache_lines))
             except Exception as e:
                 print(f"[Hydra/EMJ] {e}")
         
         GLib.idle_add(self.emoji_grid.show_all)
 
-    def _add_emoji(self, emoji):
+    def _emoji_filter_func(self, child):
+        query = self.search.get_text().strip().lower()
+        if not query:
+            return True
+        btn = child.get_child()
+        if hasattr(btn, 'emoji_name'):
+             return query in btn.emoji_name
+        return False
+
+    def _add_emoji(self, emoji, name=""):
         btn = Gtk.Button(label=emoji)
         btn.get_style_context().add_class("emoji-btn")
         btn.connect("clicked", lambda b, x=emoji: self._copy_text(x))
+        btn.emoji_name = name.lower()
+        if name:
+            btn.set_tooltip_text(name.title())
         self.emoji_grid.add(btn)
 
     # ─── GTK GRID HELPERS ────────────────────────────────────────────────────
