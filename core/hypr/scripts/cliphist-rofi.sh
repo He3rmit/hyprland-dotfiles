@@ -91,12 +91,27 @@ clip_ids=$(echo "$selection" | awk '{print $1}')
 case $exit_code in
     0)  # ENTER — Paste (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
-        decoded=$(cliphist decode "$first_id")
-        if [[ "$decoded" == file://* ]]; then
-            # Re-copy as text/uri-list so apps treat it as a file upload (not raw text)
-            printf '%s' "$decoded" | wl-copy --type text/uri-list
+        
+        # 1. Peek at the data to determine handling
+        # We use a subshell to avoid double-decoding if possible for small items
+        raw_data=$(cliphist decode "$first_id" 2>/dev/null)
+        
+        if [[ "$raw_data" == file://* ]]; then
+            # Re-copy as text/uri-list so apps treat it as a file upload
+            # CLEAN: Remove trailing carriage returns (\r) which break paths
+            clean_uri="${raw_data%$'\r'}"
+            echo -n "$clean_uri" | wl-copy --type text/uri-list
         else
-            printf '%s' "$decoded" | wl-copy
+            # It's binary or raw text. Detect the MIME type for maximum compatibility.
+            mime_type=$(cliphist decode "$first_id" | file -b --mime-type -)
+            
+            if [[ "$mime_type" == image/* ]]; then
+                # Explicitly set the image type so Discord/Telegram recognize it immediately
+                cliphist decode "$first_id" | wl-copy --type "$mime_type"
+            else
+                # Standard text handling
+                cliphist decode "$first_id" | wl-copy
+            fi
         fi
         notify_pilot "Buffer Updated" "Data sequence ready."
         ;;
