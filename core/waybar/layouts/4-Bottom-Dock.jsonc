@@ -7,7 +7,7 @@
   "margin": "0 20 10 20",
   "modules-left": ["cpu", "memory", "network"],
   "modules-center": ["hyprland/workspaces"],
-  "modules-right": ["tray", "custom/notification", "custom/peripheral", "custom/power"],
+  "modules-right": ["tray", "clock", "custom/notification", "custom/peripheral", "custom/power"],
 
   "hyprland/workspaces": { "format": "{icon}" },
   "cpu": { "format": "  {usage}%" },
@@ -15,5 +15,6 @@
   "network": { "format-wifi": "  {signalStrength}%", "format-ethernet": "󰈀", "format-disconnected": "⚠" },
   "custom/peripheral": {
       "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
-  }
+  },
+  "clock": { "format": " {:%H:%M}" }
 }

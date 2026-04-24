@@ -6,7 +6,7 @@
   "margin": "10 20 0 20",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "custom/peripheral", "custom/power"],
+  "modules-right": ["tray", "custom/notification", "custom/peripheral", "custom/power"],
 
   "hyprland/workspaces": { "format": "{icon}" },
   "clock": { "format": " {:%H:%M}" },

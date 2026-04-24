@@ -1,6 +1,6 @@
 {
   "$schema": "/etc/xdg/swaync/configSchema.json",
-  "positionX": "left",
+  "positionX": "right",
   "positionY": "bottom",
   "control-center-width": 600,
   "notification-window-width": 500,
@@ -36,61 +36,47 @@
       "actions": [
         {
           "label": "󰖩",
-          "type": "toggle",
-          "active": false,
-          "command": "~/.config/swaync/scripts/pilot-control.sh wifi",
-          "update-command": "nmcli radio wifi | grep -q enabled && echo true || echo false"
+          "command": "nm-connection-editor",
+          "active": false
         },
         {
           "label": "󰂯",
-          "type": "toggle",
-          "active": false,
-          "command": "~/.config/swaync/scripts/pilot-control.sh bluetooth",
-          "update-command": "rfkill list bluetooth | grep -q 'Soft blocked: no' && echo true || echo false",
-          "interval": 2
-        },
-        {
-          "label": "󰓅",
-          "type": "toggle",
-          "active": false,
-          "command": "~/.config/swaync/scripts/pilot-control.sh perf",
-          "update-command": "powerprofilesctl get | grep -q performance && echo true || echo false",
-          "interval": 2
-        },
-        {
-          "label": "󱫐",
-          "type": "toggle",
-          "active": false,
-          "command": "~/.config/swaync/scripts/pilot-control.sh bal",
-          "update-command": "powerprofilesctl get | grep -q balanced && echo true || echo false",
-          "interval": 2
-        },
-        {
-          "label": "󰾆",
-          "type": "toggle",
-          "active": false,
-          "command": "~/.config/swaync/scripts/pilot-control.sh save",
-          "update-command": "powerprofilesctl get | grep -q power-saver && echo true || echo false",
-          "interval": 2
-        },
-        {
-          "label": "󰃭",
-          "command": "gsimplecal",
-          "active": false
-        },
-        {
-          "label": "󰕾",
-          "command": "pavucontrol",
-          "active": false
-        },
-        {
-          "label": "󰄨",
-          "command": "kitty -e btop",
+          "command": "blueman-manager",
           "active": false
         },
         {
           "label": "󱛄",
           "command": "wihotspot-gui",
+          "active": false
+        },
+        {
+          "label": "󰓅",
+          "command": "~/.config/swaync/scripts/power-profile-cycle.sh",
+          "active": false
+        },
+        {
+          "label": "󰕾",
+          "command": "~/.config/swaync/scripts/volume.sh toggle",
+          "active": false
+        },
+        {
+          "label": "󰄄",
+          "command": "~/.config/hypr/scripts/screenshot-swappy.sh",
+          "active": false
+        },
+        {
+          "label": "󰍺",
+          "command": "~/.config/hypr/scripts/mirror-hotplug.sh",
+          "active": false
+        },
+        {
+          "label": "󰉋",
+          "command": "dolphin",
+          "active": false
+        },
+        {
+          "label": "󰅇",
+          "command": "~/.config/hypr/scripts/cliphist-rofi.sh",
           "active": false
         }
       ]
