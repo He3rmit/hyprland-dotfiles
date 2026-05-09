@@ -8,6 +8,10 @@ configuration {
     show-icons: false;
     terminal: "kitty";
     run-shell-command: "{terminal} -e {cmd}";
+    kb-accept-custom: "Return,KP_Enter";
+    kb-accept-entry: "Shift+Return";
+    kb-accept-alt: "Alt+Return";
+    kb-accept-custom-alt: "Control+Return";
 }
 
 @import "~/.cache/wal/colors-rofi-dark.rasi"
