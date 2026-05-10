@@ -113,16 +113,16 @@ CORE_PACKAGES=(
     "obsidian-icon-theme"
     "adwaita-icon-theme"
     "breeze-icons"
+    "orchis-theme"
     "starship"
     "fastfetch"
-    "kservice"
 )
 
 # Fallback packages only needed if we are NOT running alongside KDE Plasma
 STANDALONE_PACKAGES=(
-    "polkit-kde-agent" # Required for sudo prompts in GUI apps
-    "gnome-keyring"    # Required for managing secrets/passwords
-    "sddm"             # Display Manager
+    "hyprpolkitagent" # Native Hyprland polkit agent for sudo prompts in GUI apps
+    "gnome-keyring"   # Required for managing secrets/passwords
+    "sddm"            # Display Manager
 )
 
 # Function to check and install
@@ -175,5 +175,13 @@ fi
 # Rebuild font cache after installing all font packages
 print_step ">> Rebuilding font cache..."
 fc-cache -fv > /dev/null 2>&1
+
+# Apply Orchis-Dark as the global GTK default (project standard theme)
+print_step ">> Applying Orchis-Dark as default GTK theme..."
+gsettings set org.gnome.desktop.interface gtk-theme 'Orchis-Dark' 2>/dev/null || true
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+[ -f "$HOME/.config/gtk-3.0/settings.ini" ] && sed -i 's/^gtk-theme-name=.*/gtk-theme-name=Orchis-Dark/' "$HOME/.config/gtk-3.0/settings.ini"
+[ -f "$HOME/.config/gtk-4.0/settings.ini" ] && sed -i 's/^gtk-theme-name=.*/gtk-theme-name=Orchis-Dark/' "$HOME/.config/gtk-4.0/settings.ini"
+print_success "GTK theme set to Orchis-Dark."
 
 print_success "Dependencies nominal. System is ready for deployment."

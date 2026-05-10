@@ -36,12 +36,12 @@
       "actions": [
         {
           "label": "󰖩",
-          "command": "~/.config/swaync/scripts/wifi-toggle.sh",
+          "command": "~/.config/swaync/scripts/pilot-control.sh wifi",
           "active": false
         },
         {
           "label": "󰂯",
-          "command": "~/.config/swaync/scripts/bt-toggle.sh",
+          "command": "~/.config/swaync/scripts/pilot-control.sh bluetooth",
           "active": false
         },
         {
