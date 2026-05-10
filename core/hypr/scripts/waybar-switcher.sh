@@ -11,7 +11,7 @@ TYPE_FILE="$WAYBAR_DIR/.current_layout_type"
 # Look inside the dotfiles source to avoid Stow symlink issues
 LAYOUTS_DIR="$HOME/.config/waybar/layouts"
 STYLES_DIR="$HOME/.config/waybar/styles"
-ROFI_THEME="$HOME/.config/rofi/themes/runner.rasi"
+ROFI_THEME="$HOME/.config/rofi/themes/selector.rasi"
 
 # Ensure origin directories exist just in case
 mkdir -p "$LAYOUTS_DIR" "$STYLES_DIR"
