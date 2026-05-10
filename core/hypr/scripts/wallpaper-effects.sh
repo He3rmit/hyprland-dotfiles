@@ -19,7 +19,7 @@ mkdir -p "$CACHE_DIR"
 
 # If it is an image, prompt the Effects Menu
 EFFECTS="Original\n[ PILOT VISION ]\nBloom (Cinematic)\nVanguard Tactical (Orange/Green)\nBT-7274 Thermal (Red/Yellow)\nCyber HUD (Cyan/Magenta)\nNight Vision\n-\n[ DIGITAL MODES ]\nGlitch (Purge)\nCRT Retro\nNoir (High Contrast)\nPixelate"
-selected_effect=$(echo -e "$EFFECTS" | rofi -dmenu -i -p "󰸉 Vision Mode" -theme "$HOME/.config/rofi/themes/runner.rasi")
+selected_effect=$(echo -e "$EFFECTS" | rofi -dmenu -i -p "󰸉 Vision Mode" -theme "$HOME/.config/rofi/themes/selector.rasi")
 
 if [[ -z "$selected_effect" || "$selected_effect" == "-" || "$selected_effect" == "[ "* ]]; then
     exit 0

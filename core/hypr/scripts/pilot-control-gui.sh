@@ -3,7 +3,7 @@
 # TITAN PILOT HUD: GUI CONTROL PROTOCOL
 # ==============================================================================
 
-ROFI_THEME="$HOME/.config/rofi/themes/runner.rasi"
+ROFI_THEME="$HOME/.config/rofi/themes/selector.rasi"
 PILOT_CONTROL="$HOME/.local/bin/pilot-control"
 
 # 1. Main Menu Options
