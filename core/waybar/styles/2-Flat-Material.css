@@ -84,3 +84,8 @@ tooltip {
 tooltip label {
     color: @foreground;
 }
+
+/* TRAY MENU STYLING */
+menu { background: @background; border: 1px solid @color6; border-radius: 8px; padding: 4px; }
+menuitem { color: @foreground; padding: 6px 12px; border-radius: 4px; }
+menuitem:hover { background: alpha(@color6, 0.3); color: @foreground; }
