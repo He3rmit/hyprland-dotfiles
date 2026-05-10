@@ -16,8 +16,8 @@ button {
     color: #ffffff;
     transition: 200ms ease-in-out;
     background-repeat: no-repeat;
-    
-
+    background-size: 35%;
+    background-position: center 30%;
 }
 
 button:hover {
@@ -33,36 +33,29 @@ button:focus {
 #lock {
     border-color: #2196f3;
     background-image: url("icon/Ion.png");
-    background-position: center;
-    
 }
 
 #hibernate {
     border-color: #9c27b0;
     background-image: url("icon/Northstar.png");
-    background-position: center;
 }
 
 #logout {
     border-color: #4caf50;
     background-image: url("icon/Monarch.png");
-    background-position: center;
 }
 
 #shutdown {
     border-color: #f44336;
     background-image: url("icon/Ronin.png");
-    background-position: center;
 }
 
 #suspend {
     border-color: #ffc107;
     background-image: url("icon/Legion.png");
-    background-position: center;
 }
 
 #reboot {
     border-color: #ff9800;
     background-image: url("icon/Scorch.png");
-    background-position: center;
 }
