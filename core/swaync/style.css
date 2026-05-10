@@ -84,12 +84,25 @@
     margin: 4px;
     min-height: 50px;
     box-shadow: 0 2px 0 #000;
+    transition: all 0.1s ease;
 }
 
 .widget-buttons-grid > flowbox > flowboxchild > button label {
     color: #556677;
     font-size: 16px;
     font-weight: bold;
+    transition: all 0.1s ease;
+}
+
+/* Hover: pre-glow to signal the button is ready */
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+    background: alpha(@titan-cyan, 0.12);
+    border-color: alpha(@titan-cyan, 0.6);
+    box-shadow: 0 0 8px alpha(@titan-cyan, 0.3);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover label {
+    color: @titan-cyan;
 }
 
 /* Neutralize toggle :checked state — no persistent glow */
@@ -104,8 +117,18 @@
     color: #556677;
 }
 
-/* UNIVERSAL CLICK FEEDBACK — subtle press dimming */
-.widget-buttons-grid button:active,
+/* UNIVERSAL CLICK FEEDBACK — vivid cyan press flash */
+.widget-buttons-grid button:active {
+    background: alpha(@titan-cyan, 0.25);
+    border-color: @titan-cyan;
+    box-shadow: 0 0 16px alpha(@titan-cyan, 0.7), inset 0 0 8px alpha(@titan-cyan, 0.2);
+    transition: all 0.06s ease;
+}
+
+.widget-buttons-grid button:active label {
+    color: #ffffff;
+}
+
 .widget-mpris button:active,
 .widget-volume button:active,
 .widget-title button:active {

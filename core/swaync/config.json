@@ -1,7 +1,7 @@
 {
   "$schema": "/etc/xdg/swaync/configSchema.json",
   "positionX": "right",
-  "positionY": "bottom",
+  "positionY": "top",
   "control-center-width": 600,
   "notification-window-width": 500,
   "fit-to-screen": false,
@@ -36,12 +36,12 @@
       "actions": [
         {
           "label": "󰖩",
-          "command": "nm-connection-editor",
+          "command": "~/.config/swaync/scripts/wifi-toggle.sh",
           "active": false
         },
         {
           "label": "󰂯",
-          "command": "blueman-manager",
+          "command": "~/.config/swaync/scripts/bt-toggle.sh",
           "active": false
         },
         {

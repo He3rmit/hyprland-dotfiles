@@ -190,8 +190,8 @@ sync_swaync_position() {
             fi
         fi
         
-        sed -i -E 's/"positionX": *"[a-zA-Z]+"/"positionX": "'"$target_x"'"/' "$swaync_config"
-        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "'"$target_y"'"/' "$swaync_config"
+        sed -i --follow-symlinks -E 's/"positionX": *"[a-zA-Z]+"/"positionX": "'"$target_x"'"/' "$swaync_config"
+        sed -i --follow-symlinks -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "'"$target_y"'"/' "$swaync_config"
         
         swaync-client -R >/dev/null 2>&1
         swaync-client -rs >/dev/null 2>&1
