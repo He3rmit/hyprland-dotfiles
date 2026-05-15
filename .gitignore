@@ -9,7 +9,6 @@ hyprland/modules/colors.conf
 # --- Secrets & Personal Overrides ---
 home/.secrets.sh
 home/.zshrc.local
-
 # --- Cache ---
 *.cache/
 .DS_Store
