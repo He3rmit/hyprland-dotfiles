@@ -31,22 +31,31 @@ done
 print_step ">> Stowing Core Configs..."
 stow -v -R -t "$HOME/.config" core
 
-# 3. Handle Host-Specific Config Overrides
+# 3. Handle Host-Specific Config Overrides (Dynamic Engine)
 print_step ">> Applying Global Intelligence with Host Overrides for $TARGET..."
-# Always link the core config first as a universal baseline
-GLOBAL_SWAYNC="$DOTFILES_DIR/core/swaync/config.json"
-HOST_SWAYNC="$DOTFILES_DIR/hosts/$TARGET/.config/swaync/config.json"
 
-if [[ -f "$HOST_SWAYNC" ]]; then
-    safe_link "$HOST_SWAYNC" "$HOME/.config/swaync/config.json"
-else
-    safe_link "$GLOBAL_SWAYNC" "$HOME/.config/swaync/config.json"
+# Always link the core config first as a universal baseline
+safe_link "$DOTFILES_DIR/core/swaync/config.json" "$HOME/.config/swaync/config.json"
+
+# Dynamically link any XDG overrides found in the host vault
+HOST_CONFIG_DIR="$DOTFILES_DIR/hosts/$TARGET/.config"
+if [[ -d "$HOST_CONFIG_DIR" ]]; then
+    print_step ">> Deploying dynamic XDG overrides from host vault..."
+    find "$HOST_CONFIG_DIR" -type f | while read -r override_file; do
+        rel_path="${override_file#$HOST_CONFIG_DIR/}"
+        target_path="$HOME/.config/$rel_path"
+        mkdir -p "$(dirname "$target_path")"
+        safe_link "$override_file" "$target_path"
+    done
 fi
 
 # 4. Link Hyprland Environment
 print_step ">> Stowing Hyprland Environment..."
 stow -v -R -t "$HOME/.config/hypr" hyprland
 safe_link "$DOTFILES_DIR/hosts/$TARGET/hypr-host.conf" "$HOME/.config/hypr/host.conf"
+safe_link "$DOTFILES_DIR/hosts/$TARGET/hypridle-host.conf" "$HOME/.config/hypr/hypridle-host.conf"
+safe_link "$DOTFILES_DIR/hosts/$TARGET/hyprlock-host.conf" "$HOME/.config/hypr/hyprlock-host.conf"
+safe_link "$DOTFILES_DIR/hosts/$TARGET/hyprsunset.conf" "$HOME/.config/hypr/hyprsunset.conf"
 safe_link "$DOTFILES_DIR/hosts/$TARGET/kitty-host.conf" "$HOME/.config/kitty/host.conf"
 
 # 5. Waybar Deployment
@@ -54,7 +63,11 @@ print_step ">> Initializing Waybar Protocol..."
 check_fonts
 
 # Dynamically link the starting layout and style based on the Host Profile metadata
-if [[ -n "$WAYBAR_LAYOUT" && -f "$DOTFILES_DIR/core/waybar/layouts/${WAYBAR_LAYOUT}.jsonc" ]]; then
+HOST_WAYBAR_CONFIG="$DOTFILES_DIR/hosts/$TARGET/waybar/config.jsonc"
+if [[ -f "$HOST_WAYBAR_CONFIG" ]]; then
+    print_step ">> Linking Custom Host Waybar Layout..."
+    safe_link "$HOST_WAYBAR_CONFIG" "$HOME/.config/waybar/config.jsonc"
+elif [[ -n "$WAYBAR_LAYOUT" && -f "$DOTFILES_DIR/core/waybar/layouts/${WAYBAR_LAYOUT}.jsonc" ]]; then
     safe_link "$DOTFILES_DIR/core/waybar/layouts/${WAYBAR_LAYOUT}.jsonc" "$HOME/.config/waybar/config.jsonc"
 else
     # Fallback if profile metadata is incomplete
@@ -185,6 +198,21 @@ if [[ -f "$SHELL_LOCAL" ]]; then
     print_step ">> Linking shell personalization for $TARGET..."
     safe_link "$SHELL_LOCAL" "$HOME/.zshrc.local"
 fi
+
+# 10. WIREPLUMBER AUDIO PROTOCOL — Host Overrides & Cache Wipe
+HOST_WP_CONFIG="$DOTFILES_DIR/hosts/$TARGET/wireplumber/51-host-rescue.conf"
+if [[ -f "$HOST_WP_CONFIG" ]]; then
+    print_step ">> Linking host-specific Wireplumber rescue config..."
+    mkdir -p "$HOME/.config/wireplumber/wireplumber.conf.d"
+    safe_link "$HOST_WP_CONFIG" "$HOME/.config/wireplumber/wireplumber.conf.d/51-host-rescue.conf"
+fi
+
+# We must clear the wireplumber cache regardless of whether a host config exists,
+# so that the newly stowed universal 50-common-priorities.conf is recognized on first boot.
+print_step ">> Clearing Wireplumber cache to force priority updates..."
+systemctl --user stop wireplumber 2>/dev/null || true
+rm -rf ~/.local/state/wireplumber/* 2>/dev/null || true
+systemctl --user start wireplumber 2>/dev/null || true
 
 # 9. Live Interface Reload
 if pgrep Hyprland > /dev/null; then
