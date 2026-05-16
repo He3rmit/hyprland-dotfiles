@@ -12,12 +12,18 @@ if [[ -f "$DOTFILES_DIR/hosts/$TARGET/profile.conf" ]]; then
     source "$DOTFILES_DIR/hosts/$TARGET/profile.conf"
 fi
 
+export KB_CONF="$HOME/.config/hypr/modules/keyboard.conf"
+
 print_step "Stowing configurations..."
 
 # 1. Link Home Files (No --adopt, safer)
 print_step ">> Stowing Home Directory Files..."
+if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+    print_warning "Real .zshrc detected. Backing up to .zshrc.bak..."
+    mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
+fi
 cd "$DOTFILES_DIR" || exit 1
-stow -v -R -t "$HOME" home
+stow -v -R --no-folding -t "$HOME" home || { print_error "Failed to stow home directory!"; exit 1; }
 
 # 2. Dynamic Target Creation for Core
 # This prevents GNU Stow from "folding" an entire directory if the target 
@@ -28,8 +34,16 @@ find "$DOTFILES_DIR/core" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; |
     mkdir -p "$HOME/.config/$dir"
 done
 
+# PRE-STOW SWEEPER: Remove generated caches and explicit overrides that block GNU Stow
+print_step ">> Sweeping pre-existing core conflicts..."
+rm -f "$HOME/.config/swaync/config.json"
+rm -f "$HOME/.config/waybar/config.jsonc"
+rm -f "$HOME/.config/waybar/style.css"
+rm -f "$HOME/.config/wireplumber/wireplumber.conf.d/51-host-rescue.conf"
+rm -rf "$HOME/.config/wallpapers"
+
 print_step ">> Stowing Core Configs..."
-stow -v -R -t "$HOME/.config" core
+stow -v -R --no-folding -t "$HOME/.config" core || { print_error "Failed to stow core directory!"; exit 1; }
 
 # 3. Handle Host-Specific Config Overrides (Dynamic Engine)
 print_step ">> Applying Global Intelligence with Host Overrides for $TARGET..."
@@ -50,14 +64,40 @@ if [[ -d "$HOST_CONFIG_DIR" ]]; then
 fi
 
 # 4. Link Hyprland Environment
-print_step ">> Stowing Hyprland Environment..."
-stow -v -R -t "$HOME/.config/hypr" hyprland
-safe_link "$DOTFILES_DIR/hosts/$TARGET/hypr-host.conf" "$HOME/.config/hypr/host.conf"
-safe_link "$DOTFILES_DIR/hosts/$TARGET/hypridle-host.conf" "$HOME/.config/hypr/hypridle-host.conf"
-safe_link "$DOTFILES_DIR/hosts/$TARGET/hyprlock-host.conf" "$HOME/.config/hypr/hyprlock-host.conf"
-safe_link "$DOTFILES_DIR/hosts/$TARGET/hyprsunset.conf" "$HOME/.config/hypr/hyprsunset.conf"
-safe_link "$DOTFILES_DIR/hosts/$TARGET/kitty-host.conf" "$HOME/.config/kitty/host.conf"
+# PRE-STOW SWEEPER: Remove explicit overrides that block GNU Stow from deploying hyprland
+print_step ">> Sweeping pre-existing hyprland conflicts..."
+rm -f "$HOME/.config/hypr/host.conf"
+rm -f "$HOME/.config/hypr/hypridle-host.conf"
+rm -f "$HOME/.config/hypr/hyprlock-host.conf"
+rm -f "$HOME/.config/hypr/hyprsunset.conf"
+rm -f "$HOME/.config/hypr/user-keybinds.conf"
+rm -f "$HOME/.config/hypr/user-windowrules.conf"
+rm -f "$HOME/.config/hypr/user-visuals.conf"
 
+print_step ">> Stowing Hyprland Environment..."
+stow -v -R --no-folding -t "$HOME/.config/hypr" hyprland || { print_error "Failed to stow hyprland directory!"; exit 1; }
+
+# Atomically link hyprland.conf to defeat the race condition
+print_step ">> Atomically linking Hyprland main config..."
+ln -s "$DOTFILES_DIR/hyprland/hyprland.conf" "$HOME/.config/hypr/hyprland.conf.tmp"
+mv -T "$HOME/.config/hypr/hyprland.conf.tmp" "$HOME/.config/hypr/hyprland.conf"
+
+# Helper to link or touch required source files
+link_or_touch() {
+    local source_file="$1"
+    local target_file="$2"
+    if [[ -f "$source_file" ]]; then
+        safe_link "$source_file" "$target_file"
+    else
+        touch "$target_file"
+    fi
+}
+
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hypr-host.conf" "$HOME/.config/hypr/host.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hypridle-host.conf" "$HOME/.config/hypr/hypridle-host.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hyprlock-host.conf" "$HOME/.config/hypr/hyprlock-host.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hyprsunset.conf" "$HOME/.config/hypr/hyprsunset.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/kitty-host.conf" "$HOME/.config/kitty/host.conf"
 # 5. Waybar Deployment
 print_step ">> Initializing Waybar Protocol..."
 check_fonts
@@ -173,23 +213,10 @@ else
 fi
 
 # 8. USER VAULT — Link personal modules (Keybinds, Rules, Visuals)
-USER_BINDS="$DOTFILES_DIR/hosts/$TARGET/user-keybinds.conf"
-if [[ -f "$USER_BINDS" ]]; then
-    print_step ">> Linking user keybinds for $TARGET..."
-    safe_link "$USER_BINDS" "$HOME/.config/hypr/user-keybinds.conf"
-fi
-
-USER_RULES="$DOTFILES_DIR/hosts/$TARGET/user-windowrules.conf"
-if [[ -f "$USER_RULES" ]]; then
-    print_step ">> Linking user window rules for $TARGET..."
-    safe_link "$USER_RULES" "$HOME/.config/hypr/user-windowrules.conf"
-fi
-
-USER_VISUALS="$DOTFILES_DIR/hosts/$TARGET/user-visuals.conf"
-if [[ -f "$USER_VISUALS" ]]; then
-    print_step ">> Linking user visual overrides for $TARGET..."
-    safe_link "$USER_VISUALS" "$HOME/.config/hypr/user-visuals.conf"
-fi
+print_step ">> Linking user overrides for $TARGET..."
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-keybinds.conf" "$HOME/.config/hypr/user-keybinds.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-windowrules.conf" "$HOME/.config/hypr/user-windowrules.conf"
+link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-visuals.conf" "$HOME/.config/hypr/user-visuals.conf"
 
 
 # 9. SHELL PERSONALIZATION — Link host shell.local

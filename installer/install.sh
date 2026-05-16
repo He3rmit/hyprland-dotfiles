@@ -128,6 +128,11 @@ fi
 
 export TARGET
 
+if [[ -z "$TARGET" ]]; then
+    print_error "Host selection failed or was empty. Aborting."
+    exit 1
+fi
+
 if [ ! -d "$DOTFILES_DIR/hosts/$TARGET" ]; then
     print_error "Host configuration for '$TARGET' not found."
     exit 1
