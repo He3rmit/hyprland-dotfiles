@@ -7,6 +7,20 @@ Your desktop is split into two layers to ensure total portability and privacy:
 - **Core (`core/`, `hyprland/`)**: The shared "Engine" and "Visuals" that everyone uses. This code remains 100% hardware-agnostic and "Read-Only."
 - **Host (`hosts/`)**: Your machine-specific "Neuro-Link". This stores your private monitor resolution, scaling preferences, world-exclusive keybinds, and hardware drivers in a Git-ignored vault.
 
+### 🛡️ The Golden Rule of the Vault
+**Never edit configuration files directly in `~/.config/`.** 
+Because the deployment engine uses aggressive Pre-Stow Sweepers to guarantee a clean slate, any real files or manual overrides placed directly in `~/.config/` will be **annihilated** during the next deployment. 
+Always edit your configurations inside your `~/dotfiles/hosts/[your-profile]/` vault. The engine will safely link them for you.
+
+---
+
+## 1.5 The v2.1 "Atomic" Deployment Engine
+The dotfiles installer is mathematically hardened to be 100% plug-and-play on **any pre-existing, dirty environment**. You do not need a clean OS to run the deployment.
+
+1. **Pre-Stow Sweepers**: Before GNU Stow runs, the engine actively hunts down and `rm -f` destroys all known cache files and explicit overrides. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It even safely backs up your real `~/.zshrc`.
+2. **Atomic Symlink Protocol**: To defeat Hyprland's `inotify` watchdog (which violently regenerates a default config the millisecond `stow` unlinks it), `hyprland.conf` is completely ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses a POSIX atomic replacement (`mv -T`) to swap the file instantly at the VFS inode level. The race condition is permanently solved.
+3. **Strict `--no-folding`**: GNU Stow is explicitly banned from "folding" directories. It must always create real target directories and individual file symlinks. This permanently shields your Git repository from being polluted by accidental overrides following symlinks backward.
+
 ---
 
 ## 2. Keybind Lexicon (mainMod = SUPER)
