@@ -146,7 +146,6 @@ gum style --foreground 51 --bold "Select Modules to Deploy:"
 gum style --foreground 244 \
     "  00-dependencies   — Install all system and AUR packages" \
     "  01-stow-configs   — Symlink dotfiles into ~/.config" \
-    "  02-audio-rescue   — Deploy Wireplumber audio config" \
     "  03-sddm-theme     — Install the Astronaut SDDM login theme"
 echo ""
 gum style --foreground 244 "(SPACE to select, ENTER to confirm)"
@@ -155,7 +154,6 @@ echo ""
 MODULES=$(gum choose --no-limit \
     "00-dependencies" \
     "01-stow-configs" \
-    "02-audio-rescue" \
     "03-sddm-theme")
 
 if [ -z "$MODULES" ]; then

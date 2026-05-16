@@ -108,6 +108,15 @@ if [[ "$MODULES" == *"Unstow Configs"* ]] || [ "$FULL_EJECT" = true ]; then
     stow -D -t "$HOME/.config" core 2>/dev/null
     stow -D -t "$HOME/.config/hypr" hyprland 2>/dev/null
 
+    print_step ">> Ejecting Dynamic XDG Host Overrides..."
+    HOST_CONFIG_DIR="$DOTFILES_DIR/hosts/$TARGET/.config"
+    if [[ -d "$HOST_CONFIG_DIR" ]]; then
+        find "$HOST_CONFIG_DIR" -type f | while read -r override_file; do
+            rel_path="${override_file#$HOST_CONFIG_DIR/}"
+            remove_link "$HOME/.config/$rel_path"
+        done
+    fi
+
     print_step ">> Removing explicit symlinks..."
     remove_link "$HOME/.config/hypr/host.conf"
     remove_link "$HOME/.config/kitty/host.conf"
@@ -115,8 +124,14 @@ if [[ "$MODULES" == *"Unstow Configs"* ]] || [ "$FULL_EJECT" = true ]; then
     remove_link "$HOME/.config/waybar/config.jsonc"
     remove_link "$HOME/.config/waybar/style.css"
     remove_link "$HOME/.config/hypr/modules/monitor.conf"
-    remove_link "$HOME/.config/hypr/modules/user-keybinds.conf"
-    remove_link "$HOME/.config/hypr/modules/hypr-host.conf"
+    remove_link "$HOME/.config/hypr/modules/nvidia.conf"
+    remove_link "$HOME/.config/hypr/user-keybinds.conf"
+    remove_link "$HOME/.config/hypr/user-windowrules.conf"
+    remove_link "$HOME/.config/hypr/user-visuals.conf"
+    remove_link "$HOME/.config/hypr/host.conf"
+    remove_link "$HOME/.config/hypr/hypridle-host.conf"
+    remove_link "$HOME/.config/hypr/hyprlock-host.conf"
+    remove_link "$HOME/.config/hypr/hyprsunset.conf"
     remove_link "$HOME/.zshrc.local"
 
     print_step ">> Removing generated state files..."
