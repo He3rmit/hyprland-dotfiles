@@ -23,3 +23,7 @@ hosts/*/
 hyprland/modules/monitor.conf
 hyprland/modules/nvidia.conf
 hyprland/modules/touchpad.conf
+
+# Python Cache
+__pycache__/
+*.py[cod]

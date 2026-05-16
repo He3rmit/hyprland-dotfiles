@@ -76,7 +76,7 @@
         "format": "{:%H\n%M}",
         "tooltip": true,
         "tooltip-format": "{:%A\n%B %d\n%Y}",
-        "on-click": "env GDK_SCALE=2 gsimplecal"
+        "on-click": "gsimplecal"
     },
     "backlight": {
         "format": "LIT\n{percent}%",
