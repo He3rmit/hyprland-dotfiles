@@ -13,7 +13,7 @@ WP_SYSTEM_DIR="$HOME/.config/wireplumber/wireplumber.conf.d"
 mkdir -p "$WP_SYSTEM_DIR"
 
 # A. Link Universal Rules (Core)
-safe_link "$DOTFILES_DIR/core/wireplumber/50-common-priorities.conf" "$WP_SYSTEM_DIR/50-common-priorities.conf"
+# Handled automatically by GNU Stow via core/wireplumber/wireplumber.conf.d
 
 # B. Link Host-Specific Quirks (If they exist for this machine)
 HOST_WP_CONFIG="$DOTFILES_DIR/hosts/$TARGET/wireplumber/51-host-rescue.conf"

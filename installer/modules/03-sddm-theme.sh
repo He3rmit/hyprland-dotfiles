@@ -64,24 +64,24 @@ else
     # Fallback: direct symlink if pilot-control isn't stowed yet
     print_warning "pilot-control not found, using direct symlink..."
     sudo mkdir -p /etc/sddm.conf.d
-    sudo ln -sf "$DOTFILES_DIR/core/sddm/sddm.conf.d/00-theme.conf" "/etc/sddm.conf.d/00-theme.conf"
+    sudo ln -sf "$DOTFILES_DIR/sddm/sddm.conf.d/00-theme.conf" "/etc/sddm.conf.d/00-theme.conf"
 fi
 
 # --- 3. THE VIDEO ---
 print_step ">> Copying Cinematic Title Screen..."
 sudo mkdir -p "$THEME_DIR/Movies"
-sudo cp -u "$DOTFILES_DIR/core/sddm/astronaut/Movies/titanfall_intro_cinematic.mp4" "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
+sudo cp -u "$DOTFILES_DIR/sddm/astronaut/Movies/titanfall_intro_cinematic.mp4" "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
 
 # --- 4. THE HUD (Dual Deployment) ---
 # We copy to BOTH potential locations to support all theme versions (v1.x and v2.x)
 print_step ">> Applying Theme Override Preferences (Dual-Path)..."
 
 # Target A: Root folder (Standard)
-sudo cp "$DOTFILES_DIR/core/sddm/astronaut/theme.conf.user" "$THEME_DIR/theme.conf.user"
+sudo cp "$DOTFILES_DIR/sddm/astronaut/theme.conf.user" "$THEME_DIR/theme.conf.user"
 
 # Target B: Themes subfolder (Specific Astronaut structure)
 if [ -d "$THEME_DIR/Themes" ]; then
-    sudo cp "$DOTFILES_DIR/core/sddm/astronaut/theme.conf.user" "$THEME_DIR/Themes/astronaut.conf.user"
+    sudo cp "$DOTFILES_DIR/sddm/astronaut/theme.conf.user" "$THEME_DIR/Themes/astronaut.conf.user"
 fi
 
 # --- 5. Permissions ---

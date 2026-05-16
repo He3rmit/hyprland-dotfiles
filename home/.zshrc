@@ -26,13 +26,13 @@ HISTFILE=~/.zsh_history
 # 5. 📂 Environment
 export EDITOR=nvim
 export TERMINAL=kitty
-export BROWSER=firefox
+export BROWSER=$(command -v brave || command -v firefox || command -v chromium || echo "xdg-open")
 
 # Add your custom scripts to PATH so you can run them from anywhere
 export PATH=$HOME/.local/bin:$HOME/.config/hypr/scripts:$PATH
 
 # 6. 🔗 Universal Aliases (Safe on ALL Arch-based distros)
-alias battery='upower -i /org/freedesktop/UPower/devices/battery_BAT0'
+alias battery='upower -i $(upower -e | grep -m 1 "BAT")'
 alias refresh='hyprctl reload && killall waybar; waybar & disown && killall swaync && rm -rf ~/.cache/swaync && swaync & disown'
 alias logout='hyprctl dispatch exit'
 

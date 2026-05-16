@@ -69,7 +69,7 @@ fi
 
 # Fix script permissions
 chmod +x "$DOTFILES_DIR/core/waybar/scripts/"*.sh
-chmod +x "$DOTFILES_DIR/core/hypr/scripts/"*.sh
+chmod +x "$DOTFILES_DIR/hyprland/scripts/"*.sh
 chmod +x "$DOTFILES_DIR/core/swaync/scripts/"*.sh
 
 # 6. FIRST-RUN BOOTSTRAP — Touchpad State File
@@ -177,6 +177,7 @@ if [[ -f "$USER_VISUALS" ]]; then
     print_step ">> Linking user visual overrides for $TARGET..."
     safe_link "$USER_VISUALS" "$HOME/.config/hypr/user-visuals.conf"
 fi
+
 
 # 9. SHELL PERSONALIZATION — Link host shell.local
 SHELL_LOCAL="$DOTFILES_DIR/hosts/$TARGET/shell.local"
