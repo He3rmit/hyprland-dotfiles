@@ -87,10 +87,11 @@ CORE_PACKAGES=(
     "networkmanager"
     "network-manager-applet"
     "nm-connection-editor"
-    
     # --- CORE UTILITIES ---
     "unzip"
     "wget"
+    "curl"
+    "xdg-utils"
     
     # --- AUDIO & BLUETOOTH ---
     "wireplumber"
