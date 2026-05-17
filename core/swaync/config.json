@@ -1,7 +1,7 @@
 {
   "$schema": "/etc/xdg/swaync/configSchema.json",
-  "positionX": "right",
-  "positionY": "top",
+  "positionX": "left",
+  "positionY": "bottom",
   "control-center-width": 600,
   "notification-window-width": 500,
   "fit-to-screen": false,
@@ -71,7 +71,7 @@
         },
         {
           "label": "󰉋",
-          "command": "dolphin",
+          "command": "thunar",
           "active": false
         },
         {

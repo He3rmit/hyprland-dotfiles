@@ -56,7 +56,13 @@ dotfiles/
 
 ---
 
-### [v1.3.0] — Total Architectural Re-Alignment (Current)
+### [v1.4.0] — The Pure GTK Pivot & Architectural Integrity (Current)
+- **GTK Native Shift**: Completely purged KDE/Qt dependencies (Dolphin, Ark, KIO) in favor of lightweight GTK native equivalents (Thunar, File-Roller, Tumbler).
+- **Polkit Isolation Fix**: Resolved systemd race conditions by directly launching the authentication agent natively as a child process of Hyprland.
+- **User Overrides Integrity**: Fixed critical flaw in master config to properly source and prioritize host-specific user overrides (`user-keybinds.conf`, `user-windowrules.conf`, `user-visuals.conf`).
+- **System Identity Engine**: Added `02-system-identity.sh` module to the installer for better shell and environment bootstrapping.
+
+### [v1.3.0] — Total Architectural Re-Alignment
 - **Generation 2 Engine**: Refactored `waybar-switcher.sh` with **Axis-Lock** intelligence and **Link-Break** source protection.
 - **Vault Centralization**: Migrated all machine-specific identity (`monitor.conf`, `nvidia.conf`, `touchpad.conf`) into isolated host vaults.
 - **Pilot-Control Suite**: Implemented the `pilot-control` CLI and GUI for tactile system management.

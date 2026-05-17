@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v1.3.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v1.4.0)
 
 > *"The HUD is modular. The Pilot is agnostic. The Titan is universal."*
 
@@ -42,7 +42,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 ### 🚀 Cluster 1: The Launchpad (Launching & Optics)
 | Key | Action |
 |:---|:---|
-| `Super + Q` | **Terminal** (Foot) |
+| `Super + Q` | **Terminal** (Kitty) |
 | `Super + E` | **File Manager** (Thunar) |
 | `Super + R` | **App Launcher** (Rofi Drun) |
 | `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
@@ -78,7 +78,6 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra (Emoji/GIF/Stickers) picker. |
-| `Super + N` | **Notifications** | Toggle the swaync notification panel. |
 | `Print` | **Screenshot** (Full/Clipboard) |
 
 ---

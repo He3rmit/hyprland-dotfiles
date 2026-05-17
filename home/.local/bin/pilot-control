@@ -38,7 +38,7 @@ case "$1" in
             --engage)
                 echo -e "\033[1;34m>> Engaging Cinematic Priority Override...\033[0m"
                 sudo mkdir -p /etc/sddm.conf.d
-                sudo ln -sf "$REPO_DIR/core/sddm/sddm.conf.d/00-theme.conf" "/etc/sddm.conf.d/00-theme.conf"
+                sudo ln -sf "$REPO_DIR/sddm/sddm.conf.d/00-theme.conf" "/etc/sddm.conf.d/00-theme.conf"
                 echo -e "\033[1;32m✅ Protocol Active. Login HUD is now in Combat Mode.\033[0m"
                 ;;
             --disengage|--restore)

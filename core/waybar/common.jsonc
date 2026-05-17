@@ -80,7 +80,17 @@
     },
     "backlight": {
         "format": "LIT\n{percent}%",
-        "format-icons": ["", "", "", "", "", "", "", "", ""]
+        "format-icons": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
     },
     "battery": {
         "states": {
@@ -91,7 +101,19 @@
         "format-charging": "CHG\n{capacity}%",
         "format-plugged": "PWR\n{capacity}%",
         "format-alt": "{icon} {time}",
-        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰁀", "󰁁", "󰁂", "󰁃"]
+        "format-icons": [
+            "󰂎",
+            "󰁺",
+            "󰁻",
+            "󰁼",
+            "󰁽",
+            "󰁾",
+            "󰁿",
+            "󰁀",
+            "󰁁",
+            "󰁂",
+            "󰁃"
+        ]
     },
     "tray": {
         "icon-size": 21,

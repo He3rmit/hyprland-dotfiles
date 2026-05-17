@@ -180,6 +180,7 @@ fi
 # ── 8. CLEAN SDDM THEME ──────────────────────────────────────────────────────
 if [[ "$MODULES" == *"Clean SDDM Theme"* ]] || [ "$FULL_EJECT" = true ]; then
     print_step ">> Disengaging Cinematic SDDM Protocol..."
+    sudo systemctl disable sddm.service 2>/dev/null
     sudo rm -f "/etc/sddm.conf.d/00-theme.conf" 2>/dev/null
     sudo rm -f "/usr/share/sddm/themes/sddm-astronaut-theme/Movies/titanfall_intro_cinematic.mp4" 2>/dev/null
     sudo rm -f "/usr/share/sddm/themes/sddm-astronaut-theme/theme.conf.user" 2>/dev/null
@@ -192,11 +193,12 @@ REMOVABLE_CORE=(
     "waybar" "swaync" "rofi" "wlogout" "wl-clipboard" "cliphist" "wtype" "grim" "slurp" "swappy" 
     "swaybg" "mpvpaper" "python-pywal" "xorg-xrdb" "nwg-look" "starship" "fastfetch" "gsimplecal"
     "qt5-graphicaleffects" "qt5-quickcontrols2" "qt5-svg" "nss-mdns" "ttf-orbitron" "obsidian-icon-theme"
+    "python-requests" "python-gobject" "gtk3" "micro" "alacritty"
 )
 
 EXTRA_APPS=(
-    "kitty" "alacritty" "dolphin" "ark" "gvfs" "kio-admin" "kio-extras" "ffmpegthumbs" 
-    "kdegraphics-thumbnailers" "ffmpegthumbnailer" "baloo-widgets" "taglib"
+    "kitty" "thunar" "thunar-archive-plugin" "thunar-volman" "tumbler" "gvfs" "file-roller"
+    "ffmpegthumbnailer"
 )
 
 if [[ "$MODULES" == *"Uninstall Core Rice"* ]] || [ "$FULL_EJECT" = true ]; then
@@ -231,7 +233,8 @@ echo ""
 gum style \
     --border rounded --border-foreground 214 --foreground 214 --bold \
     --padding "1 4" --margin "1 2" \
-    "EJECT COMPLETE" "Welcome to your clean slate, Pilot."
+    "EJECT COMPLETE" "Welcome to your clean slate, Pilot." < /dev/null
+
 
 if [[ "$MODULES" == *"Uninstall Gum Engine"* ]] || [ "$FULL_EJECT" = true ]; then
     echo ">> Final Sweep: Removing Gum Engine..."

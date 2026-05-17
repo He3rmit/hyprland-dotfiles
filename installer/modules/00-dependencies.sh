@@ -14,6 +14,9 @@ print_step "Validating Core Dependencies for Pure Hyprland..."
 CORE_PACKAGES=(
     # --- CORE INSTALLER DEPS ---
     "stow"
+    "yay"
+    "less" # for yay diff build
+    "paru"
     
     # --- HYPRLAND SYSTEM DEPS ---
     "hyprland"
@@ -34,17 +37,14 @@ CORE_PACKAGES=(
     "swaync"
     "rofi"
     "kitty"
-    "dolphin"
+    "thunar"
+    "thunar-archive-plugin"
+    "thunar-volman"
+    "tumbler"                 # Thunar thumbnails
     "gvfs"                    # File manager trash & mount support
-    "ark"                     # Archives (unzip/zip from GUI)
-    "kio-admin"               # Root access in Dolphin
-    "kio-extras"              # Network protocols & extra thumbnails
-    "ffmpegthumbs"            # Video thumbnails
-    "kdegraphics-thumbnailers" # Image thumbnails
+    "file-roller"             # Archives (zip/unzip from GUI)
     "ffmpegthumbnailer"       # Rofi video thumbnails
-    "baloo-widgets"           # Information panel
-    "taglib"                  # File metadata
-    "alacritty"               # for some terminal commands
+    "micro"                    # Lightweight terminal text editor
     "mpv"                     # Video wallpaper playback
     "ffmpeg"                  # General multimedia support
     "btop"                    # System Monitor for SwayNC
@@ -64,6 +64,9 @@ CORE_PACKAGES=(
     "wtype"                   # Required by cliphist-rofi for auto-typing
     "python-pywal"            # Global Theming Engine (Extracts wallpaper colors)
     "xorg-xrdb"               # Required by Pywal (even on Wayland)
+    "python-requests"         # Required for Media Hub (Hydra)
+    "python-gobject"          # Required for Media Hub (Hydra) GTK
+    "gtk3"                    # Required for Media Hub GTK
     
     # --- SHELL ---
     "zsh"
@@ -151,12 +154,14 @@ if lspci | grep -qi "nvidia"; then
     print_success "NVIDIA Essentials deployed."
 elif lspci | grep -qi "intel"; then
     print_warning "Intel GPU detected. Enhancing with low-latency acceleration..."
+    install_pkg "lib32-vulkan-intel"
     install_pkg "vulkan-intel"
     install_pkg "intel-media-driver"
     install_pkg "libva-intel-driver"
     print_success "Intel Essentials deployed."
 elif lspci | grep -qi "amd" || lspci | grep -qi "ati"; then
     print_warning "AMD GPU detected. Enhancing with Vulkan & VA-API..."
+    install_pkg "lib32-vulkan-radeon"
     install_pkg "vulkan-radeon"
     install_pkg "libva-mesa-driver"
     install_pkg "mesa-vdpau"
