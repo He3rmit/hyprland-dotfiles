@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v1.4.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v2.2.0)
 
 > *"The HUD is modular. The Pilot is agnostic. The Titan is universal."*
 
@@ -20,6 +20,8 @@ The dotfiles installer is mathematically hardened to be 100% plug-and-play on **
 1. **Pre-Stow Sweepers**: Before GNU Stow runs, the engine actively hunts down and `rm -f` destroys all known cache files and explicit overrides. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It even safely backs up your real `~/.zshrc`.
 2. **Atomic Symlink Protocol**: To defeat Hyprland's `inotify` watchdog (which violently regenerates a default config the millisecond `stow` unlinks it), `hyprland.conf` is completely ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses a POSIX atomic replacement (`mv -T`) to swap the file instantly at the VFS inode level. The race condition is permanently solved.
 3. **Strict `--no-folding`**: GNU Stow is explicitly banned from "folding" directories. It must always create real target directories and individual file symlinks. This permanently shields your Git repository from being polluted by accidental overrides following symlinks backward.
+4. **SwayNC Link-Break Protection**: When `waybar-switcher.sh` dynamically synchronizes Waybar and SwayNC positions, it automatically detects if `~/.config/swaync/config.json` is a Stow symlink. If so, it instantly breaks the symlink and replaces it with a real local file copy. This prevents transient position coordinates from propagating backward through the symlink and polluting core repository files.
+
 
 ---
 
