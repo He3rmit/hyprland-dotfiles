@@ -1,7 +1,7 @@
 {
   "$schema": "/etc/xdg/swaync/configSchema.json",
-  "positionX": "left",
-  "positionY": "bottom",
+  "positionX": "right",
+  "positionY": "top",
   "control-center-width": 600,
   "notification-window-width": 500,
   "fit-to-screen": false,
