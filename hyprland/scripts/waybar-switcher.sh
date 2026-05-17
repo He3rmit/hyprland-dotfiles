@@ -157,6 +157,14 @@ sync_swaync_position() {
     local swaync_config="$HOME/.config/swaync/config.json"
     
     if [[ -f "$wbb_config" && -f "$swaync_config" ]]; then
+        # BREAK THE LINK: Ensure the active swaync config is a real file, not a symlink to the repo
+        if [[ -L "$swaync_config" ]]; then
+            local real_path=$(readlink -f "$swaync_config")
+            rm -f "$swaync_config"
+            cp "$real_path" "$swaync_config"
+            chmod 644 "$swaync_config"
+        fi
+
         local wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$wbb_config" | cut -d'"' -f4 | head -n 1)
         
         # Determine the module block containing the notification/tray icon
