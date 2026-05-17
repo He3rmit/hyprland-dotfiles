@@ -67,7 +67,8 @@ CORE_PACKAGES=(
     "python-requests"         # Required for Media Hub (Hydra)
     "python-gobject"          # Required for Media Hub (Hydra) GTK
     "gtk3"                    # Required for Media Hub GTK
-    
+    "gsimplecal"
+
     # --- SHELL ---
     "zsh"
     "zsh-autosuggestions"
@@ -90,6 +91,7 @@ CORE_PACKAGES=(
     "networkmanager"
     "network-manager-applet"
     "nm-connection-editor"
+    "wev" # for keybinds troubleshooting
     # --- CORE UTILITIES ---
     "unzip"
     "wget"
@@ -101,11 +103,9 @@ CORE_PACKAGES=(
     "pipewire"
     "pipewire-pulse"
     "pavucontrol"
-    "gsimplecal"
     "linux-wifi-hotspot"
     "bluez"                   # Bluetooth Engine
     "bluez-utils"             # Bluetooth CLI (bluetoothctl)
-    "easyeffects"
     "blueman"
     
     # --- THEME & FONTS ---
