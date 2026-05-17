@@ -69,7 +69,7 @@ keep_sudo_alive() {
     print_step "Initializing Pilot Authorization..."
     sudo -v
     while true; do 
-        sudo -n true
+        sudo -nv
         sleep 60
         kill -0 "$$" || exit
     done 2>/dev/null &

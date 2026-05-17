@@ -19,6 +19,9 @@ case "$1" in
   *) echo "Usage: $0 {up|down|toggle}" >&2; exit 1 ;;
 esac
 
+# Give WirePlumber a split second to apply the state change
+sleep 0.05
+
 # 2. PILOT'S WAIT LOOP: Wait for the source to respond (Self-Healing)
 # This loop checks 5 times with a 0.1s delay. 
 # It catches the device if it's "waking up" from a suspended state.
@@ -64,6 +67,15 @@ else
   ICON="microphone-sensitivity-high-symbolic"
   MSG="Microphone: ${VOL_PERC}%"
   HINT_VAL=$VOL_PERC
+fi
+
+# Sync physical micmute LED if brightnessctl is available
+if command -v brightnessctl >/dev/null 2>&1; then
+  if [ "$MUTED" = "true" ]; then
+    brightnessctl --device="platform::micmute" set 1 >/dev/null 2>&1
+  else
+    brightnessctl --device="platform::micmute" set 0 >/dev/null 2>&1
+  fi
 fi
 
 NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Microphone" "$MSG")

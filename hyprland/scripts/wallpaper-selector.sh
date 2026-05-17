@@ -99,7 +99,7 @@ if [[ "$1" == "--init" ]]; then
         # Default fallback (Explicitly use static image from core)
         wall="$CORE_WALL_DIR/Jack-Cooper-BT-7274.jpg"
         if [[ ! -f "$wall" ]]; then
-            wall=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f 2>/dev/null | head -n 1)
+            wall=$(find -L "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f 2>/dev/null | head -n 1)
         fi
         apply_wallpaper "$wall"
     fi
@@ -110,8 +110,8 @@ fi
 CACHE_DIR="$HOME/.cache/wallpaper-thumbnails"
 mkdir -p "$CACHE_DIR"
 
-vids=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) 2>/dev/null)
-imgs=$(find "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) 2>/dev/null)
+vids=$(find -L "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.webm' \) 2>/dev/null)
+imgs=$(find -L "$CORE_WALL_DIR" "$USER_WALL_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) 2>/dev/null)
 
 all_walls=$(echo -e "$vids\n$imgs" | grep -v '^[[:space:]]*$')
 

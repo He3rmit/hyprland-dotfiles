@@ -151,6 +151,7 @@ gum style --foreground 51 --bold "Select Modules to Deploy:"
 gum style --foreground 244 \
     "  00-dependencies   — Install all system and AUR packages" \
     "  01-stow-configs   — Symlink dotfiles into ~/.config" \
+    "  02-system-identity— Configure Shell (ZSH) and Core Services" \
     "  03-sddm-theme     — Install the Astronaut SDDM login theme"
 echo ""
 gum style --foreground 244 "(SPACE to select, ENTER to confirm)"
@@ -159,6 +160,7 @@ echo ""
 MODULES=$(gum choose --no-limit \
     "00-dependencies" \
     "01-stow-configs" \
+    "02-system-identity" \
     "03-sddm-theme")
 
 if [ -z "$MODULES" ]; then
@@ -210,4 +212,5 @@ gum style \
     --padding "1 4" \
     --margin "1 2" \
     "DEPLOYMENT COMPLETE" \
-    "Welcome back, Pilot."
+    "Welcome back, Pilot." < /dev/null
+

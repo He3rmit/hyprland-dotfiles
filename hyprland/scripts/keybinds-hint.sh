@@ -22,11 +22,20 @@ GLOBAL_BINDS="$HOME/.config/hypr/modules/keybinds.conf"
 USER_BINDS="$HOME/.config/hypr/user-keybinds.conf"
 
 # Generate Briefing and Display
-(
-    # Fetch data stream from engine and format for Rofi
+raw_list=$(
+    # Fetch data stream from engine
     parse_bind_file "$GLOBAL_BINDS"
     parse_bind_file "$USER_BINDS"
-) | awk -F '\t' '{printf "[%-10s] %-18s 󰁔  %s\n", $1, $2, $3}' | rofi -dmenu -i -p "Tactical Briefing" \
+)
+
+# Dynamically calculate the maximum category length to ensure perfect alignment
+max_len=$(echo "$raw_list" | awk -F '\t' 'BEGIN {max=10} {if (length($1) > max) max=length($1)} END {print max}')
+
+# Format and pipe to Rofi
+echo "$raw_list" | awk -F '\t' -v width="$max_len" '{
+    format = sprintf("[%%-%ds] %%-18s 󰁔  %%s\n", width)
+    printf format, $1, $2, $3
+}' | rofi -dmenu -i -p "Tactical Briefing" \
     -theme-str 'window {width: 1000px; height: 600px;} 
                 listview {columns: 1; lines: 15; spacing: 8px; scrollbar: true;} 
                 element {padding: 8px 12px;} 
