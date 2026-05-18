@@ -41,9 +41,9 @@ apply_wallpaper() {
             fi
             
             # Using both loop-file and loop-playlist, plus keep-open to prevent premature exiting
-            # Added -p to pause when wallpaper is hidden and --hwdec=auto for hardware GPU decoding
+            # Added -p to pause when wallpaper is hidden (reverted hwdec=auto due to Intel DRM vdbox kernel panics)
             mpvpaper -p -f "$monitor" "$wall" \
-                -o "--hwdec=auto --no-audio --loop-file=inf --loop-playlist=inf --keep-open=yes --fullscreen --panscan=1.0 --no-osc --no-osd-bar \
+                -o "--no-audio --loop-file=inf --loop-playlist=inf --keep-open=yes --fullscreen --panscan=1.0 --no-osc --no-osd-bar \
                     --geometry=100%x100% $fade_opt"
         else
             # Static image settings (swaybg is lighter and more stable for images)
