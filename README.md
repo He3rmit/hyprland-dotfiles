@@ -56,8 +56,8 @@ dotfiles/
 
 ---
 
-### [v2.2.0] — Hardware-Accelerated Optics & Link-Break Hardening (Current)
-- **Cinematic Hardware Optics**: Added Intel/AMD/NVIDIA GPU hardware video decoding (`--hwdec=auto`) and dynamic wallpaper auto-pause (`-p` / `--auto-pause`) to `mpvpaper` live wallpaper rendering. Reduces desktop CPU consumption from 108% to 19% and slashes battery power draw by 10x!
+### [v2.2.0] — Dynamic Optics & Link-Break Hardening (Current)
+- **Dynamic Optics Auto-Pause**: Added dynamic wallpaper auto-pause (`-p` / `--auto-pause`) to `mpvpaper` live wallpaper rendering. Automatically halts decoding when hidden under windows, slashing CPU overhead to 0% and massively extending battery life while working.
 - **SwayNC Link-Break Protection**: Hardened `waybar-switcher.sh` to automatically detect and break GNU Stow symlinks for SwayNC configuration files upon position synchronizations. Blocks local transient coordinate settings from polluting the Git tracking tree.
 - **Keybind Sourcing Priority**: Purged keybind double-sourcing from modular configurations, ensuring that host-specific user overrides are sourced strictly at the end of the Hyprland lifecycle to eradicate double-triggering.
 - **Full Proton Compatibility**: Deployed dynamic hardware drivers for hybrid architectures (`lib32-vulkan-intel`, `lib32-vulkan-radeon`) as core installer dependencies for Steam/Proton compatibility.
