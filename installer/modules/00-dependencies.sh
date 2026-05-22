@@ -17,7 +17,10 @@ CORE_PACKAGES=(
     "yay"
     "less" # for yay diff build
     "paru"
-    
+    "dosfstools"
+    "inxi"
+    "needrestart"
+
     # --- HYPRLAND SYSTEM DEPS ---
     "hyprland"
     "xdg-desktop-portal"
@@ -107,6 +110,7 @@ CORE_PACKAGES=(
     "bluez"                   # Bluetooth Engine
     "bluez-utils"             # Bluetooth CLI (bluetoothctl)
     "blueman"
+    "alsa-utils"
     
     # --- THEME & FONTS ---
     "ttf-sharetech-mono-nerd"
