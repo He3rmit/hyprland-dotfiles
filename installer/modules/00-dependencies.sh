@@ -17,9 +17,6 @@ CORE_PACKAGES=(
     "yay"
     "less" # for yay diff build
     "paru"
-    "dosfstools"
-    "inxi"
-    "needrestart"
 
     # --- HYPRLAND SYSTEM DEPS ---
     "hyprland"
