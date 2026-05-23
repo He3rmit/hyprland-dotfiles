@@ -48,6 +48,8 @@ CORE_PACKAGES=(
     "mpv"                     # Video wallpaper playback
     "ffmpeg"                  # General multimedia support
     "btop"                    # System Monitor for SwayNC
+    "neovim"                  # For the sweaty geeks
+    "nano"                    # Fallback terminal text editor
     
     # --- HYPRLAND DAEMONS & SYSTEM UTILS ---
     "hypridle"
