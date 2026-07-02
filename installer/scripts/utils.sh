@@ -75,6 +75,69 @@ keep_sudo_alive() {
     done 2>/dev/null &
 }
 
+# Bootstrap an AUR helper (yay or paru) if neither is installed
+bootstrap_aur_helper() {
+    if command -v yay &> /dev/null || command -v paru &> /dev/null; then
+        return 0
+    fi
+
+    print_warning "No AUR helper (yay or paru) detected."
+    
+    # We need git and base-devel to build from AUR
+    print_step "Ensuring 'git' and 'base-devel' are installed..."
+    sudo pacman -S --noconfirm --needed git base-devel
+
+    local helper="yay"
+    if command -v gum &> /dev/null; then
+        print_step "Select an AUR helper to install:"
+        helper=$(gum choose "yay" "paru")
+    else
+        echo "Which AUR helper would you like to install?"
+        echo "1) yay (recommended)"
+        echo "2) paru"
+        if [ -t 0 ]; then
+            read -rp "Enter choice [1-2]: " choice
+            case "$choice" in
+                2) helper="paru" ;;
+                *) helper="yay" ;;
+            esac
+        else
+            echo "Non-interactive terminal detected. Defaulting to yay."
+            helper="yay"
+        fi
+    fi
+
+    print_step "Bootstrapping $helper from AUR..."
+    local temp_dir
+    temp_dir=$(mktemp -d /tmp/aur_helper_bootstrap.XXXXXX)
+    
+    # Git clone the -bin package for faster compilation
+    local pkg_name="${helper}-bin"
+    
+    if ! git clone "https://aur.archlinux.org/${pkg_name}.git" "$temp_dir/$pkg_name"; then
+        print_warning "Failed to clone $pkg_name. Trying source version..."
+        pkg_name="$helper"
+        git clone "https://aur.archlinux.org/${pkg_name}.git" "$temp_dir/$pkg_name"
+    fi
+
+    # Enter directory and build
+    (
+        cd "$temp_dir/$pkg_name" || exit 1
+        makepkg -si --noconfirm
+    )
+
+    local build_status=$?
+    rm -rf "$temp_dir"
+
+    if [ $build_status -eq 0 ] && command -v "$helper" &> /dev/null; then
+        print_success "$helper successfully bootstrapped."
+        return 0
+    else
+        print_error "Failed to install $helper."
+        return 1
+    fi
+}
+
 # Distro-Agnostic Package Installation (Pacman -> Yay/Paru)
 aur_install() {
     local pkg="$1"
@@ -86,6 +149,10 @@ aur_install() {
     fi
 
     # Fallback to AUR helpers
+    if ! command -v yay &> /dev/null && ! command -v paru &> /dev/null; then
+        bootstrap_aur_helper || return 1
+    fi
+
     if command -v yay &> /dev/null; then
         yay -S --noconfirm --needed "$pkg"
     elif command -v paru &> /dev/null; then
@@ -95,3 +162,4 @@ aur_install() {
         return 1
     fi
 }
+
