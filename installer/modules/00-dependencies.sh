@@ -14,9 +14,7 @@ print_step "Validating Core Dependencies for Pure Hyprland..."
 CORE_PACKAGES=(
     # --- CORE INSTALLER DEPS ---
     "stow"
-    "yay"
     "less" # for yay diff build
-    "paru"
 
     # --- HYPRLAND SYSTEM DEPS ---
     "hyprland"
