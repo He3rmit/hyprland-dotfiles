@@ -72,7 +72,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 |:---|:---|
 | `Super + N` | **Notification Center** |
 | `Super + L` | **Screen Lock** (Hyprlock) |
-| `Super + B` | **Cycle Waybar** Layout |
+| `Super + B` | **Power Cycle** Performance, Balanced, Silent |
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra (Emoji/GIF/Stickers) picker. |
@@ -83,8 +83,10 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 ## 3. Desktop Management Tools
 The desktop includes a unified management tool called `pilot-control`. It handles high-level system states that standard keybinds cannot reach.
 
-### 🎮 The Settings Menu
-Launch the **Settings Menu** by clicking the **Settings** or **Power** icon in Waybar, or run:
+### 🎮 The Pilot Control Menu (System Settings & Customization)
+If you want to customize system-level options (like enabling or disabling the SDDM login screen's cinematic video HUD, or running system integrity checks), you can launch the **Pilot Control Menu**. 
+
+You can launch it by running this script in your terminal:
 `~/.config/hypr/scripts/pilot-control-gui.sh`
 
 ### ⌨️ The CLI (Terminal Access)
