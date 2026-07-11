@@ -3,7 +3,7 @@
 This is a fully declarative, hardware-agnostic ricing project for Arch Linux and Hyprland, heavily inspired by the Titanfall aesthetic. It has evolved into a stable, multi-host framework with dynamic display scaling, international layout support, and a dynamic wallpaper effects engine.
 
 ## 🔗 Repository Notice
-This is the **Stable Release** version (v3.0.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
+This is the **Stable Release** version (v3.1.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
 
 > [!IMPORTANT]
 > **OPERATOR NOTICE**: Keybinds and configurations are heavily at the user's discretion and require personal research. Use this project at your own risk and pace. Enjoy the flight! — **He3rmit**
@@ -56,11 +56,17 @@ dotfiles/
 
 ---
 
-### [v3.0.0] — Lua Configuration Migration & Hyprland v0.55+ Compliance (Current)
+### [v3.1.0] — Security Hardening & Giphy Media Engine (Current)
+- **Multi-API Media Engine**: Expanded the media selector (`pilot-hydra.py` and `gif-engine.sh`) to support **Giphy** alongside **Klipy**, automatically selecting Giphy if configured.
+- **Bash Security Hardening**: Patched vulnerabilities in `gif-engine.sh` by hiding API keys from process logs using `curl --config`, sanitizing resource IDs to prevent path traversal, caching inside private user-specific directories, and introducing size limits and format checks.
+- **Configuration Cleanups**: Replaced legacy `.conf` commented templates in host vaults with valid, native Lua table comments.
+- **Setup Guide Relocation**: Consolidated individual setup documents into a single, clean, jargon-free `DIY_GUIDE.md` in the repository root.
+
+### [v3.0.0] — Lua Configuration Migration & Hyprland v0.55+ Compliance
 - **Native Lua Architecture**: Upgraded the entire core repository and Host Vaults from the legacy `.conf` format to Hyprland's native, high-performance `.lua` configuration parser.
-- **Automated Migration Tool**: Developed `installer/scripts/migrate-to-lua.sh` utilizing advanced Perl-based post-processors to flawlessly translate your legacy user configurations, device blocks, and environment variables into perfect Lua syntax.
-- **App Launcher Intelligence**: Rewrote the Rofi Tactical Briefing backend (`lib-bind-engine.sh`) to natively parse Lua. It perfectly preserves your keybind cluster metadata and custom workspace layouts for immediate visual feedback.
-- **Installer Improvements**: Upgraded the Deployment Engine to dynamically generate `.lua` state files (keyboard/touchpad logic) while explicitly shielding standalone C++ utilities (Hypridle/Hyprlock/Hyprsunset) from breaking.
+- **Automated Migration Tool**: Developed `installer/scripts/migrate-to-lua.sh` to translate legacy user configurations, device blocks, and environment variables into perfect Lua syntax.
+- **App Launcher Keybinds**: Rewrote the Rofi keybind helper backend (`lib-bind-engine.sh`) to natively parse Lua, preserving custom layout metadata and shortcuts.
+- **Installer Improvements**: Upgraded the installer to dynamically generate `.lua` state files (keyboard/touchpad logic) while explicitly shielding standalone utilities (Hypridle/Hyprlock/Hyprsunset) from breaking.
 
 ### [v2.2.0] — Dynamic Wallpaper Engine & Link-Break Hardening
 - **Wallpaper Auto-Pause**: Added dynamic wallpaper auto-pause (`-p` / `--auto-pause`) to `mpvpaper` live wallpaper rendering. Automatically halts decoding when hidden under windows, slashing CPU overhead to 0% and massively extending battery life while working.
