@@ -20,8 +20,8 @@ Every screen is different. It is recommended not to leave this on `auto` if you 
 *   Define scaling, refresh rates, and multi-monitor positioning here.
 
 ### 3. `user-keybinds.lua` (Workflow Customization)
-Your personal keybindings go here. The core sets standard binds (like `Super+Q` to close), but you define your specific workflow here.
-*   **Example:** Bind `Super+O` to open Obsidian.
+Your personal keybindings go here. The core sets standard binds (like `hl.bind("Super + Q", hl.dsp.kill())` to close), but you define your specific workflow here.
+*   **Example:** Bind `Super+O` to open Obsidian: `hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))`
 *   **Example:** Map specific apps to specific workspaces.
 
 ### 4. `user-visuals.lua` & `user-windowrules.lua` (Aesthetics & Rules)
@@ -37,19 +37,21 @@ These are empty by default! They exist to override or hook into the core configu
 
 ---
 
-## 🎭 Media Search API (Klipy)
+## 🎭 Media Search API (Klipy & Giphy)
 
 The media and GIF selector requires an API key to search for external GIFs and Stickers. By default, it searches for this key in a hidden file in your home directory.
 
 ### 1. The Secrets File
-Create or edit `~/.secrets.sh` and add your Klipy API key:
+Create or edit `~/.secrets.sh` and add your Klipy API key (or Giphy API key):
 ```bash
 export KLIPY_API_KEY="your_actual_key_here"
+# OR
+export GIPHY_API_KEY="your_actual_key_here"
 ```
 
 ### 2. Obtaining a Key
-*   The script uses **Klipy** (api.klipy.co).
-*   Search results are limited to the Klipy database.
+*   The script uses **Klipy** (api.klipy.co) or **Giphy** (https://developers.giphy.com/).
+*   Search results are pulled from Giphy or Klipy depending on which API key is configured.
 *   If you don't have a key, the media selector will still work for your **Local Assets** and **Emojis**, but the Search tabs will remain empty or print a warning in the terminal.
 
 ---
