@@ -18,9 +18,9 @@ else
 fi
 
 # Define Search Paths
-GLOBAL_BINDS="$HOME/.config/hypr/modules/keybinds.conf"
-HOST_BINDS="$HOME/.config/hypr/host.conf"
-USER_BINDS="$HOME/.config/hypr/user-keybinds.conf"
+GLOBAL_BINDS="$HOME/.config/hypr/modules/keybinds.lua"
+HOST_BINDS="$HOME/.config/hypr/host.lua"
+USER_BINDS="$HOME/.config/hypr/user-keybinds.lua"
 
 # Generate Briefing and Display
 raw_list=$(
