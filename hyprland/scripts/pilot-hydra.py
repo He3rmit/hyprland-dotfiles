@@ -84,7 +84,7 @@ class HydraHub(Gtk.Window):
         self.set_default_size(600, 640)
         self.set_keep_above(True)
         self.set_position(Gtk.WindowPosition.CENTER)
-        self.api_key      = self._load_api_key()
+        self.api_keys     = self._load_api_keys()
         self.debounce_id  = None
 
         # Layout
@@ -104,7 +104,7 @@ class HydraHub(Gtk.Window):
 
         # Tabs
         self.gif_grid     = self._make_tab("GIFs",           animated=True)
-        self.sticker_grid = self._make_tab("Klipy Stickers", animated=True)
+        self.sticker_grid = self._make_tab("Stickers",      animated=True)
         self.vault_grid   = self._make_tab("Local Vault",    animated=False)
         self.emoji_grid   = self._make_tab("Emojis",         animated=False)
 
@@ -126,13 +126,17 @@ class HydraHub(Gtk.Window):
 
     # ─── SETUP ───────────────────────────────────────────────────────────────
 
-    def _load_api_key(self):
+    def _load_api_keys(self):
+        keys = {"klipy": None, "giphy": None}
         if os.path.exists(SECRETS_FILE):
             for line in open(SECRETS_FILE):
                 if "KLIPY_API_KEY" in line and '"' in line:
-                    return line.split('"')[1]
-        print("[Hydra] WARNING: No API key found in ~/.secrets.sh")
-        return None
+                    keys["klipy"] = line.split('"')[1]
+                if "GIPHY_API_KEY" in line and '"' in line:
+                    keys["giphy"] = line.split('"')[1]
+        if not keys["klipy"] and not keys["giphy"]:
+            print("[Hydra] WARNING: No API key found in ~/.secrets.sh")
+        return keys
 
     def _make_tab(self, title, animated=False):
         scrolled = Gtk.ScrolledWindow()
@@ -194,7 +198,15 @@ class HydraHub(Gtk.Window):
     # ─── KLIPY GIFs  (v2: results[].media_formats) ───────────────────────────
 
     def _fetch_gifs(self, query):
-        url = f"https://api.klipy.co/v2/search?q={query}&key={self.api_key}&limit=30"
+        if self.api_keys["giphy"]:
+            url = f"https://api.giphy.com/v1/gifs/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            provider = "GIPHY"
+        elif self.api_keys["klipy"]:
+            url = f"https://api.klipy.co/v2/search?q={query}&key={self.api_keys['klipy']}&limit=30"
+            provider = "KLIPY"
+        else:
+            return
+
         print(f"[Hydra/GIF] {url}")
         try:
             r = requests.get(url, timeout=6)
@@ -202,14 +214,19 @@ class HydraHub(Gtk.Window):
             if r.status_code != 200:
                 print(f"[Hydra/GIF] body: {r.text[:200]}")
                 return
-            results = r.json().get("results", [])
+            
+            results = r.json().get("data" if provider == "GIPHY" else "results", [])
             print(f"[Hydra/GIF] {len(results)} results")
             GLib.idle_add(self._clear, self.gif_grid)
             for item in results:
                 try:
-                    # nanogif for animated thumbnail (small, fast to load)
-                    nano = item["media_formats"]["nanogif"]["url"]
-                    full = item["media_formats"]["gif"]["url"]
+                    if provider == "GIPHY":
+                        nano = item["images"]["fixed_width_small"]["url"]
+                        full = item["images"]["original"]["url"]
+                    else:
+                        nano = item["media_formats"]["nanogif"]["url"]
+                        full = item["media_formats"]["gif"]["url"]
+                    
                     data = requests.get(nano, timeout=6).content
                     GLib.idle_add(self._add_animated, self.gif_grid, data, full)
                 except Exception as e:
@@ -221,7 +238,15 @@ class HydraHub(Gtk.Window):
     # ─── KLIPY STICKERS  (v2: data[].images) ─────────────────────────────────
 
     def _fetch_stickers(self, query):
-        url = f"https://api.klipy.co/v2/stickers/search?q={query}&key={self.api_key}&limit=30"
+        if self.api_keys["giphy"]:
+            url = f"https://api.giphy.com/v1/stickers/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            provider = "GIPHY"
+        elif self.api_keys["klipy"]:
+            url = f"https://api.klipy.co/v2/stickers/search?q={query}&key={self.api_keys['klipy']}&limit=30"
+            provider = "KLIPY"
+        else:
+            return
+
         print(f"[Hydra/STK] {url}")
         try:
             r = requests.get(url, timeout=6)
@@ -234,11 +259,15 @@ class HydraHub(Gtk.Window):
             GLib.idle_add(self._clear, self.sticker_grid)
             for item in items:
                 try:
-                    imgs = item.get("images", {})
-                    # fixed_width_small is ~100px wide animated GIF thumbnail
-                    thumb_url = (imgs.get("fixed_width_small", {}).get("url")
-                              or imgs.get("preview_gif", {}).get("url"))
-                    full_url  = (imgs.get("original", {}).get("url") or thumb_url)
+                    if provider == "GIPHY":
+                        thumb_url = item["images"]["fixed_width_small"]["url"]
+                        full_url  = item["images"]["original"]["url"]
+                    else:
+                        imgs = item.get("images", {})
+                        thumb_url = (imgs.get("fixed_width_small", {}).get("url")
+                                  or imgs.get("preview_gif", {}).get("url"))
+                        full_url  = (imgs.get("original", {}).get("url") or thumb_url)
+                        
                     if not thumb_url:
                         continue
                     data = requests.get(thumb_url, timeout=6).content
