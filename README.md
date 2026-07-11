@@ -33,6 +33,27 @@ During installation, you will be prompted to create or select a **Host Profile**
 
 ---
 
+## 🔄 Upgrading from v2.x to v3.x
+
+If you are an existing user upgrading from the legacy `.conf` configuration era to the new native `.lua` structure:
+
+> [!WARNING]
+> Running `git pull` without migrating your local host overrides will temporarily break your keybinds and visual rules. You must convert your files to Lua format.
+
+Run these steps in order:
+```bash
+# 1. Pull the latest updates
+git pull
+
+# 2. Translate your local host overrides from .conf to .lua
+./installer/scripts/migrate-to-lua.sh
+
+# 3. Re-run the deployment engine to sync symlinks and dependencies
+./installer/install.sh
+```
+
+---
+
 ## 📖 Documentation
 - [MANUAL.md](MANUAL.md) — The Operator's Manual (Keybinds, Visual Effects, Migration Guide).
 - [LICENSE](LICENSE) — Licensed under GNU GPL v3.0.
