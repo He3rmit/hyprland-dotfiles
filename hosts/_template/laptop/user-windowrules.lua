@@ -6,20 +6,20 @@
 
 -- --- WORKSPACE ASSIGNMENTS ---
 -- Force specific apps to always open on a specific workspace
--- windowrulev2 = workspace 3, class:^(discord)$
--- windowrulev2 = workspace 4, class:^(obsidian)$
+-- hl.window_rule({ match = { class = "^(discord)$" }, workspace = "3" })
+-- hl.window_rule({ match = { class = "^(obsidian)$" }, workspace = "4" })
 
 -- --- SPECIAL WORKSPACES ---
 -- Pin an app to a hidden 'Special' workspace that you toggle with a keybind
--- windowrulev2 = workspace special:work, class:^(code-url-handler)$
--- windowrulev2 = workspace special:hobby, class:^(Spotify)$
+-- hl.window_rule({ match = { class = "^(code-url-handler)$" }, workspace = "special:work" })
+-- hl.window_rule({ match = { class = "^(Spotify)$" }, workspace = "special:hobby" })
 
 -- --- OPACITY OVERRIDES ---
 -- Want your terminal more transparent on your desktop but solid on your laptop?
 -- Set opacity: active, inactive
--- windowrulev2 = opacity 0.8 0.7, class:^(kitty)$
+-- hl.window_rule({ match = { class = "^(kitty)$" }, opacity = "0.8 0.7" })
 
 -- --- FLOATING RULES ---
 -- Force an app to always open as a floating window
--- windowrulev2 = float, class:^(pavucontrol)$
--- windowrulev2 = size 800 600, class:^(pavucontrol)$
+-- hl.window_rule({ match = { class = "^(pavucontrol)$" }, float = true })
+-- hl.window_rule({ match = { class = "^(pavucontrol)$" }, size = "800 600" })

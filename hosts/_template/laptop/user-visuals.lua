@@ -6,16 +6,15 @@
 -- --- PERFORMANCE TWEAKS FOR WEAK LAPTOPS ---
 -- Uncomment the blocks below if your donor laptop lags.
 
--- decoration {
---     blur {
---         enabled = false    # Disabling blur saves a massive amount of GPU power
+-- hl.config({
+--     decoration = {
+--         blur = { enabled = false, },      -- Disabling blur saves a massive amount of GPU power
+--         drop_shadow = false,              -- Disabling shadows helps performance
+--     },
+--     animations = {
+--         enabled = false,                  -- Turns off all animations for an instant, snappy feel
 --     }
---     drop_shadow = false    # Disabling shadows helps performance
--- }
-
--- animations {
---     enabled = false        # Turns off all animations for an instant, snappy feel
--- }
+-- })
 
 -- ──────────────────────────────────────────────────────────────────────────────
 --  HARDWARE OPTIMIZATIONS

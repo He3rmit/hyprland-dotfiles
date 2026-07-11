@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # Search paths (Defaults)
-KB_CONFIG="$HOME/.config/hypr/modules/keyboard.conf"
+KB_CONFIG="$HOME/.config/hypr/modules/keyboard.lua"
 
 # The Dynamic Translation Table
 declare -A KEYCODES

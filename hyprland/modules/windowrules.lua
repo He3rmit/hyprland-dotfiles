@@ -10,8 +10,8 @@
 -- ──────────────────────────────────────────────────────────────────────────────
 --  Uncomment and customize in your local user-windowrules.conf.
 -- ──────────────────────────────────────────────────────────────────────────────
--- windowrule = immediate 1, match:class ^(payday2_win32_release.exe)$
--- windowrule = immediate 1, match:class ^(steam_app_\d+)$
+-- hl.window_rule({ match = { class = "^(payday2_win32_release.exe)$" }, immediate = true })
+-- hl.window_rule({ match = { class = "^(steam_app_\\d+)$" }, immediate = true })
 
 -- --- WORKSPACE RULES ---
 -- Smart gaps (No gaps when only 1 window)
@@ -35,5 +35,5 @@ hl.workspace_rule({
 -- Force specific apps to workspaces or set silent launch rules here.
 -- Uncomment and customize in your local user-windowrules.conf.
 -- ──────────────────────────────────────────────────────────────────────────────
--- windowrulev2 = workspace special:work, class:^(code-url-handler)$
--- windowrulev2 = workspace special:hobby, class:^(Spotify)$
+-- hl.window_rule({ match = { class = "^(code-url-handler)$" }, workspace = "special:work" })
+-- hl.window_rule({ match = { class = "^(Spotify)$" }, workspace = "special:hobby" })
