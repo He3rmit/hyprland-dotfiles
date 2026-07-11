@@ -6,17 +6,17 @@
 
 -- --- APP LAUNCHERS ---
 -- Example: Open Obsidian with Super + O
--- bind = $mainMod, O, exec, obsidian
+-- hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))
 -- Example: Open Discord on Workspace 3 specifically
--- bind = $mainMod, D, exec, [workspace 3] discord
+-- hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("[workspace 3] discord"))
 
 -- --- CUSTOM WORKSPACES ---
 -- Example: A hidden "Special" workspace for a chat app
--- bind = $mainMod, SPACE, togglespecialworkspace, chat
--- bind = $mainMod SHIFT, SPACE, movetoworkspace, special:chat
+-- hl.bind(mainMod .. " + SPACE", hl.dsp.workspace.toggle_special("chat"))
+-- hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.window.move({ workspace = "special:chat" }))
 
 -- --- OVERRIDING CORE BINDS ---
 -- Example: If you want to change a core bind (e.g. Super + Q to close), 
 -- you MUST unbind it first before re-binding it here:
--- unbind = $mainMod, Q
--- bind = $mainMod, Q, exec, alacritty
+-- hl.unbind(mainMod .. " + Q")
+-- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("alacritty"))

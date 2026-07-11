@@ -13,7 +13,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + CTRL + R", hl.dsp.exec_cmd(runner))
 hl.bind(mainMod .. " + ALT + code:61", hl.dsp.exec_cmd("~/.config/hypr/scripts/keybinds-hint.sh"))
--- bind = , XF86Launch1, exec, rofi -show drun
+-- hl.bind("XF86Launch1", hl.dsp.exec_cmd("rofi -show drun"))
 
 -- W = Wallpaper Selector
 hl.bind(mainMod .. " + ALT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-selector.sh"))
@@ -24,22 +24,10 @@ hl.bind(mainMod .. " + ALT + E", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpap
 --  CLUSTER 2: THE BUCKETS (Home Row Special Workspaces) [TEMPLATE]
 --  "Left hand controls the workspace."
 --  These are personal mappings for 'Special Workspaces' using Home Row keys.
---  Uncomment and customize in your local user-keybinds.conf if needed.
+--  Uncomment and customize in your local user-keybinds.lua if needed.
 -- ──────────────────────────────────────────────────────────────────────────────
--- bind = $mainMod, code:39, togglespecialworkspace, standard        # code:39 = S
--- bind = $mainMod SHIFT, code:39, movetoworkspace, special:standard
--- 
--- bind = $mainMod, code:25, togglespecialworkspace, work            # code:25 = W
--- bind = $mainMod SHIFT, code:25, movetoworkspace, special:work
--- 
--- bind = $mainMod, code:43, togglespecialworkspace, hobby           # code:43 = H
--- bind = $mainMod SHIFT, code:43, movetoworkspace, special:hobby
--- 
--- bind = $mainMod, code:42, togglespecialworkspace, gaming          # code:42 = G
--- bind = $mainMod SHIFT, code:42, movetoworkspace, special:gaming
--- 
--- bind = $mainMod, code:28, togglespecialworkspace, tools           # code:28 = T
--- bind = $mainMod SHIFT, code:28, movetoworkspace, special:tools
+hl.bind(mainMod .. " + code:39", hl.dsp.workspace.toggle_special("standard"))        -- code:39 = S
+hl.bind(mainMod .. " + SHIFT + code:39", hl.dsp.window.move({ workspace = "special:standard" }))
 -- ──────────────────────────────────────────────────────────────────────────────
 --  CLUSTER 3: WINDOW STATE (Bottom Left: Z-X-C-V)
 -- ──────────────────────────────────────────────────────────────────────────────
@@ -93,20 +81,20 @@ hl.bind(mainMod .. " + SHIFT + code:19", hl.dsp.window.move({ workspace = 10 }))
 
 -- ──────────────────────────────────────────────────────────────────────────────
 --  CLUSTER 6: EXPANDED WORKSPACES (F1-F12 -> 11-22) [TEMPLATE]
---  Uncomment and customize in your local user-keybinds.conf if needed.
+--  Uncomment and customize in your local user-keybinds.lua if needed.
 -- ──────────────────────────────────────────────────────────────────────────────
--- bind = $mainMod, code:67, workspace, 11            # code:67 = F1
--- bind = $mainMod, code:68, workspace, 12            # code:68 = F2
--- bind = $mainMod, code:69, workspace, 13            # code:69 = F3
--- bind = $mainMod, code:70, workspace, 14            # code:70 = F4
--- bind = $mainMod, code:71, workspace, 15            # code:71 = F5
--- bind = $mainMod, code:72, workspace, 16            # code:72 = F6
--- bind = $mainMod, code:73, workspace, 17            # code:73 = F7
--- bind = $mainMod, code:74, workspace, 18            # code:74 = F8
--- bind = $mainMod, code:75, workspace, 19            # code:75 = F9
--- bind = $mainMod, code:76, workspace, 20            # code:76 = F10
--- bind = $mainMod, code:95, workspace, 21            # code:95 = F11
--- bind = $mainMod, code:96, workspace, 22            # code:96 = F12
+-- hl.bind(mainMod .. " + code:67", hl.dsp.focus({ workspace = 11 }))            -- code:67 = F1
+-- hl.bind(mainMod .. " + code:68", hl.dsp.focus({ workspace = 12 }))            -- code:68 = F2
+-- hl.bind(mainMod .. " + code:69", hl.dsp.focus({ workspace = 13 }))            -- code:69 = F3
+-- hl.bind(mainMod .. " + code:70", hl.dsp.focus({ workspace = 14 }))            -- code:70 = F4
+-- hl.bind(mainMod .. " + code:71", hl.dsp.focus({ workspace = 15 }))            -- code:71 = F5
+-- hl.bind(mainMod .. " + code:72", hl.dsp.focus({ workspace = 16 }))            -- code:72 = F6
+-- hl.bind(mainMod .. " + code:73", hl.dsp.focus({ workspace = 17 }))            -- code:73 = F7
+-- hl.bind(mainMod .. " + code:74", hl.dsp.focus({ workspace = 18 }))            -- code:74 = F8
+-- hl.bind(mainMod .. " + code:75", hl.dsp.focus({ workspace = 19 }))            -- code:75 = F9
+-- hl.bind(mainMod .. " + code:76", hl.dsp.focus({ workspace = 20 }))            -- code:76 = F10
+-- hl.bind(mainMod .. " + code:95", hl.dsp.focus({ workspace = 21 }))            -- code:95 = F11
+-- hl.bind(mainMod .. " + code:96", hl.dsp.focus({ workspace = 22 }))            -- code:96 = F12
 -- ──────────────────────────────────────────────────────────────────────────────
 
 -- [ hardware-trigger ] Media & Audio binds moved to host vault

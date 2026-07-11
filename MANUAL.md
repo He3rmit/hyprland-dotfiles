@@ -1,24 +1,24 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v2.2.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v3.0.0)
 
-> *"The HUD is modular. The Pilot is agnostic. The Titan is universal."*
+> *"A modular, portable, and universal desktop environment."*
 
-## 1. Core Architecture — The Vault Standard
+## 1. Core Architecture — The Profile Standard
 Your desktop is split into two layers to ensure total portability and privacy:
 - **Core (`core/`, `hyprland/`)**: The shared "Engine" and "Visuals" that everyone uses. This code remains 100% hardware-agnostic and "Read-Only."
-- **Host (`hosts/`)**: Your machine-specific "Neuro-Link". This stores your private monitor resolution, scaling preferences, world-exclusive keybinds, and hardware drivers in a Git-ignored vault.
+- **Host (`hosts/`)**: Your machine-specific "Local Configuration". This stores your private monitor resolution, scaling preferences, world-exclusive keybinds, and hardware drivers in a Git-ignored directory.
 
-### 🛡️ The Golden Rule of the Vault
+### 🛡️ The Golden Rule of Profiles
 **Never edit configuration files directly in `~/.config/`.** 
-Because the deployment engine uses aggressive Pre-Stow Sweepers to guarantee a clean slate, any real files or manual overrides placed directly in `~/.config/` will be **annihilated** during the next deployment. 
+Because the deployment engine uses automated cleanup to guarantee a clean slate, any real files or manual overrides placed directly in `~/.config/` will be **safely overwritten** during the next deployment. 
 Always edit your configurations inside your `~/dotfiles/hosts/[your-profile]/` vault. The engine will safely link them for you.
 
 ---
 
 ## 1.5 The v2.1 "Atomic" Deployment Engine
-The dotfiles installer is mathematically hardened to be 100% plug-and-play on **any pre-existing, dirty environment**. You do not need a clean OS to run the deployment.
+The dotfiles installer is carefully designed to be 100% plug-and-play on **any pre-existing environment**. You do not need a clean OS to run the deployment.
 
-1. **Pre-Stow Sweepers**: Before GNU Stow runs, the engine actively hunts down and `rm -f` destroys all known cache files and explicit overrides. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It even safely backs up your real `~/.zshrc`.
-2. **Atomic Symlink Protocol**: To defeat Hyprland's `inotify` watchdog (which violently regenerates a default config the millisecond `stow` unlinks it), `hyprland.conf` is completely ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses a POSIX atomic replacement (`mv -T`) to swap the file instantly at the VFS inode level. The race condition is permanently solved.
+1. **Automated Cleanup**: Before GNU Stow runs, the engine actively hunts down and removes all known cache files and explicit overrides. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It even safely backs up your real `~/.zshrc`.
+2. **Reliable Symlink Creation**: To defeat Hyprland's `inotify` watchdog (which automatically recreates a default config the millisecond `stow` unlinks it), `hyprland.lua` is completely ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses a POSIX atomic replacement (`mv -T`) to swap the file instantly at the VFS inode level. The race condition is permanently solved.
 3. **Strict `--no-folding`**: GNU Stow is explicitly banned from "folding" directories. It must always create real target directories and individual file symlinks. This permanently shields your Git repository from being polluted by accidental overrides following symlinks backward.
 4. **SwayNC Link-Break Protection**: When `waybar-switcher.sh` dynamically synchronizes Waybar and SwayNC positions, it automatically detects if `~/.config/swaync/config.json` is a Stow symlink. If so, it instantly breaks the symlink and replaces it with a real local file copy. This prevents transient position coordinates from propagating backward through the symlink and polluting core repository files.
 
@@ -27,11 +27,11 @@ The dotfiles installer is mathematically hardened to be 100% plug-and-play on **
 
 ## 2. Keybind Lexicon (mainMod = SUPER)
 
-The Pilot's hand never leaves the tactical clusters. Shortcuts are organized into logical zones for high-speed operation.
+Shortcuts are designed for minimal hand movement and organized into logical zones for high-speed operation.
 
-### 🧩 Tactical Discovery (Hints for Pilots)
-To quickly learn the cockpit's operational binds without reading the manual:
-1.  **Searchable Briefing**: Press `Super + Alt + /` to launch the **Tactical Briefing**.
+### 🧩 Learning the Shortcuts
+To quickly learn the desktop's operational binds without reading the manual:
+1.  **Searchable Cheat Sheet**: Press `Super + Alt + /` to launch the **Searchable Cheat Sheet**.
 2.  **Visual Discovery**: Click the **Question Mark (``)** in your Waybar stack.
 3.  **Real-Time Parsing**: This menu scans your actual configuration—it always reflects your current active binds.
 
@@ -41,7 +41,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 - **Super + [F1-F12]**: Switch to Special Workspaces 11-22 (Personal Vault — see Section 4).
 - **Super + Shift + [1-0]**: Move window to workspace.
 
-### 🚀 Cluster 1: The Launchpad (Launching & Optics)
+### 🚀 Group 1: Basic App Launchers
 | Key | Action |
 |:---|:---|
 | `Super + Q` | **Terminal** (Kitty) |
@@ -49,20 +49,16 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + R` | **App Launcher** (Rofi Drun) |
 | `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
 | `Super + Alt + W` | **Wallpaper Selector** |
-| `Super + Alt + E` | **Pilot Vision / Effects Menu** |
+| `Super + Alt + E` | **Visual Effects Menu** |
 | `Super + Alt + /` | **Tactical Briefing** (Searchalble Cheat Sheet) |
 
-### 🎯 Cluster 2: The Buckets (Personal Workspace Vault)
-*These are now host-specific personal shortcuts. Templates are provided in the global config.*
+### 🎯 Group 2: Personal Workspaces
+*The "Standard" special workspace is enabled globally by default. You can create your own custom workspaces (like Work, Gaming, Hobby) in your local `hosts/[profile]/user-keybinds.lua` file.*
 | Key | Action | Location |
 |:---|:---|:---|
-| `Super + S` | **Standard** (Daily tasks) | `hosts/[profile]/user-keybinds.conf` |
-| `Super + W` | **Work** (Code/Dev) | `hosts/[profile]/user-keybinds.conf` |
-| `Super + H` | **Hobby** (Creation/Art) | `hosts/[profile]/user-keybinds.conf` |
-| `Super + G` | **Gaming** (Steam/Social) | `hosts/[profile]/user-keybinds.conf` |
-| `Super + T` | **Tools** (System/Terminals) | `hosts/[profile]/user-keybinds.conf` |
+| `Super + S` | **Standard** (Daily tasks / Scratchpad) | `hyprland/modules/keybinds.lua` |
 
-### 🪟 Cluster 3: Window State (Bottom Left)
+### 🪟 Group 3: Window Controls (Bottom Left)
 | Key | Action |
 |:---|:---|
 | `Super + C` | **Kill Active** Window |
@@ -71,10 +67,10 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + J` | Toggle **Split/Join** (Master Layout) |
 | `Super + P` | Toggle **Pseudo** |
 
-### 🛰️ Cluster 4: System & UI (Right Hand)
+### 🛰️ Group 4: System & UI (Right Hand)
 | Key | Action |
 |:---|:---|
-| `Super + N` | **Notification Center** (Pilot HUD) |
+| `Super + N` | **Notification Center** |
 | `Super + L` | **Screen Lock** (Hyprlock) |
 | `Super + B` | **Cycle Waybar** Layout |
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
@@ -84,11 +80,11 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 
 ---
 
-## 3. Pilot-Control Suite (The Management Chassis)
-The HUD includes a unified management tool called `pilot-control`. It handles high-level system states that standard keybinds cannot reach.
+## 3. Desktop Management Tools
+The desktop includes a unified management tool called `pilot-control`. It handles high-level system states that standard keybinds cannot reach.
 
-### 🎮 The GUI (Tactile Interface)
-Launch the **Pilot Control Center** by clicking the **Settings** or **Power** icon in Waybar, or run:
+### 🎮 The Settings Menu
+Launch the **Settings Menu** by clicking the **Settings** or **Power** icon in Waybar, or run:
 `~/.config/hypr/scripts/pilot-control-gui.sh`
 
 ### ⌨️ The CLI (Terminal Access)
@@ -104,39 +100,39 @@ The HUD features two primary "Intelligence Layers" that adapt to your specific h
 
 ### 🧩 Waybar "Generation 2" Engine
 The switcher now operates on a **Link-Break Protocol** to ensure that switching themes or layouts never modifies your Git repository.
-- **Axis-Lock Intelligence**: The switcher recognizes if you are using a **Sidebar** (Vertical) or **Topbar** (Horizontal). It automatically restricts "Direction" choices and position memory to prevent rendering glitches.
-- **Engine Restart**: The HUD performs a full "Engine Restart" during switches to guarantee 100% configuration persistence.
+- **Smart Layout Constraints**: The switcher recognizes if you are using a **Sidebar** (Vertical) or **Topbar** (Horizontal). It automatically restricts "Direction" choices and position memory to prevent rendering glitches.
+- **Clean Restart**: The HUD performs a full "Clean Restart" during switches to guarantee 100% configuration persistence.
 
-### 🧩 Pilot Vision Optics
+### 🧩 Wallpaper Engine
 The framework features a sophisticated ImageMagick-powered engine for cinematic wallpaper effects. This is resolution-agnostic and scales to your hardware.
 
 **Key Modes:**
 - **Bloom (Cinematic)**: Adds a soft "Film Halation" glow to highlights.
 - **Vanguard Tactical**: Teal/Orange grading + Hexagonal Honeycomb + Curved Visor.
-- **BT-7274 Thermal**: Red/Yellow "Heatvision" + Scanlines + Pilot Reticle.
+- **Thermal Vision**: Red/Yellow "Heatvision" + Scanlines.
 - **Cyber HUD**: Cyan/Magenta "Neon-Noir" + Digital Scanlines + Curved Visor.
 - **Glitch (Purge)**: High-intensity chromatic aberration shift.
 - **CRT Retro**: Analog TV scanlines and color bleeding.
 
 ---
 
-## 5. 🛠️ Migration Blueprint (The "Neuro-Link" Transfer)
+## 5. 🛠️ Migration Guide
 If you are moving from a legacy monolithic installation to this hardened framework, follow this guide to preserve your personal data.
 
 ### Phase 1: Identify Your Personal Vaults
 In this framework, your "soul" lives in your host-specific folder:
-- `hosts/[profile]/user-keybinds.conf`: Stores Cluster 2 (The Buckets) and Cluster 6 (F-Keys).
-- `hosts/[profile]/user-windowrules.conf`: Machine-specific app behavior and gaming rules.
-- `hosts/[profile]/user-visuals.conf`: Hardware-specific rendering and visual comfort.
-- `hosts/[profile]/monitor.conf`: Your machine's specific monitor/resolution rules.
-- `hosts/[profile]/nvidia.conf`: (Optional) NVIDIA driver environmental variables.
-- `hosts/[profile]/hypr-host.conf`: Hardware-specific triggers (Volume, Power, etc.).
+- `hosts/[profile]/user-keybinds.lua`: Stores Group 2 (Personal Workspaces) and Group 6 (F-Keys).
+- `hosts/[profile]/user-windowrules.lua`: Machine-specific app behavior and gaming rules.
+- `hosts/[profile]/user-visuals.lua`: Hardware-specific rendering and visual comfort.
+- `hosts/[profile]/monitor.lua`: Your machine's specific monitor/resolution rules.
+- `hosts/[profile]/nvidia.lua`: (Optional) NVIDIA driver environmental variables.
+- `hosts/[profile]/hypr-host.lua`: Hardware-specific triggers (Volume, Power, etc.).
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
 1. Enter your dotfile directory: `cd ~/dotfiles`
 2. Launch the deployment terminal: `./installer/install.sh`
-3. The installer now features the **Hardware Trinity** engine—it will auto-detect your GPU and deploy the correct Vulkan/VA-API acceleration modules for NVIDIA, Intel, or AMD.
+3. The installer now features **Hardware Detection**—it will auto-detect your GPU and deploy the correct Vulkan/VA-API acceleration modules for NVIDIA, Intel, or AMD.
 
 ### Phase 3: The Handover (Data Migration)
 Now, manually move your legacy data into your new protected host folder. 
@@ -144,10 +140,10 @@ Replace `[your-profile]` with the name you just created:
 
 ```bash
 # 1. Move your personal keybinds
-cp ~/.config/hypr/modules/user-keybinds.conf ~/dotfiles/hosts/[your-profile]/
+cp ~/.config/hypr/user-keybinds.conf ~/dotfiles/hosts/[your-profile]/user-keybinds.lua
 
 # 2. Move your hardware-host rules
-cp ~/.config/hypr/modules/hypr-host.conf ~/dotfiles/hosts/[your-profile]/
+cp ~/.config/hypr/host.conf ~/dotfiles/hosts/[your-profile]/hypr-host.lua
 
 # 3. Final Deployment (Stow)
 ./installer/install.sh
@@ -157,21 +153,21 @@ cp ~/.config/hypr/modules/hypr-host.conf ~/dotfiles/hosts/[your-profile]/
 
 ---
 
-## 6. Display Calibration & Scaling (Optics Protocol)
+## 6. Display Calibration & Scaling
 Your monitor rule is now **Dynamic** and part of your Vault.
 
-1.  **Monitor Wizard**: During installation, select your monitor and the script will generate a custom `monitor.conf` in your vault.
-2.  **Resolution Agnosticism**: Waybar is a native Wayland client. If you are on a 4K screen, set your `scale` to `2` in `monitor.conf`. Waybar will automatically follow this multiplier, ensuring your HUD maintains perfect "Visual Weight" without code changes.
-3.  **Optics Sync**: The Wallpaper Effects engine reads this scale factor to ensure HUD reticles and scanlines look correctly sized on your specific display.
+1.  **Monitor Wizard**: During installation, select your monitor and the script will generate a custom `monitor.lua` in your vault.
+2.  **Resolution Agnosticism**: Waybar is a native Wayland client. If you are on a 4K screen, set your `scale` to `2` in `monitor.lua`. Waybar will automatically follow this multiplier, ensuring your HUD maintains perfect "Visual Weight" without code changes.
+3.  **Wallpaper Scaling**: The Wallpaper Effects engine reads this scale factor to ensure visual overlays and scanlines look correctly sized on your specific display.
 
 ---
 
 ## 7. Security & Git Hygiene
 The project uses a **Black-Hole .gitignore** strategy:
 - All folders in `hosts/` (except `_template`) are automatically ignored.
-- The `hyprland/modules/colors.conf` (Pywal output) is ignored.
+- The `hyprland/modules/colors.lua` (Pywal output) is ignored.
 - **Result**: You can fork and push your repository to GitHub without leaking your hardware names, local monitor setups, or personal color palettes.
 
 ---
 
-**Protocol 3: Protect the Pilot.** 🦾 🛡️ 
+**Enjoy your custom desktop!** 🚀
