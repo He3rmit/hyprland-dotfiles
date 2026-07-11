@@ -1,0 +1,22 @@
+-- ==============================================================================
+-- TITANFALL PILOT HUD — USER KEYBINDS
+-- Purpose: Add your custom app launchers, workspace toggles, or overrides here.
+--          This file is host-specific and will NEVER be touched by core updates.
+-- ==============================================================================
+
+-- --- APP LAUNCHERS ---
+-- Example: Open Obsidian with Super + O
+-- bind = $mainMod, O, exec, obsidian
+-- Example: Open Discord on Workspace 3 specifically
+-- bind = $mainMod, D, exec, [workspace 3] discord
+
+-- --- CUSTOM WORKSPACES ---
+-- Example: A hidden "Special" workspace for a chat app
+-- bind = $mainMod, SPACE, togglespecialworkspace, chat
+-- bind = $mainMod SHIFT, SPACE, movetoworkspace, special:chat
+
+-- --- OVERRIDING CORE BINDS ---
+-- Example: If you want to change a core bind (e.g. Super + Q to close), 
+-- you MUST unbind it first before re-binding it here:
+-- unbind = $mainMod, Q
+-- bind = $mainMod, Q, exec, alacritty

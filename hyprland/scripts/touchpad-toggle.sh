@@ -2,7 +2,7 @@
 
 # --- TITAN CONFIGURATION ---
 # The file that holds the state
-STATE_FILE="$HOME/.config/hypr/touchpad.conf"
+STATE_FILE="$HOME/.config/hypr/touchpad.lua"
 
 # Auto-detect the touchpad device
 # Phase 1: Explicitly look for a device with "touchpad" in its name (Safest)
@@ -20,26 +20,26 @@ fi
 
 # Create state file with defaults if it doesn't exist
 if [ ! -f "$STATE_FILE" ]; then
-    echo "device {
-    name = $DEVICE
+    echo "hl.device({
+    name = \"$DEVICE\",
     enabled = true
-}" > "$STATE_FILE"
+})" > "$STATE_FILE"
 fi
 
 # Check if the file currently says "enabled = false"
 if grep -q "enabled = false" "$STATE_FILE"; then
     # TOGGLE ON: Enable it
-    echo "device {
-    name = $DEVICE
+    echo "hl.device({
+    name = \"$DEVICE\",
     enabled = true
-}" > "$STATE_FILE"
+})" > "$STATE_FILE"
     notify-send -u low -i input-touchpad-on "Touchpad" "Enabled ✅"
 else
     # TOGGLE OFF: Disable it
-    echo "device {
-    name = $DEVICE
+    echo "hl.device({
+    name = \"$DEVICE\",
     enabled = false
-}" > "$STATE_FILE"
+})" > "$STATE_FILE"
     notify-send -u low -i input-touchpad-off "Touchpad" "Disabled 🚫"
 fi
 
