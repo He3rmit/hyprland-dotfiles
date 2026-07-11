@@ -86,6 +86,7 @@ class HydraHub(Gtk.Window):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.api_keys     = self._load_api_keys()
         self.debounce_id  = None
+        self.current_query = None
 
         # Layout
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -184,6 +185,7 @@ class HydraHub(Gtk.Window):
 
     def _dispatch(self, query):
         self.debounce_id = None
+        self.current_query = query
         page = self.notebook.get_current_page()
         if not query and page != 3:
             return False
@@ -219,6 +221,9 @@ class HydraHub(Gtk.Window):
             print(f"[Hydra/GIF] {len(results)} results")
             GLib.idle_add(self._clear, self.gif_grid)
             for item in results:
+                if self.current_query != query:
+                    print("[Hydra/GIF] Query changed, aborting thread.")
+                    return
                 try:
                     if provider == "GIPHY":
                         nano = item["images"]["fixed_width_small"]["url"]
@@ -258,6 +263,9 @@ class HydraHub(Gtk.Window):
             print(f"[Hydra/STK] {len(items)} stickers")
             GLib.idle_add(self._clear, self.sticker_grid)
             for item in items:
+                if self.current_query != query:
+                    print("[Hydra/STK] Query changed, aborting thread.")
+                    return
                 try:
                     if provider == "GIPHY":
                         thumb_url = item["images"]["fixed_width_small"]["url"]
