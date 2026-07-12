@@ -24,6 +24,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("~/.config/hypr/scripts/xhost-root.sh")
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-selector.sh --init")
     hl.exec_cmd("killall waybar; waybar")
+    hl.exec_cmd("killall swaync; swaync")
     hl.exec_cmd("~/.config/hypr/scripts/portal-watcher.sh")
 end)
 

@@ -85,7 +85,7 @@
       "label": "󰕾",
       "show-per-app": true,
       "show-per-app-icon": true,
-      "show-per-app-label": false
+      "show-per-app-label": true
     },
     "backlight": {
       "label": "󰃠"
