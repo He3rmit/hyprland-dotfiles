@@ -115,9 +115,7 @@ CORE_PACKAGES=(
     "ttf-nerd-fonts-symbols"
     "ttf-orbitron"
     "noto-fonts-emoji"
-    "obsidian-icon-theme"
-    "adwaita-icon-theme"
-    "breeze-icons"
+    "papirus-icon-theme"
     "orchis-theme"
     "starship"
     "fastfetch"
@@ -183,12 +181,15 @@ fi
 print_step ">> Rebuilding font cache..."
 fc-cache -fv > /dev/null 2>&1
 
-# Apply Orchis-Dark as the global GTK default (project standard theme)
-print_step ">> Applying Orchis-Dark as default GTK theme..."
+# Apply Orchis-Dark and Papirus as the global GTK defaults
+print_step ">> Applying Orchis-Dark and Papirus icon theme as defaults..."
 gsettings set org.gnome.desktop.interface gtk-theme 'Orchis-Dark' 2>/dev/null || true
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+gsettings set org.gnome.desktop.interface icon-theme 'Papirus' 2>/dev/null || true
 [ -f "$HOME/.config/gtk-3.0/settings.ini" ] && sed -i 's/^gtk-theme-name=.*/gtk-theme-name=Orchis-Dark/' "$HOME/.config/gtk-3.0/settings.ini"
+[ -f "$HOME/.config/gtk-3.0/settings.ini" ] && sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=Papirus/' "$HOME/.config/gtk-3.0/settings.ini"
 [ -f "$HOME/.config/gtk-4.0/settings.ini" ] && sed -i 's/^gtk-theme-name=.*/gtk-theme-name=Orchis-Dark/' "$HOME/.config/gtk-4.0/settings.ini"
-print_success "GTK theme set to Orchis-Dark."
+[ -f "$HOME/.config/gtk-4.0/settings.ini" ] && sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=Papirus/' "$HOME/.config/gtk-4.0/settings.ini"
+print_success "GTK theme set to Orchis-Dark and icon theme set to Papirus."
 
 print_success "Dependencies nominal. System is ready for deployment."

@@ -193,7 +193,7 @@ REMOVABLE_CORE=(
     "hyprland" "xdg-desktop-portal-hyprland" "hypridle" "hyprlock" "hyprpicker" "hyprsunset" 
     "waybar" "swaync" "rofi" "wlogout" "wl-clipboard" "cliphist" "wtype" "grim" "slurp" "swappy" 
     "swaybg" "mpvpaper" "python-pywal" "xorg-xrdb" "nwg-look" "starship" "fastfetch" "gsimplecal"
-    "qt5-graphicaleffects" "qt5-quickcontrols2" "qt5-svg" "nss-mdns" "ttf-orbitron" "obsidian-icon-theme"
+    "qt5-graphicaleffects" "qt5-quickcontrols2" "qt5-svg" "nss-mdns" "ttf-orbitron" "papirus-icon-theme"
     "python-requests" "python-gobject" "gtk3" "micro" "alacritty"
 )
 
