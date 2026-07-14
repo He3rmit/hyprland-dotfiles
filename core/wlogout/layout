@@ -14,7 +14,7 @@
 }
 {
     "label" : "logout",
-    "action" : "hyprctl dispatch exit",
+    "action" : "hyprctl dispatch 'hl.dsp.exit()' 2>/dev/null || hyprctl dispatch exit",
     "text" : "LOGOUT",
     "keybind" : "e",
     "height" : 0
