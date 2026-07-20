@@ -14,7 +14,7 @@
 hl.on("hyprland.start", function()
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE")
     hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE")
-    hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent")
+    hl.exec_cmd("if [ -f /usr/lib/hyprpolkitagent/hyprpolkitagent ]; then /usr/lib/hyprpolkitagent/hyprpolkitagent; elif [ -f /usr/lib/polkit-kde-authentication-agent-1 ]; then /usr/lib/polkit-kde-authentication-agent-1; fi")
     hl.exec_cmd("/usr/bin/gnome-keyring-daemon --start --components=secrets")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprsunset")
