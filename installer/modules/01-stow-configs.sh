@@ -168,8 +168,11 @@ else
     print_warning "No monitor calibration found in vault. Generating default fallback..."
     cat > "$HOME/.config/hypr/modules/monitor.lua" << EOF
 -- FALLBACK MONITOR CONFIG
-hl.config({
-    monitor = "${MONITOR_NAME:-},preferred,auto,${SCALE:-1.0}"
+hl.monitor({
+    output = "${MONITOR_NAME:-}",
+    mode = "preferred",
+    position = "auto",
+    scale = "${SCALE:-1.0}"
 })
 EOF
 fi
