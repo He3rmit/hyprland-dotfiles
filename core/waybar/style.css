@@ -11,10 +11,34 @@
 
 window#waybar {
     background: rgba(0, 0, 0, 0.6);
+    transition: background 0.3s ease-in-out;
+}
+
+/* Dynamic position margins for sidebar-minimal layout */
+window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
+window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
+window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
+window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+
+window#waybar.left {
     border-right: 2px solid rgba(0, 174, 239, 0.4);
     border-radius: 0px 10px 10px 0px;
     padding: 10px 5px;
-    transition: background 0.3s ease-in-out;
+}
+window#waybar.right {
+    border-left: 2px solid rgba(0, 174, 239, 0.4);
+    border-radius: 10px 0px 0px 10px;
+    padding: 10px 5px;
+}
+window#waybar.top {
+    border-bottom: 2px solid rgba(0, 174, 239, 0.4);
+    border-radius: 0px 0px 10px 10px;
+    padding: 5px 10px;
+}
+window#waybar.bottom {
+    border-top: 2px solid rgba(0, 174, 239, 0.4);
+    border-radius: 10px 10px 0px 0px;
+    padding: 5px 10px;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

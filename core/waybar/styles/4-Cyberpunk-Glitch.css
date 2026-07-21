@@ -13,18 +13,32 @@
 
 window#waybar {
     background: rgba(10, 5, 20, 0.85);
-    border-right: 2px solid @color1;
     border-radius: 0px;
 }
 
 window#waybar.sidebar-expanded {
     background: transparent;
-    border-right: none;
 }
+window#waybar.sidebar-expanded.left { border-right: none; }
+window#waybar.sidebar-expanded.right { border-left: none; }
 
-window#waybar.horizontal, window#waybar.top, window#waybar.bottom {
-    border-right: none;
+/* Dynamic position margins for sidebar-minimal layout */
+window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
+window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
+window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
+window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+
+window#waybar.left {
+    border-right: 2px solid @color1;
+}
+window#waybar.right {
+    border-left: 2px solid @color1;
+}
+window#waybar.top {
     border-bottom: 2px solid @color1;
+}
+window#waybar.bottom {
+    border-top: 2px solid @color1;
 }
 
 #cpu, #memory, #network, #clock, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {

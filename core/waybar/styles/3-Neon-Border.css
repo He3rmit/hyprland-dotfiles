@@ -18,6 +18,12 @@ window#waybar.sidebar-expanded {
     background: alpha(@background, 0.4);
 }
 
+/* Dynamic position margins for sidebar-minimal layout */
+window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
+window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
+window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
+window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+
 #cpu, #memory, #network, #clock, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
     border: 1px solid @color6;
     border-radius: 4px;

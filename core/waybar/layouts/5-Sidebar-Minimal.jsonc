@@ -4,7 +4,6 @@
   "position": "left",
   "width": "auto",
   "height": 45,
-  "margin": "10 0 10 10",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": [],
   "modules-right": ["tray", "clock", "custom/notification", "custom/peripheral", "custom/power"],
