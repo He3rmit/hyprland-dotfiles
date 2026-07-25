@@ -6,6 +6,7 @@ import hashlib
 import threading
 import subprocess
 import requests
+import concurrent.futures
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -209,38 +210,7 @@ class HydraHub(Gtk.Window):
         else:
             return
 
-        print(f"[Hydra/GIF] {url}")
-        try:
-            r = requests.get(url, timeout=6)
-            print(f"[Hydra/GIF] HTTP {r.status_code}")
-            if r.status_code != 200:
-                print(f"[Hydra/GIF] body: {r.text[:200]}")
-                return
-            
-            results = r.json().get("data" if provider == "GIPHY" else "results", [])
-            print(f"[Hydra/GIF] {len(results)} results")
-            GLib.idle_add(self._clear, self.gif_grid)
-            for item in results:
-                if self.current_query != query:
-                    print("[Hydra/GIF] Query changed, aborting thread.")
-                    return
-                try:
-                    if provider == "GIPHY":
-                        nano = item["images"]["fixed_width_small"]["url"]
-                        full = item["images"]["original"]["url"]
-                    else:
-                        nano = item["media_formats"]["nanogif"]["url"]
-                        full = item["media_formats"]["gif"]["url"]
-                    
-                    data = requests.get(nano, timeout=6).content
-                    GLib.idle_add(self._add_animated, self.gif_grid, data, full)
-                except Exception as e:
-                    print(f"[Hydra/GIF] item error: {e}")
-            GLib.idle_add(self.gif_grid.show_all)
-        except Exception as e:
-            print(f"[Hydra/GIF] fetch error: {e}")
-
-    # ─── KLIPY STICKERS  (v2: data[].images) ─────────────────────────────────
+        self._fetch_media_grid(url, provider, self.gif_grid, query, is_sticker=False)
 
     def _fetch_stickers(self, query):
         if self.api_keys["giphy"]:
@@ -252,39 +222,74 @@ class HydraHub(Gtk.Window):
         else:
             return
 
-        print(f"[Hydra/STK] {url}")
+        self._fetch_media_grid(url, provider, self.sticker_grid, query, is_sticker=True)
+
+    def _fetch_media_grid(self, url, provider, grid, query, is_sticker=False):
+        print(f"[Hydra/Media] {url}")
         try:
             r = requests.get(url, timeout=6)
-            print(f"[Hydra/STK] HTTP {r.status_code}")
             if r.status_code != 200:
-                print(f"[Hydra/STK] body: {r.text[:200]}")
                 return
-            items = r.json().get("data", [])
-            print(f"[Hydra/STK] {len(items)} stickers")
-            GLib.idle_add(self._clear, self.sticker_grid)
+
+            data_key = "data" if (provider == "GIPHY" or is_sticker) else "results"
+            items = r.json().get(data_key, [])
+            GLib.idle_add(self._clear, grid)
+
+            download_targets = []
             for item in items:
-                if self.current_query != query:
-                    print("[Hydra/STK] Query changed, aborting thread.")
-                    return
                 try:
                     if provider == "GIPHY":
-                        thumb_url = item["images"]["fixed_width_small"]["url"]
-                        full_url  = item["images"]["original"]["url"]
+                        thumb = item["images"]["fixed_width_small"]["url"]
+                        full  = item["images"]["original"]["url"]
                     else:
-                        imgs = item.get("images", {})
-                        thumb_url = (imgs.get("fixed_width_small", {}).get("url")
+                        if is_sticker:
+                            imgs = item.get("images", {})
+                            fw_small = imgs.get("fixed_width_small", {})
+                            thumb = (fw_small.get("webp")
+                                  or fw_small.get("url")
+                                  or imgs.get("preview_webp", {}).get("url")
                                   or imgs.get("preview_gif", {}).get("url"))
-                        full_url  = (imgs.get("original", {}).get("url") or thumb_url)
-                        
-                    if not thumb_url:
-                        continue
-                    data = requests.get(thumb_url, timeout=6).content
-                    GLib.idle_add(self._add_animated, self.sticker_grid, data, full_url)
+                            full  = (imgs.get("original", {}).get("url") or thumb)
+                        else:
+                            mf = item.get("media_formats", {})
+                            thumb = mf.get("nanogif", {}).get("url") or mf.get("gif", {}).get("url")
+                            full  = mf.get("gif", {}).get("url")
+
+                    if thumb and full:
+                        download_targets.append((thumb, full))
                 except Exception as e:
-                    print(f"[Hydra/STK] item error: {e}")
-            GLib.idle_add(self.sticker_grid.show_all)
+                    pass
+
+            def worker(pair):
+                if self.current_query != query:
+                    return
+                thumb_url, full_url = pair
+                url_hash = hashlib.md5(thumb_url.encode()).hexdigest()[:12]
+                cache_file = os.path.join(CACHE_DIR, f"thumb_{url_hash}")
+
+                img_bytes = None
+                if os.path.exists(cache_file):
+                    try:
+                        with open(cache_file, "rb") as f:
+                            img_bytes = f.read()
+                    except: pass
+
+                if not img_bytes:
+                    try:
+                        img_bytes = requests.get(thumb_url, timeout=5).content
+                        with open(cache_file, "wb") as f:
+                            f.write(img_bytes)
+                    except: return
+
+                if self.current_query == query and img_bytes:
+                    GLib.idle_add(self._add_animated, grid, img_bytes, full_url)
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                executor.map(worker, download_targets)
+
+            GLib.idle_add(grid.show_all)
         except Exception as e:
-            print(f"[Hydra/STK] fetch error: {e}")
+            print(f"[Hydra/Media] fetch error: {e}")
 
     # ─── LOCAL VAULT ─────────────────────────────────────────────────────────
 
