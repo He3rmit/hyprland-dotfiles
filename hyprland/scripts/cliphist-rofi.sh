@@ -141,12 +141,40 @@ case $exit_code in
 
         notify_pilot "Buffer Updated" "Pasted into active window."
         ;;
-    15) # Alt+P — Preview Image (First item only)
+    15) # Alt+P — Preview / Open Media (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
-        tmp_img="$CACHE_DIR/preview_$first_id.png"
-        cliphist decode "$first_id" > "$tmp_img"
-        xdg-open "$tmp_img" &
-        notify_pilot "Visual Feed Active" "Opening image preview..."
+        raw_data=$(cliphist decode "$first_id" 2>/dev/null)
+        clean_data="${raw_data%$'\r'}"
+
+        target_path=""
+        if [[ "$clean_data" == file://* ]]; then
+            raw_path="${clean_data#file://}"
+            target_path=$(echo -e "${raw_path//%/\\x}")
+        elif [[ "$clean_data" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
+            target_path="${BASH_REMATCH[1]}"
+        fi
+
+        if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+            # Direct file preview (videos open in default video player, images in viewer)
+            xdg-open "$target_path" &
+            notify_pilot "Visual Feed Active" "Opening $(basename "$target_path")..."
+        elif [[ "$clean_data" =~ ^https?:// ]]; then
+            # Web URL preview
+            xdg-open "$clean_data" &
+            notify_pilot "Uplink Active" "Opening URL in browser..."
+        else
+            # Binary image or raw text
+            mime_type=$(cliphist decode "$first_id" | file -b --mime-type -)
+            if [[ "$mime_type" == image/* ]]; then
+                tmp_img="$CACHE_DIR/preview_${first_id}.png"
+                cliphist decode "$first_id" > "$tmp_img"
+                xdg-open "$tmp_img" &
+                notify_pilot "Visual Feed Active" "Opening image preview..."
+            else
+                # Text preview in notification
+                notify_pilot "Text Preview" "${clean_data:0:300}"
+            fi
+        fi
         ;;
     10) # Alt+Delete — Delete Entry (Deep Purge)
         echo "$clip_ids" | while read -r id; do
