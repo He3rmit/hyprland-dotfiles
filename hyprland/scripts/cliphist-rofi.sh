@@ -113,7 +113,11 @@ case $exit_code in
                 cliphist decode "$first_id" | wl-copy
             fi
         fi
-        notify_pilot "Buffer Updated" "Data sequence ready."
+
+        # Auto-paste into active window
+        (sleep 0.15 && wtype -M ctrl -k v -m ctrl) &
+
+        notify_pilot "Buffer Updated" "Pasted into active window."
         ;;
     15) # Alt+P — Preview Image (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
