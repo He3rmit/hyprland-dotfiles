@@ -214,15 +214,17 @@ window#waybar.bottom {
 
 tooltip {
     background: rgba(10, 15, 20, 0.95);
-    border: 1px solid #4261ff;
-    border-radius: 8px;
+    border: 2px solid #00e0ff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.4);
+    padding: 12px;
 }
 
 tooltip label {
     color: #00e0ff;
-    font-family: "Orbitron", monospace;
-    font-size: 13px;
-    padding: 8px;
+    font-family: "Orbitron", "ShureTechMono Nerd Font", "JetBrainsMono Nerd Font", monospace;
+    font-size: 16px;
+    padding: 8px 12px;
     text-shadow: 0 0 5px rgba(0, 224, 255, 0.3);
 }
 

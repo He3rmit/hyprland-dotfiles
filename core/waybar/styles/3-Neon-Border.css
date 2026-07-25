@@ -89,13 +89,17 @@ window#waybar.horizontal #workspaces button, window#waybar.top #workspaces butto
 }
 
 tooltip {
-    background: @background;
-    border: 1px solid @color5;
-    box-shadow: 0 0 10px @color5;
+    background: alpha(@background, 0.95);
+    border: 2px solid @color6;
+    border-radius: 12px;
+    box-shadow: 0 0 15px alpha(@color6, 0.4);
+    padding: 12px;
 }
 
 tooltip label {
     color: @color6;
+    font-size: 16px;
+    padding: 8px 12px;
 }
 
 /* TRAY MENU STYLING */

@@ -134,7 +134,7 @@ window#waybar.horizontal #workspaces button.urgent { border-bottom: 2px solid @c
 }
 
 tooltip { background: alpha(@color0, 0.95); border: 1px solid @color4; border-radius: 8px; }
-tooltip label { color: @color6; font-family: "Orbitron", monospace; font-size: 13px; padding: 8px; text-shadow: 0 0 5px alpha(@color6, 0.3); }
+tooltip label { color: @color6; font-family: "Orbitron", "ShureTechMono Nerd Font", "JetBrainsMono Nerd Font", monospace; font-size: 13px; padding: 8px; text-shadow: 0 0 5px alpha(@color6, 0.3); }
 /* TRAY MENU STYLING */
 menu { background: @background; border: 1px solid @color6; border-radius: 8px; padding: 4px; }
 menuitem { color: @foreground; padding: 6px 12px; border-radius: 4px; }

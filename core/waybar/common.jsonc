@@ -75,8 +75,26 @@
     "clock": {
         "format": "{:%H\n%M}",
         "tooltip": true,
-        "tooltip-format": "{:%A\n%B %d\n%Y}",
-        "on-click": "gsimplecal"
+        "tooltip-format": "<big><b>{:%B %Y}</b></big>\n\n<span font_family='ShureTechMono Nerd Font, JetBrainsMono Nerd Font, monospace'>{calendar}</span>",
+        "locale": "en_US.UTF-8",
+        "calendar": {
+            "mode": "month",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<b>{}</b>",
+                "days": "{}",
+                "weeks": "<span alpha='50%'>W{}</span>",
+                "weekdays": "<b>{}</b>",
+                "today": "<b><u>{}</u></b>"
+            }
+        },
+        "actions": {
+            "on-click-right": "mode",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
     },
     "backlight": {
         "format": "LIT\n{percent}%",
