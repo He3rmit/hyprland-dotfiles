@@ -9,7 +9,6 @@
   "modules-right": ["tray", "custom/notification", "custom/peripheral", "custom/power"],
 
   "hyprland/workspaces": { "format": "{icon}" },
-  "clock": { "format": " {:%H:%M}" },
   "custom/peripheral": {
       "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
   }

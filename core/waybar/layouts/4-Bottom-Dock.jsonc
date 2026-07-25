@@ -15,6 +15,5 @@
   "network": { "format-wifi": "  {signalStrength}%", "format-ethernet": "󰈀", "format-disconnected": "⚠" },
   "custom/peripheral": {
       "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
-  },
-  "clock": { "format": " {:%H:%M}" }
+  }
 }

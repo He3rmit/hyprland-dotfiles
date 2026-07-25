@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <menu id="menu">
+    <item>
+      <attribute name="label">󰥔 Manila, Philippines (PHT)</attribute>
+      <attribute name="action">tz-manila</attribute>
+    </item>
+    <item>
+      <attribute name="label">󰥔 Tokyo, Japan (JST)</attribute>
+      <attribute name="action">tz-tokyo</attribute>
+    </item>
+    <item>
+      <attribute name="label">󰥔 UTC (Universal Time)</attribute>
+      <attribute name="action">tz-utc</attribute>
+    </item>
+    <item>
+      <attribute name="label">󰥔 London, UK (BST/GMT)</attribute>
+      <attribute name="action">tz-london</attribute>
+    </item>
+    <item>
+      <attribute name="label">󰥔 New York, USA (EDT/EST)</attribute>
+      <attribute name="action">tz-ny</attribute>
+    </item>
+    <item>
+      <attribute name="label">󰥔 Los Angeles, USA (PDT/PST)</attribute>
+      <attribute name="action">tz-la</attribute>
+    </item>
+  </menu>
+</interface>
