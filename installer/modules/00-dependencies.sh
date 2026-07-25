@@ -67,7 +67,6 @@ CORE_PACKAGES=(
     "python-requests"         # Required for Media Hub (Hydra)
     "python-gobject"          # Required for Media Hub (Hydra) GTK
     "gtk3"                    # Required for Media Hub GTK
-    "gsimplecal"
 
     # --- SHELL ---
     "zsh"
