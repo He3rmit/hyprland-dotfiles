@@ -17,46 +17,65 @@ notify_pilot() {
 generate_list() {
     local img_count=0
     cliphist list | head -n 150 | while IFS= read -r line; do
-        # Extract ID and Content instantaneously using bash native substring splitting
         id="${line%%$'\t'*}"
         content="${line#*$'\t'}"
         
-        if [[ "$content" =~ binary.*data ]] || [[ "$content" =~ file://.* ]]; then
-            # Extract path if it's a URI, otherwise use ID for binary
-            if [[ "$content" =~ file://(.*) ]]; then
-                raw_path="${BASH_REMATCH[1]}"
-                # Ensure we handle spaces/special chars in URI
-                image_source=$(echo -e "${raw_path//%/\\x}")
-                preview_file="$CACHE_DIR/uri_$(echo -n "$image_source" | md5sum | cut -d' ' -f1).png"
-                label="[File: $(basename "$image_source")]"
+        # Detect file paths or file URIs
+        file_path=""
+        if [[ "$content" =~ file://(.*) ]]; then
+            file_path=$(echo -e "${BASH_REMATCH[1]//%/\\x}")
+            file_path="${file_path%$'\r'}"
+        elif [[ "$content" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
+            file_path="${BASH_REMATCH[1]}"
+        fi
+
+        if [ -n "$file_path" ] && [ -f "$file_path" ]; then
+            preview_file="$CACHE_DIR/uri_$(echo -n "$file_path" | md5sum | cut -d' ' -f1).png"
+            ext="${file_path##*.}"
+            ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+
+            case "$ext_lc" in
+                mp4|mkv|webm|avi|mov|flv|wmv)
+                    label="[Video: $(basename "$file_path")]"
+                    if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+                        img_count=$((img_count + 1))
+                        (ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 64 >/dev/null 2>&1) &
+                    fi
+                    icon_val="$preview_file"
+                    [ ! -f "$preview_file" ] && icon_val="video-x-generic"
+                    ;;
+                png|jpg|jpeg|gif|webp)
+                    label="[Image: $(basename "$file_path")]"
+                    if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+                        img_count=$((img_count + 1))
+                        (magick "$file_path"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                    fi
+                    icon_val="$preview_file"
+                    [ ! -f "$preview_file" ] && icon_val="image-x-generic"
+                    ;;
+                *)
+                    label="[File: $(basename "$file_path")]"
+                    icon_val="text-x-generic"
+                    ;;
+            esac
+
+            echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
+
+        elif [[ "$content" =~ binary.*data ]]; then
+            preview_file="$CACHE_DIR/${id}.png"
+            if [[ "$content" =~ ([0-9]+x[0-9]+) ]]; then
+                label="[Bin: ${BASH_REMATCH[1]}]"
             else
-                image_source="-" # Read from stdin (cliphist decode)
-                preview_file="$CACHE_DIR/${id}.png"
-                
-                # Extract dimensions directly from cliphist output
-                if [[ "$content" =~ ([0-9]+x[0-9]+) ]]; then
-                    label="[Bin: ${BASH_REMATCH[1]}]"
-                else
-                    label="[Binary Image]"
-                fi
+                label="[Binary Image]"
             fi
 
-            if [ ! -f "$preview_file" ]; then
-                # Performance Throttle: Only spawn background magick for first 20 images
-                if [ $img_count -lt 20 ]; then
-                    img_count=$((img_count + 1))
-                    if [ "$image_source" == "-" ]; then
-                        (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
-                    else
-                        (magick "$image_source"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
-                    fi
-                fi
+            if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+                img_count=$((img_count + 1))
+                (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
             fi
-            
+
             echo -en "${id}\t${label}\0icon\x1f${preview_file}\n"
         else
-            # Clean string purely in bash (no slow sub-processes)
-            # Remove any extra spacing
             clean="${content//  / }"
             clean="${clean//  / }"
             echo -en "${id}\t${clean:0:120}\0icon\x1ftext-x-generic\n"
@@ -92,24 +111,27 @@ case $exit_code in
     0)  # ENTER — Paste (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
         
-        # 1. Peek at the data to determine handling
-        # We use a subshell to avoid double-decoding if possible for small items
         raw_data=$(cliphist decode "$first_id" 2>/dev/null)
-        
-        if [[ "$raw_data" == file://* ]]; then
-            # Re-copy as text/uri-list so apps treat it as a file upload
-            # CLEAN: Remove trailing carriage returns (\r) which break paths
-            clean_uri="${raw_data%$'\r'}"
-            echo -n "$clean_uri" | wl-copy --type text/uri-list
+        clean_data="${raw_data%$'\r'}"
+
+        target_path=""
+        if [[ "$clean_data" == file://* ]]; then
+            raw_path="${clean_data#file://}"
+            target_path=$(echo -e "${raw_path//%/\\x}")
+        elif [[ "$clean_data" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
+            target_path="${BASH_REMATCH[1]}"
+        fi
+
+        if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+            # Convert file path to file:// URI so Discord, Telegram, Browsers treat it as an actual file attachment!
+            encoded_path=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$target_path")
+            file_uri="file://${encoded_path}"
+            echo -n "$file_uri" | wl-copy --type text/uri-list
         else
-            # It's binary or raw text. Detect the MIME type for maximum compatibility.
             mime_type=$(cliphist decode "$first_id" | file -b --mime-type -)
-            
             if [[ "$mime_type" == image/* ]]; then
-                # Explicitly set the image type so Discord/Telegram recognize it immediately
                 cliphist decode "$first_id" | wl-copy --type "$mime_type"
             else
-                # Standard text handling
                 cliphist decode "$first_id" | wl-copy
             fi
         fi
