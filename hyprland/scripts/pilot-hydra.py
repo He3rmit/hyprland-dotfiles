@@ -88,6 +88,7 @@ class HydraHub(Gtk.Window):
         self.api_keys     = self._load_api_keys()
         self.debounce_id  = None
         self.current_query = None
+        self.search_gen   = 0
 
         # Layout
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -176,31 +177,38 @@ class HydraHub(Gtk.Window):
 
     def _dispatch_page(self, query, page):
         self.debounce_id = None
+        self.search_gen += 1
+        gen = self.search_gen
+        self.current_query = query
+
         if page == 0:
-            threading.Thread(target=self._fetch_gifs, args=(query,), daemon=True).start()
+            threading.Thread(target=self._fetch_gifs, args=(query, gen), daemon=True).start()
         elif page == 1:
-            threading.Thread(target=self._fetch_stickers, args=(query,), daemon=True).start()
+            threading.Thread(target=self._fetch_stickers, args=(query, gen), daemon=True).start()
         elif page == 3:
             self.emoji_grid.invalidate_filter()
         return False
 
     def _dispatch(self, query):
         self.debounce_id = None
+        self.search_gen += 1
+        gen = self.search_gen
         self.current_query = query
+
         page = self.notebook.get_current_page()
         if not query and page != 3:
             return False
         if page == 0:
-            threading.Thread(target=self._fetch_gifs, args=(query,), daemon=True).start()
+            threading.Thread(target=self._fetch_gifs, args=(query, gen), daemon=True).start()
         elif page == 1:
-            threading.Thread(target=self._fetch_stickers, args=(query,), daemon=True).start()
+            threading.Thread(target=self._fetch_stickers, args=(query, gen), daemon=True).start()
         elif page == 3:
             self.emoji_grid.invalidate_filter()
         return False
 
-    # ─── KLIPY GIFs  (v2: results[].media_formats) ───────────────────────────
+    # ─── KLIPY GIFs & STICKERS ────────────────────────────────────────────────
 
-    def _fetch_gifs(self, query):
+    def _fetch_gifs(self, query, gen):
         if self.api_keys["giphy"]:
             url = f"https://api.giphy.com/v1/gifs/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
             provider = "GIPHY"
@@ -210,9 +218,9 @@ class HydraHub(Gtk.Window):
         else:
             return
 
-        self._fetch_media_grid(url, provider, self.gif_grid, query, is_sticker=False)
+        self._fetch_media_grid(url, provider, self.gif_grid, query, gen, is_sticker=False)
 
-    def _fetch_stickers(self, query):
+    def _fetch_stickers(self, query, gen):
         if self.api_keys["giphy"]:
             url = f"https://api.giphy.com/v1/stickers/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
             provider = "GIPHY"
@@ -222,17 +230,36 @@ class HydraHub(Gtk.Window):
         else:
             return
 
-        self._fetch_media_grid(url, provider, self.sticker_grid, query, is_sticker=True)
+        self._fetch_media_grid(url, provider, self.sticker_grid, query, gen, is_sticker=True)
 
-    def _fetch_media_grid(self, url, provider, grid, query, is_sticker=False):
-        print(f"[Hydra/Media] {url}")
+    def _show_empty_message(self, grid, query):
+        self._clear(grid)
+        lbl = Gtk.Label()
+        lbl.set_markup(f"<span color='#a6adc8'>No items found for '<b>{query}</b>'</span>")
+        lbl.set_padding(20, 20)
+        grid.add(lbl)
+        grid.show_all()
+
+    def _fetch_media_grid(self, url, provider, grid, query, gen, is_sticker=False):
+        if self.search_gen != gen:
+            return
+
+        print(f"[Hydra/Media] ({gen}) {url}")
         try:
             r = requests.get(url, timeout=6)
-            if r.status_code != 200:
+            if self.search_gen != gen or r.status_code != 200:
                 return
 
             data_key = "data" if (provider == "GIPHY" or is_sticker) else "results"
             items = r.json().get(data_key, [])
+
+            if self.search_gen != gen:
+                return
+
+            if not items:
+                GLib.idle_add(self._show_empty_message, grid, query)
+                return
+
             GLib.idle_add(self._clear, grid)
 
             download_targets = []
@@ -261,7 +288,7 @@ class HydraHub(Gtk.Window):
                     pass
 
             def worker(pair):
-                if self.current_query != query:
+                if self.search_gen != gen:
                     return
                 thumb_url, full_url = pair
                 url_hash = hashlib.md5(thumb_url.encode()).hexdigest()[:12]
@@ -281,13 +308,14 @@ class HydraHub(Gtk.Window):
                             f.write(img_bytes)
                     except: return
 
-                if self.current_query == query and img_bytes:
+                if self.search_gen == gen and img_bytes:
                     GLib.idle_add(self._add_animated, grid, img_bytes, full_url)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
                 executor.map(worker, download_targets)
 
-            GLib.idle_add(grid.show_all)
+            if self.search_gen == gen:
+                GLib.idle_add(grid.show_all)
         except Exception as e:
             print(f"[Hydra/Media] fetch error: {e}")
 
