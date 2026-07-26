@@ -4,8 +4,16 @@
 # -----------------------------------------------------
 
 THEME="$HOME/.config/rofi/themes/clipboard.rasi"
-CACHE_DIR="/tmp/cliphist-thumbnails"
+CACHE_DIR="$HOME/.cache/cliphist-thumbnails"
 mkdir -p "$CACHE_DIR"
+
+# Prevent ImageMagick from hogging all CPU cores & RAM
+export MAGICK_THREAD_LIMIT=1
+export MAGICK_MEMORY_LIMIT=32MiB
+export MAGICK_TIME_LIMIT=2
+
+# Cleanup old thumbnail cache files (older than 3 days) in background
+(find "$CACHE_DIR" -type f -mtime +3 -delete 2>/dev/null) &
 
 # Keybind cheat sheet shown at the bottom of the popup
 KEYBIND_HINTS="Enter: Paste  |  Alt+P: Preview  |  Alt+Del: Delete | Shift+Enter: Select Items |  Alt+Shift+Del: Wipe  |  Alt+T: Type  |  Alt+O: URL  |  Alt+E: Edit"
@@ -30,31 +38,33 @@ generate_list() {
         fi
 
         if [ -n "$file_path" ] && [ -f "$file_path" ]; then
-            preview_file="$CACHE_DIR/uri_$(echo -n "$file_path" | md5sum | cut -d' ' -f1).png"
+            filename="${file_path##*/}"
+            clean_hash="${file_path//[\/ %]/_}"
+            preview_file="$CACHE_DIR/uri_${clean_hash: -32}.png"
             ext="${file_path##*.}"
             ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
 
             case "$ext_lc" in
                 mp4|mkv|webm|avi|mov|flv|wmv)
-                    label="[Video: $(basename "$file_path")]"
-                    if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+                    label="[Video: ${filename}]"
+                    if [ ! -f "$preview_file" ] && [ $img_count -lt 5 ]; then
                         img_count=$((img_count + 1))
-                        (ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 64 >/dev/null 2>&1) &
+                        (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 64 >/dev/null 2>&1) &
                     fi
                     icon_val="$preview_file"
                     [ ! -f "$preview_file" ] && icon_val="video-x-generic"
                     ;;
                 png|jpg|jpeg|gif|webp)
-                    label="[Image: $(basename "$file_path")]"
-                    if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+                    label="[Image: ${filename}]"
+                    if [ ! -f "$preview_file" ] && [ $img_count -lt 5 ]; then
                         img_count=$((img_count + 1))
-                        (magick "$file_path"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                        (nice -n 19 magick "$file_path"[0] -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
                     fi
                     icon_val="$preview_file"
                     [ ! -f "$preview_file" ] && icon_val="image-x-generic"
                     ;;
                 *)
-                    label="[File: $(basename "$file_path")]"
+                    label="[File: ${filename}]"
                     icon_val="text-x-generic"
                     ;;
             esac
@@ -69,9 +79,9 @@ generate_list() {
                 label="[Binary Image]"
             fi
 
-            if [ ! -f "$preview_file" ] && [ $img_count -lt 20 ]; then
+            if [ ! -f "$preview_file" ] && [ $img_count -lt 5 ]; then
                 img_count=$((img_count + 1))
-                (cliphist decode "$id" | magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
+                (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -resize '64x64^' -gravity center -extent 64x64 "$preview_file" >/dev/null 2>&1) &
             fi
 
             echo -en "${id}\t${label}\0icon\x1f${preview_file}\n"
