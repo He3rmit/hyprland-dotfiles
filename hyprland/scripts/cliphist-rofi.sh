@@ -28,13 +28,14 @@ generate_list() {
         id="${line%%$'\t'*}"
         content="${line#*$'\t'}"
         
-        # Detect file paths or file URIs
+        # Detect file paths or file URIs (including paths containing spaces)
         file_path=""
+        clean_content="${content%$'\r'}"
         if [[ "$content" =~ file://(.*) ]]; then
             file_path=$(echo -e "${BASH_REMATCH[1]//%/\\x}")
             file_path="${file_path%$'\r'}"
-        elif [[ "$content" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
-            file_path="${BASH_REMATCH[1]}"
+        elif [[ "$clean_content" == /* ]] && [ -f "$clean_content" ]; then
+            file_path="$clean_content"
         fi
 
         if [ -n "$file_path" ] && [ -f "$file_path" ]; then
@@ -121,23 +122,25 @@ case $exit_code in
     0)  # ENTER — Paste (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
         
-        raw_data=$(cliphist decode "$first_id" 2>/dev/null)
-        clean_data="${raw_data%$'\r'}"
+        # 1. Peek at first line to check for file path or URI without corrupting binary image streams
+        raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
+        clean_head="${raw_head%$'\r'}"
 
         target_path=""
-        if [[ "$clean_data" == file://* ]]; then
-            raw_path="${clean_data#file://}"
+        if [[ "$clean_head" == file://* ]]; then
+            raw_path="${clean_head#file://}"
             target_path=$(echo -e "${raw_path//%/\\x}")
-        elif [[ "$clean_data" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
-            target_path="${BASH_REMATCH[1]}"
+        elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+            target_path="$clean_head"
         fi
 
         if [ -n "$target_path" ] && [ -f "$target_path" ]; then
-            # Convert file path to file:// URI so Discord, Telegram, Browsers treat it as an actual file attachment!
-            encoded_path=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$target_path")
+            # File attachment (videos, images on disk, docs)
+            encoded_path="${target_path// /%20}"
             file_uri="file://${encoded_path}"
             echo -n "$file_uri" | wl-copy --type text/uri-list
         else
+            # Stream binary data directly from cliphist decode (never store in bash variable!)
             mime_type=$(cliphist decode "$first_id" | file -b --mime-type -)
             if [[ "$mime_type" == image/* ]]; then
                 cliphist decode "$first_id" | wl-copy --type "$mime_type"
@@ -146,43 +149,42 @@ case $exit_code in
             fi
         fi
 
-        # Auto-paste into active window
-        (sleep 0.15 && wtype -M ctrl -k v -m ctrl) &
-
-        notify_pilot "Buffer Updated" "Pasted into active window."
+        # Auto-paste into active window (120ms sleep so window focus is guaranteed)
+        (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
+        (notify_pilot "Buffer Updated" "Pasted into active window.") &
         ;;
     15) # Alt+P — Preview / Open Media (First item only)
         first_id=$(echo "$clip_ids" | head -n 1)
-        raw_data=$(cliphist decode "$first_id" 2>/dev/null)
-        clean_data="${raw_data%$'\r'}"
+        raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
+        clean_head="${raw_head%$'\r'}"
 
         target_path=""
-        if [[ "$clean_data" == file://* ]]; then
-            raw_path="${clean_data#file://}"
+        if [[ "$clean_head" == file://* ]]; then
+            raw_path="${clean_head#file://}"
             target_path=$(echo -e "${raw_path//%/\\x}")
-        elif [[ "$clean_data" =~ ^(/[^[:space:]]+) ]] && [ -f "${BASH_REMATCH[1]}" ]; then
-            target_path="${BASH_REMATCH[1]}"
+        elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+            target_path="$clean_head"
         fi
 
         if [ -n "$target_path" ] && [ -f "$target_path" ]; then
             # Direct file preview (videos open in default video player, images in viewer)
-            xdg-open "$target_path" &
-            notify_pilot "Visual Feed Active" "Opening $(basename "$target_path")..."
-        elif [[ "$clean_data" =~ ^https?:// ]]; then
+            (xdg-open "$target_path") &
+            (notify_pilot "Visual Feed Active" "Opening ${target_path##*/}...") &
+        elif [[ "$clean_head" =~ ^https?:// ]]; then
             # Web URL preview
-            xdg-open "$clean_data" &
-            notify_pilot "Uplink Active" "Opening URL in browser..."
+            (xdg-open "$clean_head") &
+            (notify_pilot "Uplink Active" "Opening URL in browser...") &
         else
             # Binary image or raw text
             mime_type=$(cliphist decode "$first_id" | file -b --mime-type -)
             if [[ "$mime_type" == image/* ]]; then
                 tmp_img="$CACHE_DIR/preview_${first_id}.png"
                 cliphist decode "$first_id" > "$tmp_img"
-                xdg-open "$tmp_img" &
-                notify_pilot "Visual Feed Active" "Opening image preview..."
+                (xdg-open "$tmp_img") &
+                (notify_pilot "Visual Feed Active" "Opening image preview...") &
             else
                 # Text preview in notification
-                notify_pilot "Text Preview" "${clean_data:0:300}"
+                (notify_pilot "Text Preview" "${clean_head:0:300}") &
             fi
         fi
         ;;
