@@ -85,10 +85,13 @@ tooltip {
     background: @background;
     border: 1px solid @color5;
     border-radius: 6px;
+    padding: 10px;
 }
 
 tooltip label {
     color: @foreground;
+    font-size: 15px;
+    padding: 8px 12px;
 }
 
 /* TRAY MENU STYLING */

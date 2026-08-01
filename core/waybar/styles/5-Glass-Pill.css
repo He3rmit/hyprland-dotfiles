@@ -83,13 +83,16 @@ window#waybar.horizontal #workspaces button, window#waybar.top #workspaces butto
 }
 
 tooltip {
-    background: alpha(@background, 0.8);
+    background: alpha(@background, 0.85);
     border: 1px solid @color4;
     border-radius: 12px;
+    padding: 10px;
 }
 
 tooltip label {
     color: @foreground;
+    font-size: 15px;
+    padding: 8px 12px;
 }
 
 /* TRAY MENU STYLING */

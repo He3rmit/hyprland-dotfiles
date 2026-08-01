@@ -109,10 +109,13 @@ tooltip {
     background: @color0;
     border: 2px solid @color1;
     border-radius: 0px;
+    padding: 10px;
 }
 
 tooltip label {
     color: @color3;
+    font-size: 15px;
+    padding: 8px 12px;
 }
 
 /* TRAY MENU STYLING */
