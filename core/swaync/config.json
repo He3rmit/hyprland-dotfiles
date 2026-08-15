@@ -3,7 +3,7 @@
   "positionX": "right",
   "positionY": "top",
   "control-center-width": 600,
-  "control-center-height": 850,
+  "control-center-height": 980,
   "notification-window-width": 500,
   "notification-grouping": true,
   "fit-to-screen": false,
@@ -93,7 +93,7 @@
       "label": "󰃠"
     },
     "mpris": {
-      "image-size": 96
+      "image-size": 68
     },
     "notifications": {}
   }

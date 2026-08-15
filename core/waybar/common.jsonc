@@ -78,7 +78,7 @@
         "tooltip-format": "<tt><big><b>{:%B %Y}</b></big>\n\n{calendar}</tt>",
         "calendar": {
             "mode": "month",
-            "mode-mon-col": 3,
+            "mode-mon-col": 4,
             "weeks-pos": "right",
             "on-scroll": 1,
             "format": {
@@ -90,19 +90,6 @@
             }
         },
         "on-click-middle": "$HOME/.config/waybar/scripts/timezone-selector.sh",
-        "calendar": {
-            "mode": "month",
-            "mode-mon-col": 3,
-            "weeks-pos": "right",
-            "on-scroll": 1,
-            "format": {
-                "months": "<b>{}</b>",
-                "days": "{}",
-                "weeks": "<span alpha='50%'>W{}</span>",
-                "weekdays": "<b>{}</b>",
-                "today": "<b><u>{}</u></b>"
-            }
-        },
         "actions": {
             "on-click-right": "mode",
             "on-scroll-up": "shift_up",
