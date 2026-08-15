@@ -220,19 +220,78 @@ case $exit_code in
             xdg-open "$url" &
         done
         ;;
-    14) # Alt+E — Edit in Terminal
-        tmp_file="/tmp/cliphist-edit-$$.txt"
-        > "$tmp_file"
-        echo "$clip_ids" | while read -r id; do
-            cliphist decode "$id" >> "$tmp_file"
-            echo "" >> "$tmp_file" # separator
-        done
-        notify_pilot "Editing Multi-Record" "Opening secure editor..."
-        kitty --class floating -e nano "$tmp_file"
-        if [ -s "$tmp_file" ]; then
-            cat "$tmp_file" | wl-copy
-            rm "$tmp_file"
-            notify_pilot "Buffer Updated" "Combined custom string saved to clipboard."
+    14) # Alt+E — Edit Selection (File / Text Editor)
+        first_id=$(echo "$clip_ids" | head -n 1)
+        raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
+        clean_head="${raw_head%$'\r'}"
+
+        target_path=""
+        if [[ "$clean_head" == file://* ]]; then
+            raw_path="${clean_head#file://}"
+            target_path=$(echo -e "${raw_path//%/\\x}")
+        elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+            target_path="$clean_head"
+        fi
+
+        # Preferred Editor (nvim -> vim -> nano fallback)
+        PREFERRED_EDITOR="${CLIPBOARD_EDITOR:-${VISUAL:-${EDITOR:-nvim}}}"
+        if [ ! -x "$(which "$PREFERRED_EDITOR" 2>/dev/null)" ]; then
+            if which vim >/dev/null 2>&1; then
+                PREFERRED_EDITOR="vim"
+            else
+                PREFERRED_EDITOR="nano"
+            fi
+        fi
+
+        if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+            ext="${target_path##*.}"
+            ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+
+            case "$ext_lc" in
+                png|jpg|jpeg|webp)
+                    notify_pilot "Editing Media" "Opening image editor for ${target_path##*/}..."
+                    if which swappy >/dev/null 2>&1; then
+                        swappy -f "$target_path" &
+                    else
+                        xdg-open "$target_path" &
+                    fi
+                    ;;
+                mp4|mkv|webm|avi|mov|flv|wmv|mp3|wav|ogg)
+                    notify_pilot "Opening Media" "${target_path##*/}"
+                    xdg-open "$target_path" &
+                    ;;
+                *)
+                    notify_pilot "Editing File" "Opening ${target_path##*/} in ${PREFERRED_EDITOR}..."
+                    if [ "$PREFERRED_EDITOR" == "code" ]; then
+                        code "$target_path" &
+                    else
+                        kitty --class floating -e "$PREFERRED_EDITOR" "$target_path" &
+                    fi
+                    ;;
+            esac
+        else
+            tmp_file="/tmp/cliphist-edit-$$.txt"
+            > "$tmp_file"
+            echo "$clip_ids" | while read -r id; do
+                cliphist decode "$id" >> "$tmp_file"
+                echo "" >> "$tmp_file" # separator
+            done
+
+            notify_pilot "Editing Text Snippet" "Opening editor (${PREFERRED_EDITOR})..."
+
+            if [ "$PREFERRED_EDITOR" == "code" ]; then
+                code -w "$tmp_file"
+            else
+                kitty --class floating -e "$PREFERRED_EDITOR" "$tmp_file"
+            fi
+
+            if [ -s "$tmp_file" ]; then
+                cat "$tmp_file" | wl-copy
+                rm -f "$tmp_file"
+                notify_pilot "Buffer Updated" "Edited text saved to clipboard."
+            else
+                rm -f "$tmp_file"
+            fi
         fi
         ;;
 esac
