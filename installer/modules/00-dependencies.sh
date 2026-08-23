@@ -31,7 +31,7 @@ CORE_PACKAGES=(
     "nss-mdns"                # Required for local hostname resolution (.local)
     
     # --- GUI COMPONENTS ---
-    "waybar-git"
+    "waybar"
     "swaync"
     "rofi"
     "kitty"
