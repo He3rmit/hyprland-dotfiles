@@ -63,6 +63,14 @@ if [[ -d "$HOST_CONFIG_DIR" ]]; then
     done
 fi
 
+# Auto-detect and align backlight controller (Intel, AMD, etc.) for SwayNC
+BACKLIGHT_DEV=$(ls /sys/class/backlight 2>/dev/null | head -n 1)
+if [[ -n "$BACKLIGHT_DEV" && -f "$HOME/.config/swaync/config.json" ]]; then
+    print_step ">> Auto-aligning SwayNC backlight controller ($BACKLIGHT_DEV)..."
+    sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$HOME/.config/swaync/config.json"
+fi
+
+
 # 4. Link Hyprland Environment
 # PRE-STOW SWEEPER: Remove explicit overrides that block GNU Stow from deploying hyprland
 print_step ">> Sweeping pre-existing hyprland conflicts..."

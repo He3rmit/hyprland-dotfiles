@@ -154,10 +154,10 @@ gum style --foreground 244 \
     "  02-system-identity— Configure Shell (ZSH) and Core Services" \
     "  03-sddm-theme     — Install the Astronaut SDDM login theme"
 echo ""
-gum style --foreground 244 "(SPACE to select, ENTER to confirm)"
+gum style --foreground 244 "(TAB or x to toggle selection, ENTER to confirm)"
 echo ""
 
-MODULES=$(gum choose --no-limit \
+MODULES=$(gum choose --no-limit --show-help --selected="*" \
     "00-dependencies" \
     "01-stow-configs" \
     "02-system-identity" \

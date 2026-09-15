@@ -90,7 +90,8 @@
       "show-per-app-label": true
     },
     "backlight": {
-      "label": "󰃠"
+      "label": "󰃠",
+      "device": "amdgpu_bl2"
     },
     "mpris": {
       "image-size": 68

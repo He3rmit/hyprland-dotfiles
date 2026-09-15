@@ -58,10 +58,10 @@ gum style --foreground 244 \
     "  Uninstall Gum Engine     — Purge the UI tool itself after sign-off" \
     "  FULL PURGE               — Everything (Except system-critical items)"
 echo ""
-gum style --foreground 244 "(SPACE to select, ENTER to confirm)"
+gum style --foreground 244 "(TAB or x to toggle selection, ENTER to confirm)"
 echo ""
 
-MODULES=$(gum choose --no-limit \
+MODULES=$(gum choose --no-limit --show-help \
     "Unstow Configs" \
     "Clean Pilot & Wal Cache" \
     "Clean Wireplumber" \
