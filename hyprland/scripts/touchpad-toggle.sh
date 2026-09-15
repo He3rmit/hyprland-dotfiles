@@ -33,6 +33,7 @@ if grep -q "enabled = false" "$STATE_FILE"; then
     name = \"$DEVICE\",
     enabled = true
 })" > "$STATE_FILE"
+    hyprctl eval "hl.device({ name = \"$DEVICE\", enabled = true })"
     notify-send -u low -i input-touchpad-on "Touchpad" "Enabled ✅"
 else
     # TOGGLE OFF: Disable it
@@ -40,9 +41,6 @@ else
     name = \"$DEVICE\",
     enabled = false
 })" > "$STATE_FILE"
+    hyprctl eval "hl.device({ name = \"$DEVICE\", enabled = false })"
     notify-send -u low -i input-touchpad-off "Touchpad" "Disabled 🚫"
 fi
-
-# Reload Hyprland to apply the new file
-# (This does NOT restart your session, just re-reads configs)
-hyprctl reload
