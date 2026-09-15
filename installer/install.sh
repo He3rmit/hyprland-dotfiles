@@ -190,7 +190,12 @@ for module in "${SELECTED_MODULES[@]}"; do
 
     if [ -f "$module_script" ]; then
         echo ""
-        gum spin --spinner dot --title " Deploying: $module..." -- bash "$module_script"
+        if [ "$module" == "00-dependencies" ]; then
+            print_step ">> Deploying $module (Package Installation)..."
+            bash "$module_script"
+        else
+            gum spin --spinner dot --title " Deploying: $module..." -- bash "$module_script"
+        fi
 
         if [ $? -ne 0 ]; then
             print_error "Module '$module' failed. Aborting."

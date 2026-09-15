@@ -150,14 +150,16 @@ if lspci | grep -qi "nvidia"; then
     install_pkg "libva-nvidia-driver"
     install_pkg "nvidia-settings"
     print_success "NVIDIA Essentials deployed."
-elif lspci | grep -qi "intel"; then
+fi
+if lspci | grep -qi "intel"; then
     print_warning "Intel GPU detected. Enhancing with low-latency acceleration..."
     install_pkg "lib32-vulkan-intel"
     install_pkg "vulkan-intel"
     install_pkg "intel-media-driver"
     install_pkg "libva-intel-driver"
     print_success "Intel Essentials deployed."
-elif lspci | grep -qi "amd" || lspci | grep -qi "ati"; then
+fi
+if lspci | grep -qi "amd" || lspci | grep -qi "ati"; then
     print_warning "AMD GPU detected. Enhancing with Vulkan & VA-API..."
     install_pkg "lib32-vulkan-radeon"
     install_pkg "vulkan-radeon"

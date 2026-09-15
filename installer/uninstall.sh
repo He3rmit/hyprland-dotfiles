@@ -109,14 +109,16 @@ if [[ "$MODULES" == *"Unstow Configs"* ]] || [ "$FULL_EJECT" = true ]; then
     stow -D -t "$HOME/.config/hypr" hyprland 2>/dev/null
 
     print_step ">> Ejecting Dynamic XDG Host Overrides..."
-    HOST_CONFIG_DIR="$DOTFILES_DIR/hosts/$TARGET/.config"
-    if [[ -d "$HOST_CONFIG_DIR" ]]; then
-        find "$HOST_CONFIG_DIR" -type f | while read -r override_file; do
-            rel_path="${override_file#$HOST_CONFIG_DIR/}"
-            rm -f "$HOME/.config/$rel_path"
-            echo "  🗑️  Removed override: $HOME/.config/$rel_path"
-        done
-    fi
+    for host_dir in "$DOTFILES_DIR"/hosts/*/; do
+        HOST_CONFIG_DIR="$host_dir/.config"
+        if [[ -d "$HOST_CONFIG_DIR" ]]; then
+            find "$HOST_CONFIG_DIR" -type f | while read -r override_file; do
+                rel_path="${override_file#$HOST_CONFIG_DIR/}"
+                rm -f "$HOME/.config/$rel_path"
+                echo "  🗑️  Removed override: $HOME/.config/$rel_path"
+            done
+        fi
+    done
 
     print_step ">> Removing explicit overrides..."
     rm -f "$HOME/.config/hypr/host.lua"
