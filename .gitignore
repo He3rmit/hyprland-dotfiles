@@ -27,3 +27,9 @@ hyprland/modules/touchpad.conf
 # Python Cache
 __pycache__/
 *.py[cod]
+
+# --- Media Assets (Decoupled & Hosted on GitHub Releases) ---
+*.mp4
+*.tar.gz
+titanfall-media-pack.tar.gz
+

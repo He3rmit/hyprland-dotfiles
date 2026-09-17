@@ -36,6 +36,12 @@ done
 
 # PRE-STOW SWEEPER: Remove generated caches and explicit overrides that block GNU Stow
 print_step ">> Sweeping pre-existing core conflicts..."
+find "$HOME/.config" -type l 2>/dev/null | while read -r link; do
+    target=$(readlink -f "$link" 2>/dev/null || true)
+    if [[ "$target" == "$DOTFILES_DIR/core"* || "$target" == "$DOTFILES_DIR/hosts"* ]]; then
+        rm -f "$link"
+    fi
+done
 rm -f "$HOME/.config/swaync/config.json"
 rm -f "$HOME/.config/waybar/config.jsonc"
 rm -f "$HOME/.config/waybar/style.css"
@@ -74,6 +80,12 @@ fi
 # 4. Link Hyprland Environment
 # PRE-STOW SWEEPER: Remove explicit overrides that block GNU Stow from deploying hyprland
 print_step ">> Sweeping pre-existing hyprland conflicts..."
+find "$HOME/.config/hypr" -type l 2>/dev/null | while read -r link; do
+    target=$(readlink -f "$link" 2>/dev/null || true)
+    if [[ "$target" == "$DOTFILES_DIR/hyprland"* || "$target" == "$DOTFILES_DIR/hosts"* ]]; then
+        rm -f "$link"
+    fi
+done
 rm -f "$HOME/.config/hypr/host.lua"
 rm -f "$HOME/.config/hypr/hypridle-host.conf"
 rm -f "$HOME/.config/hypr/hyprlock-host.conf"

@@ -68,9 +68,23 @@ else
 fi
 
 # --- 3. THE VIDEO ---
-print_step ">> Copying Cinematic Title Screen..."
+print_step ">> Deploying Cinematic Title Screen..."
 sudo mkdir -p "$THEME_DIR/Movies"
-sudo cp -u "$DOTFILES_DIR/sddm/astronaut/Movies/titanfall_intro_cinematic.mp4" "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
+LOCAL_VIDEO="$DOTFILES_DIR/sddm/astronaut/Movies/titanfall_intro_cinematic.mp4"
+
+if [ ! -f "$LOCAL_VIDEO" ]; then
+    print_warning "SDDM video not found locally. Attempting to fetch media pack..."
+    if [ -x "$INSTALLER_DIR/scripts/fetch-media.sh" ]; then
+        "$INSTALLER_DIR/scripts/fetch-media.sh" --download || true
+    fi
+fi
+
+if [ -f "$LOCAL_VIDEO" ]; then
+    sudo cp -u "$LOCAL_VIDEO" "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
+    print_success "Cinematic title screen deployed."
+else
+    print_warning "Cinematic video not available. SDDM will fall back to static theme."
+fi
 
 # --- 4. THE HUD (Dual Deployment) ---
 # We copy to BOTH potential locations to support all theme versions (v1.x and v2.x)
@@ -90,7 +104,7 @@ sudo chown -R sddm:sddm "$THEME_DIR/Movies"
 [ -f "$THEME_DIR/theme.conf.user" ] && sudo chown sddm:sddm "$THEME_DIR/theme.conf.user"
 [ -f "$THEME_DIR/Themes/astronaut.conf.user" ] && sudo chown sddm:sddm "$THEME_DIR/Themes/astronaut.conf.user"
 
-sudo chmod 644 "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
+[ -f "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4" ] && sudo chmod 644 "$THEME_DIR/Movies/titanfall_intro_cinematic.mp4"
 [ -f "$THEME_DIR/theme.conf.user" ] && sudo chmod 644 "$THEME_DIR/theme.conf.user"
 [ -f "$THEME_DIR/Themes/astronaut.conf.user" ] && sudo chmod 644 "$THEME_DIR/Themes/astronaut.conf.user"
 

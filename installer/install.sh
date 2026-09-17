@@ -181,6 +181,14 @@ if ! gum confirm "Initiate deployment to [$TARGET]?"; then
     exit 0
 fi
 
+# Optional Live Media Pack prompt if missing
+if [ "$("$INSTALLER_DIR/scripts/fetch-media.sh" --check 2>/dev/null)" == "missing" ]; then
+    echo ""
+    if gum confirm "Download Live Wallpaper & Cinematic Media Pack (~300MB)?"; then
+        bash "$INSTALLER_DIR/scripts/fetch-media.sh" --download
+    fi
+fi
+
 # ── 6. EXECUTION ───────────────────────────────────────────────────────────────
 echo ""
 IFS=$'\n' read -rd '' -a SELECTED_MODULES <<< "$MODULES"
