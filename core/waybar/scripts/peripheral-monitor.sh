@@ -13,12 +13,12 @@ SEPARATOR="\n"
 
 # --- 1. UPOWER READ FOR LAPTOP BATTERY (THE FIX) ---
 # This uses upower to safely buffer battery reads and prevent blank/0% ghost reads
-BAT_DEVICE=$(upower -e | grep -m 1 'BAT')
+BAT_DEVICE=$(timeout 1s upower -e 2>/dev/null | grep -m 1 'BAT')
 
 if [ -n "$BAT_DEVICE" ]; then
-    RAW_LEVEL=$(upower -i "$BAT_DEVICE" | grep -E "percentage:" | awk '{print $2}' | tr -d '%')
+    RAW_LEVEL=$(timeout 1s upower -i "$BAT_DEVICE" 2>/dev/null | grep -E "percentage:" | awk '{print $2}' | tr -d '%')
     BAT_LEVEL=${RAW_LEVEL%.*} # Strips any decimals just in case
-    BAT_STATE=$(upower -i "$BAT_DEVICE" | grep -E "state:" | awk '{print $2}')
+    BAT_STATE=$(timeout 1s upower -i "$BAT_DEVICE" 2>/dev/null | grep -E "state:" | awk '{print $2}')
     
     ICON="BAT"
     [[ "$BAT_STATE" == "charging" ]] && ICON="⚡"
@@ -38,7 +38,7 @@ while read -r DEV_PATH; do
         continue
     fi
 
-    INFO=$(upower -i "$DEV_PATH")
+    INFO=$(timeout 1s upower -i "$DEV_PATH" 2>/dev/null)
     MODEL=$(echo "$INFO" | grep "model:" | cut -d: -f2 | xargs | sed 's/&/\&amp;/g')
     PERCENT=$(echo "$INFO" | grep "percentage:" | awk '{print $2}' | tr -d '%')
     STATE=$(echo "$INFO" | grep "state:" | awk '{print $2}' | xargs)
@@ -63,7 +63,7 @@ while read -r DEV_PATH; do
         PERIPH_BAT+="${SEPARATOR}"
     fi
     PERIPH_BAT+="${DEV_ICON}${SEPARATOR}${PERCENT}%"
-done < <(upower -e)
+done < <(timeout 1s upower -e 2>/dev/null)
 
 # --- 3. DETERMINE CLASS ---
 [[ "$IS_CHARGING" == true ]] && MAIN_CLASS="charging"

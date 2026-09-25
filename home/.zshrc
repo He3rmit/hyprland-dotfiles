@@ -24,7 +24,7 @@ SAVEHIST=10000
 HISTFILE=~/.zsh_history
 
 # 5. 📂 Environment
-export EDITOR=nvim
+export EDITOR=$(command -v nvim || command -v micro || command -v nano || echo "vi")
 export TERMINAL=kitty
 export BROWSER=$(command -v brave || command -v firefox || command -v chromium || echo "xdg-open")
 

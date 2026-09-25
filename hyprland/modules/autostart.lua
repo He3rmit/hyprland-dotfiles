@@ -25,6 +25,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-selector.sh --init")
     hl.exec_cmd("killall waybar; waybar")
     hl.exec_cmd("~/.config/swaync/scripts/swaync-start.sh &")
-    hl.exec_cmd("~/.config/hypr/scripts/portal-watcher.sh")
+    -- hl.exec_cmd("~/.config/hypr/scripts/portal-watcher.sh") -- Opt-in captive portal daemon for public Wi-Fi
 end)
 

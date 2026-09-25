@@ -42,12 +42,10 @@ CORE_PACKAGES=(
     "gvfs"                    # File manager trash & mount support
     "file-roller"             # Archives (zip/unzip from GUI)
     "ffmpegthumbnailer"       # Rofi video thumbnails
-    "micro"                    # Lightweight terminal text editor
     "mpv"                     # Video wallpaper playback
     "ffmpeg"                  # General multimedia support
     "btop"                    # System Monitor for SwayNC
-    "neovim"                  # For the sweaty geeks
-    "nano"                    # Fallback terminal text editor
+    "nano"                    # Universal lightweight terminal text editor
     
     # --- HYPRLAND DAEMONS & SYSTEM UTILS ---
     "hypridle"
@@ -90,7 +88,6 @@ CORE_PACKAGES=(
     "networkmanager"
     "network-manager-applet"
     "nm-connection-editor"
-    "wev" # for keybinds troubleshooting
     # --- CORE UTILITIES ---
     "unzip"
     "wget"
@@ -144,6 +141,11 @@ for pkg in "${CORE_PACKAGES[@]}"; do
 done
 
 # --- GPU HARDWARE TRINITY (Acceleration Essentials) ---
+HAS_MULTILIB=false
+if pacman -Sl multilib &>/dev/null; then
+    HAS_MULTILIB=true
+fi
+
 if lspci | grep -qi "nvidia"; then
     print_warning "NVIDIA GPU detected. Enhancing with hardware acceleration..."
     install_pkg "nvidia-utils"
@@ -153,18 +155,16 @@ if lspci | grep -qi "nvidia"; then
 fi
 if lspci | grep -qi "intel"; then
     print_warning "Intel GPU detected. Enhancing with low-latency acceleration..."
-    install_pkg "lib32-vulkan-intel"
+    [[ "$HAS_MULTILIB" == true ]] && install_pkg "lib32-vulkan-intel"
     install_pkg "vulkan-intel"
     install_pkg "intel-media-driver"
-    install_pkg "libva-intel-driver"
     print_success "Intel Essentials deployed."
 fi
 if lspci | grep -qi "amd" || lspci | grep -qi "ati"; then
     print_warning "AMD GPU detected. Enhancing with Vulkan & VA-API..."
-    install_pkg "lib32-vulkan-radeon"
+    [[ "$HAS_MULTILIB" == true ]] && install_pkg "lib32-vulkan-radeon"
     install_pkg "vulkan-radeon"
     install_pkg "libva-mesa-driver"
-    install_pkg "mesa-vdpau"
     print_success "AMD Essentials deployed."
 fi
 

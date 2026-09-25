@@ -53,7 +53,7 @@
         },
         {
           "label": "󰓅",
-          "command": "~/.config/swaync/scripts/power-profile-cycle.sh",
+          "command": "~/.config/waybar/scripts/power_cycle.sh",
           "active": false
         },
         {
