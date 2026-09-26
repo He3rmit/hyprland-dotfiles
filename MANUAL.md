@@ -127,12 +127,14 @@ If you are moving from a legacy monolithic installation to this hardened framewo
 
 ### Phase 1: Identify Your Personal Vaults
 In this framework, your "soul" lives in your host-specific folder:
+- `hosts/[profile]/profile.conf`: Hardware manifest, default Waybar theme, display scaling, and keyboard layout.
 - `hosts/[profile]/user-keybinds.lua`: Stores Group 2 (Personal Workspaces) and Group 6 (F-Keys).
 - `hosts/[profile]/user-windowrules.lua`: Machine-specific app behavior and gaming rules.
 - `hosts/[profile]/user-visuals.lua`: Hardware-specific rendering and visual comfort.
 - `hosts/[profile]/monitor.lua`: Your machine's specific monitor/resolution rules.
 - `hosts/[profile]/nvidia.lua`: (Optional) NVIDIA driver environmental variables.
 - `hosts/[profile]/hypr-host.lua`: Hardware-specific triggers (Volume, Power, etc.).
+- `hosts/[profile]/hypridle-host.conf`: Host-specific idle and screen timeout variable overrides.
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
