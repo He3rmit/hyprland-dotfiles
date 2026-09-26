@@ -33,7 +33,7 @@ These are complete, independent files. Edit them directly in your host folder to
 
 ### 6. `hypridle-host.conf` & `hyprlock-host.conf` (Overrides)
 These are empty by default! They exist to override or hook into the core configuration.
-*   **Example:** To make a laptop screen dim after 1 minute (while keeping a desktop set to 10 minutes), add `timeout = 60` to the laptop's `hypridle-host.conf`.
+*   **Example:** To make a laptop screen dim after 1 minute (while keeping a desktop set to default), add `$TIMEOUT_DIM = 60` to the laptop's `hypridle-host.conf`. Available variables: `$TIMEOUT_DIM`, `$TIMEOUT_KBD`, `$TIMEOUT_LOCK`, `$TIMEOUT_DPMS`, `$TIMEOUT_SUSPEND`.
 
 ---
 
