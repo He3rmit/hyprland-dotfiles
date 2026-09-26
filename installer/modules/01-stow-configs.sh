@@ -135,10 +135,40 @@ else
     safe_link "$DOTFILES_DIR/core/waybar/layouts/2-Topbar-Detailed.jsonc" "$HOME/.config/waybar/config.jsonc"
 fi
 
+# Optional position override from profile.conf (top, bottom, left, right)
+if [[ -n "$WAYBAR_POSITION" && -f "$HOME/.config/waybar/config.jsonc" ]]; then
+    print_step ">> Aligning Waybar orientation to $WAYBAR_POSITION..."
+    if [[ -L "$HOME/.config/waybar/config.jsonc" ]]; then
+        real_config=$(readlink -f "$HOME/.config/waybar/config.jsonc")
+        rm -f "$HOME/.config/waybar/config.jsonc"
+        cp "$real_config" "$HOME/.config/waybar/config.jsonc"
+        chmod 644 "$HOME/.config/waybar/config.jsonc"
+    fi
+    sed -i -E "s/\"position\": *\"[a-zA-Z]+\"/\"position\": \"$WAYBAR_POSITION\"/" "$HOME/.config/waybar/config.jsonc"
+fi
+
 if [[ -n "$WAYBAR_STYLE" && -f "$DOTFILES_DIR/core/waybar/styles/${WAYBAR_STYLE}.css" ]]; then
     safe_link "$DOTFILES_DIR/core/waybar/styles/${WAYBAR_STYLE}.css" "$HOME/.config/waybar/style.css"
 else
     safe_link "$DOTFILES_DIR/core/waybar/styles/5-Glass-Pill.css" "$HOME/.config/waybar/style.css"
+fi
+
+# Align SwayNC drawer position with Waybar orientation
+if [[ -f "$HOME/.config/waybar/config.jsonc" && -f "$HOME/.config/swaync/config.json" ]]; then
+    if [[ -L "$HOME/.config/swaync/config.json" ]]; then
+        real_swaync=$(readlink -f "$HOME/.config/swaync/config.json")
+        rm -f "$HOME/.config/swaync/config.json"
+        cp "$real_swaync" "$HOME/.config/swaync/config.json"
+        chmod 644 "$HOME/.config/swaync/config.json"
+    fi
+    wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$HOME/.config/waybar/config.jsonc" | cut -d'"' -f4 | head -n 1)
+    if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
+        sed -i -E "s/\"positionX\": *\"[a-zA-Z]+\"/\"positionX\": \"$wb_pos\"/" "$HOME/.config/swaync/config.json"
+    elif [[ "$wb_pos" == "bottom" ]]; then
+        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "bottom"/' "$HOME/.config/swaync/config.json"
+    else
+        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "top"/' "$HOME/.config/swaync/config.json"
+    fi
 fi
 
 # Fix script permissions
@@ -292,7 +322,7 @@ if pgrep Hyprland > /dev/null; then
     
     # Force Kill & Restart Waybar
     pkill waybar || true
-    waybar -c "$HOME/.config/waybar/config.jsonc" -s "$HOME/.config/waybar/style.css" &> /dev/null &
+    waybar -c "$HOME/.config/waybar/config.jsonc" -s "$HOME/.config/waybar/style.css" &> /dev/null & disown
     
     # Reload SwayNC
     if command -v swaync-client &> /dev/null; then
