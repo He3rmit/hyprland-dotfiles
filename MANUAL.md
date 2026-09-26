@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v3.1.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v3.3.0)
 
 > *"A modular, portable, and universal desktop environment."*
 
@@ -14,13 +14,17 @@ Always edit your configurations inside your `~/dotfiles/hosts/[your-profile]/` v
 
 ---
 
-## 1.5 The v2.1 "Atomic" Deployment Engine
+## 1.5 The Modern "Atomic" Deployment Engine
 The dotfiles installer is carefully designed to be 100% plug-and-play on **any pre-existing environment**. You do not need a clean OS to run the deployment.
 
-1. **Automated Cleanup**: Before GNU Stow runs, the engine actively hunts down and removes all known cache files and explicit overrides. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It even safely backs up your real `~/.zshrc`.
-2. **Reliable Symlink Creation**: To defeat Hyprland's `inotify` watchdog (which automatically recreates a default config the millisecond `stow` unlinks it), `hyprland.lua` is completely ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses a POSIX atomic replacement (`mv -T`) to swap the file instantly at the VFS inode level. The race condition is permanently solved.
+1. **Automated Cleanup**: Before GNU Stow runs, the engine actively hunts down and sweeps pre-existing symlinks and conflicting files in `~/.config/`. This guarantees Stow always sees a pristine environment and never aborts due to "existing target" conflicts. It also safely backs up your real `~/.zshrc`.
+2. **Reliable Symlink Creation**: To defeat Hyprland's `inotify` watchdog (which automatically recreates a default config the millisecond `stow` unlinks it), both `hyprland.lua` and `user-keybinds.lua` are ignored by GNU Stow (`.stow-local-ignore`). Instead, the engine uses POSIX atomic replacement (`mv -T`) to swap the files instantly at the VFS inode level.
 3. **Strict `--no-folding`**: GNU Stow is explicitly banned from "folding" directories. It must always create real target directories and individual file symlinks. This permanently shields your Git repository from being polluted by accidental overrides following symlinks backward.
-4. **SwayNC Link-Break Protection**: When `waybar-switcher.sh` dynamically synchronizes Waybar and SwayNC positions, it automatically detects if `~/.config/swaync/config.json` is a Stow symlink. If so, it instantly breaks the symlink and replaces it with a real local file copy. This prevents transient position coordinates from propagating backward through the symlink and polluting core repository files.
+4. **SwayNC Link-Break Protection**: When `waybar-switcher.sh` dynamically synchronizes Waybar and SwayNC positions, it automatically detects if `~/.config/swaync/config.json` is a Stow symlink. If so, it breaks the symlink and replaces it with a real local file copy. This prevents transient position coordinates from propagating backward through the symlink and polluting core repository files.
+5. **Hardware Auto-Alignment**: The desktop dynamically probes hardware during startup:
+   - **Backlight Alignment**: [`swaync-start.sh`](file:///home/rexsm/hyprland-dotfiles/core/swaync/scripts/swaync-start.sh) auto-detects `/sys/class/backlight/` devices (`amdgpu_bl*` vs `intel_backlight`) and patches SwayNC to prevent broken brightness sliders.
+   - **Touchpad Detection**: The installer dynamically inspects `hyprctl devices -j` to bind the correct hardware touchpad device name on laptops.
+6. **Decoupled Media Architecture**: Live video wallpapers and SDDM video cinematics (`.mp4`) are decoupled from Git tracking to keep clone size fast and lightweight (~75 MB). They are fetched on demand from GitHub Releases via [`installer/scripts/fetch-media.sh`](file:///home/rexsm/hyprland-dotfiles/installer/scripts/fetch-media.sh).
 
 
 ---
@@ -72,10 +76,10 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 |:---|:---|
 | `Super + N` | **Notification Center** |
 | `Super + L` | **Screen Lock** (Hyprlock) |
-| `Super + B` | **Power Cycle** Performance, Balanced, Silent |
+| `Super + B` | **Power Cycle** Performance, Balanced, Power Saver |
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
-| `Super + Shift + E` | **Media Hub** | Launch the Hydra (Emoji/GIF/Stickers) picker. |
+| `Super + Shift + E` | **Media Hub** | Launch the Hydra-Omega GTK (Emoji/GIF/Stickers) picker. |
 | `Print` | **Screenshot** (Full/Clipboard) |
 
 ---
@@ -136,21 +140,17 @@ In this framework, your "soul" lives in your host-specific folder:
 2. Launch the deployment terminal: `./installer/install.sh`
 3. The installer now features **Hardware Detection**—it will auto-detect your GPU and deploy the correct Vulkan/VA-API acceleration modules for NVIDIA, Intel, or AMD.
 
-### Phase 3: The Handover (Data Migration)
-Now, manually move your legacy data into your new protected host folder. 
-Replace `[your-profile]` with the name you just created:
+### Phase 3: Profile Customization & Deployment
+Customize your host vault files in `~/dotfiles/hosts/[your-profile]/`:
+- Edit `monitor.lua` to lock in your refresh rates and display scale.
+- Edit `user-keybinds.lua` to add your personal application shortcuts.
+- Edit `hypridle-host.conf` to set your desired idle timeout variables (e.g. `$TIMEOUT_DIM = 60`).
 
+Deploy your profile using the interactive installer:
 ```bash
-# 1. Move your personal keybinds
-cp ~/.config/hypr/user-keybinds.conf ~/dotfiles/hosts/[your-profile]/user-keybinds.lua
-
-# 2. Move your hardware-host rules
-cp ~/.config/hypr/host.conf ~/dotfiles/hosts/[your-profile]/hypr-host.lua
-
-# 3. Final Deployment (Stow)
 ./installer/install.sh
 # -> Select [your-profile]
-# -> Select [01-stow-configs]
+# -> Confirm modules (00-dependencies, 01-stow-configs, 02-system-identity, 03-sddm-theme)
 ```
 
 ---
@@ -168,7 +168,8 @@ Your monitor rule is now **Dynamic** and part of your Vault.
 The project uses a **Black-Hole .gitignore** strategy:
 - All folders in `hosts/` (except `_template`) are automatically ignored.
 - The `hyprland/modules/colors.lua` (Pywal output) is ignored.
-- **Result**: You can fork and push your repository to GitHub without leaking your hardware names, local monitor setups, or personal color palettes.
+- Video wallpapers (`*.mp4`) and release archives (`*.tar.gz`) are ignored.
+- **Result**: You can fork and push your repository to GitHub without leaking your hardware names, local monitor setups, personal color palettes, or bloating Git with video files.
 
 ---
 

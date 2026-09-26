@@ -3,15 +3,18 @@
 This is a fully declarative, hardware-agnostic ricing project for Arch Linux and Hyprland, heavily inspired by the Titanfall aesthetic. It has evolved into a stable, multi-host framework with dynamic display scaling, international layout support, and a dynamic wallpaper effects engine.
 
 ## 🔗 Repository Notice
-This is the **Stable Release** version (v3.1.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
+This is the **Stable Release** version (v3.3.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
 
 > [!IMPORTANT]
 > **OPERATOR NOTICE**: Keybinds and configurations are heavily at the user's discretion and require personal research. Use this project at your own risk and pace. Enjoy the flight! — **He3rmit**
 
 ## 🛠️ Key Features
 - **Local Host Profiles**: Total separation of `core/` logic and `hosts/` machine configurations. Your monitor, GPU drivers, and local tweaks are kept in a private, Git-ignored directory.
+- **Decoupled Media Architecture**: Video wallpapers and SDDM cinematics are hosted via GitHub Releases and downloaded on demand via `fetch-media.sh`. Keeps the Git repository under ~75 MB for fast cloning.
+- **Hardware Auto-Alignment**: Dynamic backlight auto-detection for SwayNC (`amdgpu_bl*` vs `intel_backlight`) and automatic touchpad hardware identification.
+- **Hydra Media Hub**: Native GTK3 Python hub for searching and deploying animated GIFs (Giphy/Klipy), stickers, and emojis (`Super + Shift + E`).
 - **Improved Waybar Switcher**: A logic-aware Waybar switcher featuring **Smart Layout Constraints** (prevents Sidebar/Topbar rendering failures) and **Symlink Protection**.
-- **Hardware Detection**: Intelligent installer that auto-detects NVIDIA hardware and deploys specific configuration modules.
+- **Hardware Detection**: Intelligent installer that auto-detects NVIDIA/Intel/AMD hardware and deploys specific acceleration modules.
 - **Resolution-Agnostic Optics**: Leveraging the Host-Vault scaling protocol, the UI renders perfectly across 1080p, 1440p, 4K, and Ultrawide displays without code changes.
 - **Dual-Library Discovery**: The Wallpaper Engine merges your Git-tracked library with a private local wallpaper directory (`~/Pictures/Wallpapers/`) for a seamless, private collection.
 - **International Ready**: Strategic use of **Physical Keycodes** ensures your navigation works natively on QWERTY, AZERTY, QWERTZ, and more.
@@ -29,7 +32,7 @@ cd ~/dotfiles
 ./installer/install.sh
 ```
 
-During installation, you will be prompted to create or select a **Host Profile**. This profile stores your machine's specific monitor, scaling, and layout preferences in a private folder that is automatically ignored by Git.
+During installation, you will be prompted to create or select a **Host Profile** and optionally download the **Titanfall Media Pack** (~300MB live wallpapers and SDDM cinematics).
 
 ---
 
@@ -55,7 +58,8 @@ git pull
 ---
 
 ## 📖 Documentation
-- [MANUAL.md](MANUAL.md) — The Operator's Manual (Keybinds, Visual Effects, Migration Guide).
+- [MANUAL.md](MANUAL.md) — The Operator's Manual (Keybinds, Visual Effects, Deployment Architecture).
+- [DIY_GUIDE.md](DIY_GUIDE.md) — Machine Customization & Host Vault Setup Guide.
 - [LICENSE](LICENSE) — Licensed under GNU GPL v3.0.
 
 ---
@@ -77,9 +81,17 @@ dotfiles/
 
 ---
 
-### [v3.1.0] — Security Hardening & Giphy Media Engine (Current)
-- **Multi-API Media Engine**: Expanded the media selector (`pilot-hydra.py` and `gif-engine.sh`) to support **Giphy** alongside **Klipy**, automatically selecting Giphy if configured.
-- **Bash Security Hardening**: Patched vulnerabilities in `gif-engine.sh` by hiding API keys from process logs using `curl --config`, sanitizing resource IDs to prevent path traversal, caching inside private user-specific directories, and introducing size limits and format checks.
+### [v3.3.0] — Decoupled Media Assets, Hardware Alignment & Bloat Pruning (Current)
+- **Decoupled Heavy Media Assets**: Decoupled all `.mp4` video wallpapers and SDDM login cinematics from Git into GitHub Release assets (`fetch-media.sh`). Reduced Git clone payload from >500 MB down to **~75 MB**.
+- **Hardware Auto-Alignment**: Integrated dynamic backlight detection in `swaync-start.sh` (supporting both `amdgpu_bl*` and `intel_backlight`) and dynamic touchpad hardware detection in the installer.
+- **Hypridle & Hyprlock Resilience**: Refactored `hypridle` with an overrideable `$TIMEOUT_*` variable architecture to eliminate duplicate listener conflicts, and enabled `immediate_render = true` in `hyprlock` to eliminate wake-from-suspend black screens.
+- **Bloat Pruning & Image Optimization**: Converted oversized 29 MB raw PNG into an optimized 4K JPG (1.5 MB), purged 500+ lines of unreferenced prototype shell scripts, and streamlined dependencies in `00-dependencies.sh`.
+- **Unified Power Protocol**: Consolidated power cycling logic across Waybar and SwayNC into a single source of truth (`power_cycle.sh`).
+- **Resilient Environment**: Added dynamic `$EDITOR` fallback in `.zshrc` (`nvim` ➔ `micro` ➔ `nano` ➔ `vi`) and `timeout 1s` safety buffer on `upower` queries in Waybar.
+
+### [v3.1.0] — Security Hardening & Hydra Media Hub
+- **Multi-API Media Engine**: Expanded the media selector (`pilot-hydra.py`) to support **Giphy** alongside **Klipy**, automatically selecting Giphy if configured.
+- **Unified GTK Media Hub**: Consolidated animated GIFs, Klipy stickers, local stickers, and dynamic emojis into the native GTK3 `pilot-hydra.py` application (`Super + Shift + E`).
 - **Configuration Cleanups**: Replaced legacy `.conf` commented templates in host vaults with valid, native Lua table comments.
 - **Setup Guide Relocation**: Consolidated individual setup documents into a single, clean, jargon-free `DIY_GUIDE.md` in the repository root.
 

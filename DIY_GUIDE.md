@@ -20,7 +20,7 @@ Every screen is different. It is recommended not to leave this on `auto` if you 
 *   Define scaling, refresh rates, and multi-monitor positioning here.
 
 ### 3. `user-keybinds.lua` (Workflow Customization)
-Your personal keybindings go here. The core sets standard binds (like `hl.bind("Super + Q", hl.dsp.kill())` to close), but you define your specific workflow here.
+Your personal keybindings go here. The core sets standard binds (like `hl.bind(mainMod .. " + C", hl.dsp.window.close())` to close windows), but you define your specific workflow here.
 *   **Example:** Bind `Super+O` to open Obsidian: `hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))`
 *   **Example:** Map specific apps to specific workspaces.
 
