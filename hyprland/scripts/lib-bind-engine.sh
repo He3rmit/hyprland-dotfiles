@@ -1,7 +1,9 @@
 #!/bin/bash
 # ==============================================================================
-# LIBRARY: lib-bind-engine.sh (LUA MIGRATION EDITION)
-# PURPOSE: Parses Lua keybind configuration files to preserve Rofi HUD groupings.
+# LIBRARY: lib-bind-engine.sh (DYNAMIC LUA BRIEFING ENGINE)
+# PURPOSE: Parses Lua keybind configuration files to preserve Rofi HUD groupings,
+#          translates AST dispatchers to clean pseudocode, and dynamically maps
+#          hardware keycodes via active XKB layout.
 # ==============================================================================
 
 # Search paths (Defaults)
@@ -12,8 +14,8 @@ declare -A KEYCODES
 
 # --- ENGINE: KEYCODE DISCOVERY ---
 generate_keycode_map() {
-    local layout=$(grep "kb_layout" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | xargs)
-    local variant=$(grep "kb_variant" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | xargs)
+    local layout=$(grep "kb_layout" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | tr -d '", ' | xargs)
+    local variant=$(grep "kb_variant" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | tr -d '", ' | xargs)
 
     layout=${layout:-us}
     variant=${variant:-""}
@@ -41,7 +43,110 @@ generate_keycode_map() {
     ')
 }
 
-# --- ENGINE: DATA EXTRACTION ---
+# --- ENGINE: KEY SANITIZER ---
+clean_key() {
+    local k="$1"
+
+    # Normalize Lua string concatenation & mainMod
+    k=$(echo "$k" | sed 's/mainMod/"SUPER"/g; s/ \.\. / /g; s/"//g; s/  */ /g; s/ \+ /+/g')
+
+    # Mouse & Touchpad Special mappings
+    k="${k//mouse:272/LMB (Drag)}"
+    k="${k//mouse:273/RMB (Resize)}"
+    k="${k//mouse_down/Scroll Down}"
+    k="${k//mouse_up/Scroll Up}"
+    k="${k//code:202/Fn + F9 (Touchpad)}"
+
+    # Dynamic XKB Keycode mapping (e.g., code:61 -> /, code:10 -> 1)
+    if [[ "$k" =~ code:([0-9]+) ]]; then
+        local c="code:${BASH_REMATCH[1]}"
+        if [[ -n "${KEYCODES[$c]}" ]]; then
+            local sym="${KEYCODES[$c]}"
+            [[ "$sym" == "SLASH" ]] && sym="/"
+            k="${k//$c/$sym}"
+        fi
+    fi
+
+    # Format XF86 keys into readable titles (e.g. XF86MonBrightnessUp -> Mon Brightness Up)
+    k=$(echo "$k" | sed -E 's/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
+    k=$(echo "$k" | sed 's/+/ + /g; s/  */ /g')
+    echo "$k"
+}
+
+# --- ENGINE: PSEUDOCODE TRANSLATOR ---
+clean_pseudocode() {
+    local action="$1"
+    local comment="$2"
+
+    # Priority 1: User inline comment (excluding keycode reminders like "code:39 = S")
+    if [[ -n "$comment" && ! "$comment" =~ ^code:[0-9]+ ]]; then
+        echo "$comment" | xargs
+        return
+    fi
+
+    # Strip trailing Lua table options (e.g. , { locked = true, repeating = true })
+    action=$(echo "$action" | sed -E 's/, *\{.*\} *$//')
+
+    # Window management actions
+    if [[ "$action" =~ hl\.dsp\.window\.([a-zA-Z0-9_]+) ]]; then
+        local method="${BASH_REMATCH[1]}"
+        if [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
+            echo "move window -> ${BASH_REMATCH[1]}"
+            return
+        fi
+        case "$method" in
+            drag)       echo "window: drag" ;;
+            resize)     echo "window: resize" ;;
+            close)      echo "window: close" ;;
+            float)      echo "window: toggle float" ;;
+            fullscreen) echo "window: toggle fullscreen" ;;
+            pseudo)     echo "window: pseudo tile" ;;
+            *)          echo "window: $method" ;;
+        esac
+        return
+    fi
+
+    # Navigation / Focus
+    if [[ "$action" =~ hl\.dsp\.focus ]]; then
+        if [[ "$action" =~ direction\ *=\ *\"?([a-zA-Z0-9_]+) ]]; then
+            echo "focus: ${BASH_REMATCH[1]}"
+            return
+        elif [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
+            echo "workspace: ${BASH_REMATCH[1]}"
+            return
+        fi
+    fi
+
+    # Special Workspaces / Scratchpads
+    if [[ "$action" =~ hl\.dsp\.workspace\.toggle_special\(\"?([^\"]+)\"?\) ]]; then
+        echo "scratchpad: ${BASH_REMATCH[1]}"
+        return
+    fi
+
+    # Layout actions
+    if [[ "$action" =~ hl\.dsp\.layout\(\"?([^\"]+)\"?\) ]]; then
+        echo "layout: ${BASH_REMATCH[1]}"
+        return
+    fi
+
+    # Executed commands & scripts: strip paths and wrappers
+    if [[ "$action" =~ hl\.dsp\.exec_cmd\((.*)\) ]]; then
+        local cmd="${BASH_REMATCH[1]}"
+        cmd=$(echo "$cmd" | sed -E "s/^[ \"'\''\(]+//; s/[ \"'\''\)]+$//")
+        if [[ "$cmd" =~ /([^/]+)$ ]]; then
+            echo "exec: ${BASH_REMATCH[1]}"
+        else
+            echo "exec: $cmd"
+        fi
+        return
+    fi
+
+    # Fallback: Strip generic Lua wrapper and quotes
+    local fallback=$(echo "$action" | sed -E 's/hl\.dsp\.[a-z_.]+\((.*)\)/\1/; s/\{[^}]*\}//g; s/\"//g' | xargs)
+    echo "${fallback:-$action}"
+}
+
+# --- ENGINE: DATA STORAGE ---
 declare -a BIND_KEYS
 declare -A BIND_VALUES
 
@@ -75,8 +180,14 @@ remove_bind() {
 parse_bind_file() {
     local file="$1"
     local category="SYSTEM"
+
+    # Contextual defaults based on configuration tier
+    [[ "$file" == *"host.lua"* ]] && category="HARDWARE"
+    [[ "$file" == *"user-keybinds.lua"* ]] && category="USER WORKFLOW"
+
     local RE_CATEGORY='^-- *CLUSTER [0-9]+: *(.*)'
     local RE_BIND='^hl\.bind\(([^,]+), *(.*)\)'
+    local RE_UNBIND='^hl\.unbind\(([^)]+)\)'
     local RE_HINT='-- *(.*)'
 
     if [[ ! -f "$file" ]]; then return; fi
@@ -89,24 +200,27 @@ parse_bind_file() {
             continue
         fi
 
+        if [[ "$line" =~ "Mouse Interaction" ]]; then
+            category="MOUSE & WINDOW"
+        fi
+
+        if [[ "$line" =~ $RE_UNBIND ]]; then
+            local ukey=$(clean_key "${BASH_REMATCH[1]}")
+            remove_bind "$ukey"
+            continue
+        fi
+
         if [[ "$line" =~ $RE_BIND ]]; then
-            local key_combo="${BASH_REMATCH[1]}"
+            local raw_key="${BASH_REMATCH[1]}"
             local action="${BASH_REMATCH[2]}"
-            
-            # Clean up key_combo (e.g., mainMod .. " + Q" -> SUPER + Q)
-            key_combo=$(echo "$key_combo" | sed 's/mainMod/"SUPER"/g; s/ \.\. / /g; s/"//g')
-            key_combo=$(echo "$key_combo" | sed 's/  */ /g; s/^+ //; s/ \+ /+/g')
-            
-            local hint=""
+            local key_combo=$(clean_key "$raw_key")
+
+            local comment=""
             if [[ "$line" =~ $RE_HINT ]]; then
-                hint="${BASH_REMATCH[1]}"
-            else
-                # Extract inner action 
-                hint=$(echo "$action" | sed -E 's/hl\.dsp\.[a-z_]+\((.*)\)/\1/; s/"//g; s/\)$//')
-                # Truncate long commands
-                hint=$(echo "$hint" | cut -c 1-60)
+                comment="${BASH_REMATCH[1]}"
             fi
 
+            local hint=$(clean_pseudocode "$action" "$comment")
             add_or_update_bind "$key_combo" "$category" "$hint"
         fi
     done < "$file"

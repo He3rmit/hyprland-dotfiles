@@ -30,12 +30,15 @@ raw_list=$(
     print_bind_list
 )
 
-# Dynamically calculate the maximum category length to ensure perfect alignment
-max_len=$(echo "$raw_list" | awk -F '\t' 'BEGIN {max=10} {if (length($1) > max) max=length($1)} END {print max}')
+# Dynamically calculate maximum column widths to ensure razor-sharp alignment
+read -r max_cat max_key < <(echo "$raw_list" | awk -F '\t' 'BEGIN {c_max=10; k_max=16} {
+    if (length($1) > c_max) c_max=length($1);
+    if (length($2) > k_max) k_max=length($2);
+} END {print c_max, k_max}')
 
 # Format and pipe to Rofi
-echo "$raw_list" | awk -F '\t' -v width="$max_len" '{
-    fmt = sprintf("[%%-%ds] %%-18s 󰁔  %%s\n", width)
+echo "$raw_list" | awk -F '\t' -v c_w="$max_cat" -v k_w="$max_key" '{
+    fmt = sprintf("[%%-%ds] %%-%ds 󰁔  %%s\n", c_w, k_w)
     printf fmt, $1, $2, $3
 }' | rofi -dmenu -i -p "Tactical Briefing" \
     -theme-str 'window {width: 1000px; height: 600px;} 
