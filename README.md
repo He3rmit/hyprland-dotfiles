@@ -3,7 +3,7 @@
 This is a fully declarative, hardware-agnostic ricing project for Arch Linux and Hyprland, heavily inspired by the Titanfall aesthetic. It has evolved into a stable, multi-host framework with dynamic display scaling, international layout support, and a dynamic wallpaper effects engine.
 
 ## 🔗 Repository Notice
-This is the **Stable Release** version (v3.3.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
+This is the **Stable Release** version (v4.0.0). It features a completely modular architecture where your personal settings are kept private and machine-specific.
 
 > [!IMPORTANT]
 > **OPERATOR NOTICE**: Keybinds and configurations are heavily at the user's discretion and require personal research. Use this project at your own risk and pace. Enjoy the flight! — **He3rmit**
@@ -81,7 +81,15 @@ dotfiles/
 
 ---
 
-### [v3.3.0] — Decoupled Media Assets, Hardware Alignment & Bloat Pruning (Current)
+### [v4.0.0] — Full Lua Runtime Compliance, Bilingual Script Engine & Host Auto-Bridging (Current)
+- **Complete Hyprland Lua Modernization**: Finalized migration of the core window manager configuration to modern Hyprland Lua syntax (`hl.*`, `hl.dsp.*`), ensuring native compatibility with Hyprland 0.55+.
+- **Bilingual Control Script Engine**: Updated helper scripts (`mirror-hotplug.sh`, `wallpaper-selector.sh`, `waybar-switcher.sh`, `wlogout`, and `hypridle`) to support bilingual execution—executing Lua dispatchers (`hl.dsp.*`) first with seamless fallbacks to legacy dispatchers, eliminating interpreter syntax errors and accidental session termination.
+- **Installer Host Auto-Bridging**: Upgraded `01-stow-configs.sh` to automatically detect legacy `.conf` user overrides (`user-keybinds.conf`, `user-windowrules.conf`, `user-visuals.conf`) and compile them to `.lua` via `hyprlang2lua` during deployment.
+- **Desktop & Laptop Profile Template Parity**: Added missing `user-visuals.lua` and `user-windowrules.lua` templates for desktop environments and cleaned up legacy migration artifacts across host templates.
+- **Waybar Switcher Race Condition Hardening**: Replaced naive process termination in `waybar-switcher.sh` with an explicit PID polling wait loop to ensure clean UI lifecycle reloads.
+- **Dynamic Pywal Dual-Export**: Updated `wallpaper-selector.sh` to populate both `colors.lua` and `colors.conf` upon color scheme generation, followed by live `hyprctl reload`.
+
+### [v3.3.0] — Decoupled Media Assets, Hardware Alignment & Bloat Pruning
 - **Decoupled Heavy Media Assets**: Decoupled all `.mp4` video wallpapers and SDDM login cinematics from Git into GitHub Release assets (`fetch-media.sh`). Reduced Git clone payload from >500 MB down to **~75 MB**.
 - **Hardware Auto-Alignment**: Integrated dynamic backlight detection in `swaync-start.sh` (supporting both `amdgpu_bl*` and `intel_backlight`) and dynamic touchpad hardware detection in the installer.
 - **Hypridle & Hyprlock Resilience**: Refactored `hypridle` with an overrideable `$TIMEOUT_*` variable architecture to eliminate duplicate listener conflicts, and enabled `immediate_render = true` in `hyprlock` to eliminate wake-from-suspend black screens.

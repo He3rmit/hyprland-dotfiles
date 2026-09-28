@@ -288,6 +288,19 @@ fi
 
 # 8. USER VAULT — Link personal modules (Keybinds, Rules, Visuals)
 print_step ">> Linking user overrides for $TARGET..."
+
+# Auto-bridge legacy .conf files if user hasn't converted yet
+for mod in user-keybinds user-windowrules user-visuals; do
+    host_lua="$DOTFILES_DIR/hosts/$TARGET/${mod}.lua"
+    host_conf="$DOTFILES_DIR/hosts/$TARGET/${mod}.conf"
+    if [[ ! -f "$host_lua" && -f "$host_conf" ]]; then
+        if command -v hyprlang2lua &>/dev/null; then
+            print_step ">> Migrating legacy ${mod}.conf to ${mod}.lua for $TARGET..."
+            hyprlang2lua "$host_conf" > "$host_lua" 2>/dev/null
+        fi
+    fi
+done
+
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-keybinds.lua" "$HOME/.config/hypr/user-keybinds.lua"
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-windowrules.lua" "$HOME/.config/hypr/user-windowrules.lua"
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-visuals.lua" "$HOME/.config/hypr/user-visuals.lua"

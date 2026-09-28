@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v3.3.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v4.0.0)
 
 > *"A modular, portable, and universal desktop environment."*
 

@@ -18,7 +18,8 @@ mkdir -p "$LAYOUTS_DIR" "$STYLES_DIR"
 
 # 0. ENGINE RESTART PROTOCOL
 reload_waybar() {
-    killall waybar
+    pkill -x waybar 2>/dev/null
+    while pgrep -u "$UID" -x waybar >/dev/null; do sleep 0.05; done
     waybar -c "$CONFIG_FILE" -s "$STYLE_FILE" & disown
 }
 
