@@ -134,7 +134,8 @@ In this framework, your "soul" lives in your host-specific folder:
 - `hosts/[profile]/monitor.lua`: Your machine's specific monitor/resolution rules.
 - `hosts/[profile]/nvidia.lua`: (Optional) NVIDIA driver environmental variables.
 - `hosts/[profile]/hypr-host.lua`: Hardware-specific triggers (Volume, Power, etc.).
-- `hosts/[profile]/hypridle-host.conf`: Host-specific idle and screen timeout variable overrides.
+- `hosts/[profile]/hypridle.conf`: Host-specific idle and screen timeout configuration (or legacy `hypridle-host.conf`).
+- `hosts/[profile]/hyprlock.conf`: Host-specific lock screen configuration (or legacy `hyprlock-host.conf`).
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
@@ -146,7 +147,7 @@ In this framework, your "soul" lives in your host-specific folder:
 Customize your host vault files in `~/dotfiles/hosts/[your-profile]/`:
 - Edit `monitor.lua` to lock in your refresh rates and display scale.
 - Edit `user-keybinds.lua` to add your personal application shortcuts.
-- Edit `hypridle-host.conf` to set your desired idle timeout variables (e.g. `$TIMEOUT_DIM = 60`).
+- Edit `hypridle.conf` to customize listeners, timeouts, or power-saving rules for your specific hardware.
 
 Deploy your profile using the interactive installer:
 ```bash

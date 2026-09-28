@@ -87,7 +87,9 @@ find "$HOME/.config/hypr" -type l 2>/dev/null | while read -r link; do
     fi
 done
 rm -f "$HOME/.config/hypr/host.lua"
+rm -f "$HOME/.config/hypr/hypridle.conf"
 rm -f "$HOME/.config/hypr/hypridle-host.conf"
+rm -f "$HOME/.config/hypr/hyprlock.conf"
 rm -f "$HOME/.config/hypr/hyprlock-host.conf"
 rm -f "$HOME/.config/hypr/hyprsunset.conf"
 rm -f "$HOME/.config/hypr/user-keybinds.lua"
@@ -102,6 +104,26 @@ stow -v -R --no-folding -t "$HOME/.config/hypr" hyprland || { print_error "Faile
 print_step ">> Atomically linking Hyprland main config..."
 ln -s "$DOTFILES_DIR/hyprland/hyprland.lua" "$HOME/.config/hypr/hyprland.lua.tmp"
 mv -T "$HOME/.config/hypr/hyprland.lua.tmp" "$HOME/.config/hypr/hyprland.lua"
+
+# 4.1 HYPRIDLE PROTOCOL (Host First, Default Fallback)
+HOST_HYPRIDLE="$DOTFILES_DIR/hosts/$TARGET/hypridle.conf"
+if [[ -f "$HOST_HYPRIDLE" ]]; then
+    print_step ">> Linking Host-Specific Hypridle Configuration..."
+    safe_link "$HOST_HYPRIDLE" "$HOME/.config/hypr/hypridle.conf"
+else
+    print_step ">> Linking Default Core Hypridle Configuration..."
+    safe_link "$DOTFILES_DIR/hyprland/hypridle.conf" "$HOME/.config/hypr/hypridle.conf"
+fi
+
+# 4.2 HYPRLOCK PROTOCOL (Host First, Default Fallback)
+HOST_HYPRLOCK="$DOTFILES_DIR/hosts/$TARGET/hyprlock.conf"
+if [[ -f "$HOST_HYPRLOCK" ]]; then
+    print_step ">> Linking Host-Specific Hyprlock Configuration..."
+    safe_link "$HOST_HYPRLOCK" "$HOME/.config/hypr/hyprlock.conf"
+else
+    print_step ">> Linking Default Core Hyprlock Configuration..."
+    safe_link "$DOTFILES_DIR/hyprland/hyprlock.conf" "$HOME/.config/hypr/hyprlock.conf"
+fi
 
 # Helper to link or touch required source files
 link_or_touch() {

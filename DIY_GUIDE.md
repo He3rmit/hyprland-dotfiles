@@ -45,9 +45,10 @@ Your personal keybindings go here. The core sets standard binds (like `hl.bind(m
 ### 5. `xdph.conf` & `hyprsunset.conf` (Standalone Rules)
 These are complete, independent files. Edit them directly in your host folder to change screen-sharing rules or night-light temperature behaviors for this specific machine.
 
-### 6. `hypridle-host.conf` & `hyprlock-host.conf` (Overrides)
-These are empty by default! They exist to override or hook into the core configuration.
-*   **Example:** To make a laptop screen dim after 1 minute (while keeping a desktop set to default), add `$TIMEOUT_DIM = 60` to the laptop's `hypridle-host.conf`. Available variables: `$TIMEOUT_DIM`, `$TIMEOUT_KBD`, `$TIMEOUT_LOCK`, `$TIMEOUT_DPMS`, `$TIMEOUT_SUSPEND`.
+### 6. `hypridle.conf` & `hyprlock.conf` (Interchangeable Modules)
+These are fully modular, host-first configurations.
+*   **Host Sovereignty**: If `hypridle.conf` or `hyprlock.conf` exists in your host vault (`hosts/[profile]/`), the installer links it directly as the primary configuration. Desktop and laptop templates provide pre-configured listener setups (e.g., desktops omit laptop keyboard backlight and aggressive suspend listeners).
+*   **Default Fallback**: If absent from your host vault, the system automatically falls back to the clean core default, while still honoring legacy variable overrides via `hypridle-host.conf` (e.g. `$TIMEOUT_DIM = 60`).
 
 ---
 

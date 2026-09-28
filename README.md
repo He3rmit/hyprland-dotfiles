@@ -88,6 +88,7 @@ dotfiles/
 - **Desktop & Laptop Profile Template Parity**: Added missing `user-visuals.lua` and `user-windowrules.lua` templates for desktop environments and cleaned up legacy migration artifacts across host templates.
 - **Waybar Switcher Race Condition Hardening**: Replaced naive process termination in `waybar-switcher.sh` with an explicit PID polling wait loop to ensure clean UI lifecycle reloads.
 - **Dynamic Pywal Dual-Export**: Updated `wallpaper-selector.sh` to populate both `colors.lua` and `colors.conf` upon color scheme generation, followed by live `hyprctl reload`.
+- **Interchangeable Hypridle & Hyprlock Architecture**: Elevated `hypridle.conf` and `hyprlock.conf` to first-class interchangeable host modules (Host First, Default Fallback). Allows hosts (e.g. desktops vs. laptops) to fully customize or omit listeners without rigid variable constraints, while maintaining seamless fallback to core defaults.
 
 ### [v3.3.0] — Decoupled Media Assets, Hardware Alignment & Bloat Pruning
 - **Decoupled Heavy Media Assets**: Decoupled all `.mp4` video wallpapers and SDDM login cinematics from Git into GitHub Release assets (`fetch-media.sh`). Reduced Git clone payload from >500 MB down to **~75 MB**.
