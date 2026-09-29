@@ -41,17 +41,14 @@ During installation, you will be prompted to create or select a **Host Profile**
 If you are an existing user upgrading from a pre-v4.0 release:
 
 > [!NOTE]
-> The deployment engine now features automated legacy-to-Lua compilation and host-first configuration linking for `hypridle` and `hyprlock`. Running `./installer/install.sh` will automatically migrate your setup.
+> The deployment engine features automated legacy-to-Lua compilation for existing host configurations and host-first linking for `hypridle` and `hyprlock`. Running `./installer/install.sh` will automatically migrate your setup.
 
 Run these steps in order:
 ```bash
 # 1. Pull the latest updates
 git pull
 
-# 2. (Optional) Manually translate your local host overrides from .conf to .lua
-./installer/scripts/migrate-to-lua.sh
-
-# 3. Re-run the deployment engine to sync symlinks, compile legacy configs, and refresh modules
+# 2. Re-run the deployment engine to sync symlinks, auto-bridge legacy configs, and refresh modules
 ./installer/install.sh
 ```
 

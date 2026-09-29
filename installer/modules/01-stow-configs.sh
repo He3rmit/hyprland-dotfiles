@@ -76,6 +76,41 @@ if [[ -n "$BACKLIGHT_DEV" && -f "$HOME/.config/swaync/config.json" ]]; then
     sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$HOME/.config/swaync/config.json"
 fi
 
+# 3.1 LEGACY HOST AUTO-BRIDGE
+# Automatically compile legacy .conf files in the host vault to modern .lua
+print_step ">> Auditing host vault for legacy configurations..."
+for mod in hypr-host monitor nvidia user-keybinds user-windowrules user-visuals; do
+    host_lua="$DOTFILES_DIR/hosts/$TARGET/${mod}.lua"
+    host_conf="$DOTFILES_DIR/hosts/$TARGET/${mod}.conf"
+    if [[ ! -f "$host_lua" && -f "$host_conf" ]]; then
+        if ! command -v hyprlang2lua &>/dev/null; then
+            print_step ">> hyprlang2lua not found. Attempting installation from AUR..."
+            aur_install hyprlang2lua
+        fi
+
+        if command -v hyprlang2lua &>/dev/null; then
+            print_step ">> Auto-bridging legacy ${mod}.conf -> ${mod}.lua for $TARGET..."
+            hyprlang2lua "$host_conf" > "$host_lua" 2>/dev/null
+
+            if [[ -s "$host_lua" ]]; then
+                # Post-processing adjustments for Lua compatibility
+                perl -pi -e 's|hl\.config\(\{\s*source\s*=\s*"~/\.config/hypr/(.*?)\.conf"\s*\}\)|require("\1")|g' "$host_lua"
+                perl -pi -e 's|source\s*=\s*"~/\.config/hypr/(.*?)\.conf"|require("\1")|g' "$host_lua"
+                perl -pi -e 's/^local\s+(mainMod|terminal|fileManager|menu|runner)\s*=\s*/\1 = /g' "$host_lua"
+                perl -pi -e 's/\["tap-to-click"\]/tap_to_click/g' "$host_lua"
+                perl -pi -e 's/active_border\s*=\s*(\w+)\s*\.\.\s*" "\s*\.\.\s*(\w+)\s*\.\.\s*"\s*(\d+)deg"/active_border = { colors = { \1, \2 }, angle = \3 }/g' "$host_lua"
+                perl -pi -e 's/hl\.dsp\.exec_cmd\("\$(\w+)"\)/hl.dsp.exec_cmd(\1)/g' "$host_lua"
+                mv "$host_conf" "${host_conf}.bak"
+                print_success "Migrated ${mod}.conf to ${mod}.lua (backup saved as ${mod}.conf.bak)"
+            else
+                rm -f "$host_lua"
+                print_warning "Conversion of ${mod}.conf produced empty output. Preserving original."
+            fi
+        else
+            print_warning "hyprlang2lua unavailable. Cannot auto-convert ${mod}.conf."
+        fi
+    fi
+done
 
 # 4. Link Hyprland Environment
 # PRE-STOW SWEEPER: Remove explicit overrides that block GNU Stow from deploying hyprland
@@ -310,18 +345,6 @@ fi
 
 # 8. USER VAULT — Link personal modules (Keybinds, Rules, Visuals)
 print_step ">> Linking user overrides for $TARGET..."
-
-# Auto-bridge legacy .conf files if user hasn't converted yet
-for mod in user-keybinds user-windowrules user-visuals; do
-    host_lua="$DOTFILES_DIR/hosts/$TARGET/${mod}.lua"
-    host_conf="$DOTFILES_DIR/hosts/$TARGET/${mod}.conf"
-    if [[ ! -f "$host_lua" && -f "$host_conf" ]]; then
-        if command -v hyprlang2lua &>/dev/null; then
-            print_step ">> Migrating legacy ${mod}.conf to ${mod}.lua for $TARGET..."
-            hyprlang2lua "$host_conf" > "$host_lua" 2>/dev/null
-        fi
-    fi
-done
 
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-keybinds.lua" "$HOME/.config/hypr/user-keybinds.lua"
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/user-windowrules.lua" "$HOME/.config/hypr/user-windowrules.lua"
