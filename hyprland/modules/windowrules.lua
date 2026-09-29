@@ -2,6 +2,9 @@
 -- WINDOW RULES
 -- -----------------------------------------------------
 
+-- Suppress maximize events from all apps so they tile properly
+hl.window_rule({ match = { class = ".*" }, suppress_event = "maximize" })
+
 -- --- GAME RULES [TEMPLATE] ---
 -- For niche high-performance gaming (Tearing/Immediate Mode).
 -- 1. Use 'hyprctl clients' to find the binary class.
