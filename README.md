@@ -36,22 +36,22 @@ During installation, you will be prompted to create or select a **Host Profile**
 
 ---
 
-## 🔄 Upgrading from v2.x to v3.x
+## 🔄 Upgrading to v4.x (Native Lua & Modular Architecture)
 
-If you are an existing user upgrading from the legacy `.conf` configuration era to the new native `.lua` structure:
+If you are an existing user upgrading from a pre-v4.0 release:
 
-> [!WARNING]
-> Running `git pull` without migrating your local host overrides will temporarily break your keybinds and visual rules. You must convert your files to Lua format.
+> [!NOTE]
+> The deployment engine now features automated legacy-to-Lua compilation and host-first configuration linking for `hypridle` and `hyprlock`. Running `./installer/install.sh` will automatically migrate your setup.
 
 Run these steps in order:
 ```bash
 # 1. Pull the latest updates
 git pull
 
-# 2. Translate your local host overrides from .conf to .lua
+# 2. (Optional) Manually translate your local host overrides from .conf to .lua
 ./installer/scripts/migrate-to-lua.sh
 
-# 3. Re-run the deployment engine to sync symlinks and dependencies
+# 3. Re-run the deployment engine to sync symlinks, compile legacy configs, and refresh modules
 ./installer/install.sh
 ```
 

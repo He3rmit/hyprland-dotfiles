@@ -54,7 +54,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
 | `Super + Alt + W` | **Wallpaper Selector** |
 | `Super + Alt + E` | **Visual Effects Menu** |
-| `Super + Alt + /` | **Tactical Briefing** (Searchalble Cheat Sheet) |
+| `Super + Alt + /` | **Tactical Briefing** (Searchable Cheat Sheet) |
 
 ### 🎯 Group 2: Personal Workspaces
 *The "Standard" special workspace is enabled globally by default. You can create your own custom workspaces (like Work, Gaming, Hobby) in your local `hosts/[profile]/user-keybinds.lua` file.*
@@ -139,12 +139,12 @@ In this framework, your "soul" lives in your host-specific folder:
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment
-1. Enter your dotfile directory: `cd ~/dotfiles`
+1. Enter your dotfile directory: `cd ~/hyprland-dotfiles`
 2. Launch the deployment terminal: `./installer/install.sh`
 3. The installer now features **Hardware Detection**—it will auto-detect your GPU and deploy the correct Vulkan/VA-API acceleration modules for NVIDIA, Intel, or AMD.
 
 ### Phase 3: Profile Customization & Deployment
-Customize your host vault files in `~/dotfiles/hosts/[your-profile]/`:
+Customize your host vault files in `~/hyprland-dotfiles/hosts/[your-profile]/`:
 - Edit `monitor.lua` to lock in your refresh rates and display scale.
 - Edit `user-keybinds.lua` to add your personal application shortcuts.
 - Edit `hypridle.conf` to customize listeners, timeouts, or power-saving rules for your specific hardware.
