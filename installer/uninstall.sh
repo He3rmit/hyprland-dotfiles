@@ -198,7 +198,7 @@ REMOVABLE_CORE=(
     "waybar" "swaync" "rofi" "wlogout" "wl-clipboard" "cliphist" "wtype" "grim" "slurp" "swappy" "satty" 
     "swaybg" "mpvpaper" "python-pywal" "xorg-xrdb" "nwg-look" "starship" "fastfetch"
     "qt5-graphicaleffects" "qt5-quickcontrols2" "qt5-svg" "nss-mdns" "ttf-orbitron" "papirus-icon-theme"
-    "python-requests" "python-gobject" "gtk3" "micro" "alacritty"
+    "python-requests" "python-gobject" "gtk3" "imv"
 )
 
 EXTRA_APPS=(

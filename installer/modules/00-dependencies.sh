@@ -21,12 +21,8 @@ CORE_PACKAGES=(
     "xdg-desktop-portal"
     "xdg-desktop-portal-hyprland"
     "xdg-desktop-portal-gtk"  # Essential for file pickers & settings
-    "xwaylandvideobridge"     # Allows screen sharing for X11 apps like Discord
     "qt5-wayland"
     "qt6-wayland"
-    "qt5-graphicaleffects"    # Required for SDDM themes visuals
-    "qt5-quickcontrols2"     # Required for SDDM theme inputs
-    "qt5-svg"                # Required for icon rendering in themes
     "nwg-look"
     "nss-mdns"                # Required for local hostname resolution (.local)
     
@@ -44,7 +40,6 @@ CORE_PACKAGES=(
     "ffmpegthumbnailer"       # Rofi video thumbnails
     "mpv"                     # Video wallpaper playback
     "ffmpeg"                  # General multimedia support
-    "btop"                    # System Monitor for SwayNC
     "nano"                    # Universal lightweight terminal text editor
     
     # --- HYPRLAND DAEMONS & SYSTEM UTILS ---
@@ -60,7 +55,7 @@ CORE_PACKAGES=(
     "xdg-user-dirs"
     "imagemagick"             # Required by cliphist-rofi for image previews
     "imv"                     # Required by cliphist-rofi for instant floating image previews
-    "wtype"                   # Required by cliphist-rofi for auto-typing
+    "wtype"                   # Required by cliphist-rofi for active-window paste
     "python-pywal"            # Global Theming Engine (Extracts wallpaper colors)
     "xorg-xrdb"               # Required by Pywal (even on Wayland)
     "python-requests"         # Required for Media Hub (Hydra)
@@ -76,7 +71,6 @@ CORE_PACKAGES=(
     # --- SCREENSHOT & WALLPAPER ---
     "grim"
     "slurp"
-    "swappy"
     "satty"
     "swaybg"
     "mpvpaper"
@@ -121,9 +115,12 @@ CORE_PACKAGES=(
 
 # Fallback packages only needed if we are NOT running alongside KDE Plasma
 STANDALONE_PACKAGES=(
-    "hyprpolkitagent" # Native Hyprland polkit agent for sudo prompts in GUI apps
-    "gnome-keyring"   # Required for managing secrets/passwords
-    "sddm"            # Display Manager
+    "hyprpolkitagent"        # Native Hyprland polkit agent for sudo prompts in GUI apps
+    "gnome-keyring"          # Required for managing secrets/passwords
+    "sddm"                   # Display Manager
+    "qt5-graphicaleffects"   # Required for SDDM themes visuals
+    "qt5-quickcontrols2"     # Required for SDDM theme inputs
+    "qt5-svg"                # Required for icon rendering in themes
 )
 
 # Function to check and install
