@@ -22,7 +22,7 @@
 
 window {
     location: center;
-    width: 700px;
+    width: 920px;
     border-radius: 15px;
     border: 2px;
     border-color: @selected-active-background;
@@ -56,18 +56,18 @@ entry {
 }
 
 listview {
-    lines: 8;
+    lines: 6;
     columns: 1;
-    spacing: 6px;
+    spacing: 8px;
     scrollbar: false;
     fixed-height: true;
 }
 
 element {
     orientation: horizontal;
-    spacing: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    spacing: 14px;
+    padding: 8px 14px;
+    border-radius: 10px;
     background-color: @bg-alt;
     cursor: pointer;
 }
@@ -87,7 +87,7 @@ element selected.normal {
 }
 
 element-icon {
-    size: 64px;
+    size: 80px;
     cursor: inherit;
     background-color: transparent;
 }
@@ -103,10 +103,11 @@ element-text {
 message {
     background-color: @bg-alt;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 8px 14px;
 }
 
 textbox {
     text-color: @foreground;
     font: "Orbitron 8";
+    horizontal-align: 0.5;
 }
