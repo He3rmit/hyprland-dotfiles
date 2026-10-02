@@ -232,8 +232,30 @@ case $exit_code in
         fi
 
         if [ -n "$target_path" ] && [ -f "$target_path" ]; then
-            (xdg-open "$target_path") &
-            notify_pilot "Visual Feed Active" "Opening ${target_path##*/}..."
+            ext="${target_path##*.}"
+            ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+            case "$ext_lc" in
+                png|jpg|jpeg|gif|webp|svg)
+                    if which imv >/dev/null 2>&1; then
+                        imv -b 0a0f14 "$target_path" &
+                    else
+                        xdg-open "$target_path" &
+                    fi
+                    notify_pilot "Visual Feed Active" "Previewing ${target_path##*/}..."
+                    ;;
+                mp4|mkv|webm|avi|mov|flv|wmv)
+                    if which mpv >/dev/null 2>&1; then
+                        mpv --title="Clip-Preview" --autofit=960x540 "$target_path" &
+                    else
+                        xdg-open "$target_path" &
+                    fi
+                    notify_pilot "Visual Feed Active" "Playing ${target_path##*/}..."
+                    ;;
+                *)
+                    (xdg-open "$target_path") &
+                    notify_pilot "Visual Feed Active" "Opening ${target_path##*/}..."
+                    ;;
+            esac
         elif [[ "$clean_head" =~ ^https?:// ]]; then
             (xdg-open "$clean_head") &
             notify_pilot "Uplink Active" "Opening URL in browser..."
@@ -242,7 +264,11 @@ case $exit_code in
             if [[ "$mime_type" == image/* ]]; then
                 tmp_img="$CACHE_DIR/preview_${first_id}.png"
                 cliphist decode "$first_id" > "$tmp_img"
-                (xdg-open "$tmp_img") &
+                if which imv >/dev/null 2>&1; then
+                    imv -b 0a0f14 "$tmp_img" &
+                else
+                    xdg-open "$tmp_img" &
+                fi
                 notify_pilot "Visual Feed Active" "Opening image preview..."
             else
                 notify_pilot "Text Preview" "${clean_head:0:300}"

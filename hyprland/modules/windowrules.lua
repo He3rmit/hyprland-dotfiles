@@ -39,3 +39,8 @@ hl.workspace_rule({
 -- ──────────────────────────────────────────────────────────────────────────────
 -- hl.window_rule({ match = { class = "^(code-url-handler)$" }, workspace = "special:work" })
 -- hl.window_rule({ match = { class = "^(Spotify)$" }, workspace = "special:hobby" })
+
+-- --- MEDIA & CLIPBOARD PREVIEW FLOATING RULES ---
+hl.window_rule({ match = { class = "^(imv)$" }, float = true, center = true })
+hl.window_rule({ match = { class = "^(swappy)$" }, float = true, center = true })
+hl.window_rule({ match = { title = "^(Clip-Preview)$" }, float = true, center = true })

@@ -59,6 +59,7 @@ CORE_PACKAGES=(
     "xorg-xhost"
     "xdg-user-dirs"
     "imagemagick"             # Required by cliphist-rofi for image previews
+    "imv"                     # Required by cliphist-rofi for instant floating image previews
     "wtype"                   # Required by cliphist-rofi for auto-typing
     "python-pywal"            # Global Theming Engine (Extracts wallpaper colors)
     "xorg-xrdb"               # Required by Pywal (even on Wayland)
