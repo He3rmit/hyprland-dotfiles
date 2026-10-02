@@ -377,9 +377,9 @@ case $exit_code in
             case "$ext_lc" in
                 png|jpg|jpeg|webp)
                     notify_pilot "Editing Media" "Opening image annotator for ${target_path##*/}..."
-                    if which satty >/dev/null 2>&1; then
+                    if command -v satty >/dev/null 2>&1; then
                         satty --filename "$target_path" --output-filename "$target_path" --early-exit
-                    elif which swappy >/dev/null 2>&1; then
+                    elif command -v swappy >/dev/null 2>&1; then
                         swappy -f "$target_path" -o "$target_path"
                     else
                         xdg-open "$target_path" &
@@ -394,7 +394,7 @@ case $exit_code in
                     if [ "$PREFERRED_EDITOR" == "code" ]; then
                         code "$target_path" &
                     else
-                        kitty --class floating -e "$PREFERRED_EDITOR" "$target_path" &
+                        ${TERMINAL:-kitty} --class floating -e "$PREFERRED_EDITOR" "$target_path" &
                     fi
                     ;;
             esac
@@ -405,14 +405,14 @@ case $exit_code in
                 tmp_img="/tmp/cliphist-edit-$$.png"
                 cliphist decode "$first_id" > "$tmp_img"
 
-                if which satty >/dev/null 2>&1; then
+                if command -v satty >/dev/null 2>&1; then
                     notify_pilot "Editing Screenshot" "Opening screenshot in Satty..."
                     satty --filename "$tmp_img" --output-filename "$tmp_img" --early-exit
                     if [ -s "$tmp_img" ]; then
                         wl-copy --type image/png < "$tmp_img"
                         notify_pilot "Buffer Updated" "Annotated screenshot saved to clipboard."
                     fi
-                elif which swappy >/dev/null 2>&1; then
+                elif command -v swappy >/dev/null 2>&1; then
                     notify_pilot "Editing Screenshot" "Opening screenshot in Swappy..."
                     swappy -f "$tmp_img" -o "$tmp_img"
                     if [ -s "$tmp_img" ]; then
@@ -437,7 +437,7 @@ case $exit_code in
                 if [ "$PREFERRED_EDITOR" == "code" ]; then
                     code -w "$tmp_file"
                 else
-                    kitty --class floating -e "$PREFERRED_EDITOR" "$tmp_file"
+                    ${TERMINAL:-kitty} --class floating -e "$PREFERRED_EDITOR" "$tmp_file"
                 fi
 
                 if [ -s "$tmp_file" ]; then
