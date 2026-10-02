@@ -77,6 +77,7 @@ CORE_PACKAGES=(
     "grim"
     "slurp"
     "swappy"
+    "satty"
     "swaybg"
     "mpvpaper"
     "jq"

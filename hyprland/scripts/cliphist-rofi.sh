@@ -22,6 +22,19 @@ notify_pilot() {
     notify-send -u normal -a "Titanfall Systems" -i "terminal" "$1" "$2"
 }
 
+paste_to_active_window() {
+    local active_class
+    active_class=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' 2>/dev/null)
+    case "$active_class" in
+        kitty|Alacritty|foot|wezterm|org.wezfurlong.wezterm)
+            (sleep 0.12 && wtype -M ctrl -M shift -k v -m shift -m ctrl) &
+            ;;
+        *)
+            (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
+            ;;
+    esac
+}
+
 generate_list() {
     local img_count=0
     cliphist list | head -n 150 | while IFS=$'\t' read -r id content; do
@@ -32,14 +45,14 @@ generate_list() {
         if [[ "$content" =~ file://(.*) ]]; then
             file_path=$(echo -e "${BASH_REMATCH[1]//%/\\x}")
             file_path="${file_path%$'\r'}"
-        elif [[ "$clean_content" == /* ]] && [ -f "$clean_content" ]; then
+        elif [[ "$clean_content" == /* ]] && [ -e "$clean_content" ]; then
             file_path="$clean_content"
         fi
 
         if [ -n "$file_path" ] && [ -f "$file_path" ]; then
             filename="${file_path##*/}"
-            clean_hash="${file_path//[\/ %]/_}"
-            preview_file="$CACHE_DIR/uri_${clean_hash: -32}.png"
+            clean_hash=$(echo -n "$file_path" | md5sum | awk '{print $1}')
+            preview_file="$CACHE_DIR/uri_${clean_hash}.png"
             ext="${file_path##*.}"
             ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
 
@@ -78,6 +91,13 @@ generate_list() {
 
             echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
 
+        elif [ -n "$file_path" ] && [ -d "$file_path" ]; then
+            filename="${file_path##*/}"
+            [ -z "$filename" ] && filename="$file_path"
+            label="󰉋 Folder • ${filename}"
+            icon_val="folder"
+            echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
+
         elif [[ "$content" =~ binary.*data ]]; then
             preview_file="$CACHE_DIR/${id}.png"
             
@@ -106,7 +126,9 @@ generate_list() {
                 (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -resize '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
             fi
 
-            echo -en "${id}\t${label}\0icon\x1f${preview_file}\n"
+            icon_val="$preview_file"
+            [ ! -f "$preview_file" ] && icon_val="image-x-generic"
+            echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
 
         else
             clean="${content//  / }"
@@ -185,7 +207,7 @@ case $exit_code in
             done <<< "$clip_ids"
 
             echo -n "$merged_text" | wl-copy
-            (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
+            paste_to_active_window
             notify_pilot "Multi-Buffer Ready" "Merged ${item_count} items & pasted into active window."
         else
             first_id=$(echo "$clip_ids" | head -n 1)
@@ -196,11 +218,11 @@ case $exit_code in
             if [[ "$clean_head" == file://* ]]; then
                 raw_path="${clean_head#file://}"
                 target_path=$(echo -e "${raw_path//%/\\x}")
-            elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+            elif [[ "$clean_head" == /* ]] && [ -e "$clean_head" ]; then
                 target_path="$clean_head"
             fi
 
-            if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+            if [ -n "$target_path" ] && [ -e "$target_path" ]; then
                 encoded_path="${target_path// /%20}"
                 file_uri="file://${encoded_path}"
                 echo -n "$file_uri" | wl-copy --type text/uri-list
@@ -213,7 +235,7 @@ case $exit_code in
                 fi
             fi
 
-            (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
+            paste_to_active_window
             notify_pilot "Buffer Updated" "Pasted into active window."
         fi
         ;;
@@ -227,11 +249,11 @@ case $exit_code in
         if [[ "$clean_head" == file://* ]]; then
             raw_path="${clean_head#file://}"
             target_path=$(echo -e "${raw_path//%/\\x}")
-        elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+        elif [[ "$clean_head" == /* ]] && [ -e "$clean_head" ]; then
             target_path="$clean_head"
         fi
 
-        if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+        if [ -n "$target_path" ] && [ -e "$target_path" ]; then
             ext="${target_path##*.}"
             ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
             case "$ext_lc" in
@@ -283,6 +305,7 @@ case $exit_code in
             if [[ "$decoded" =~ ^file://(.+/.cache/pilot-hydra/ck_[^[:space:]]+) ]]; then
                 rm -f "${BASH_REMATCH[1]}"
             fi
+            rm -f "$CACHE_DIR/${id}.png" "$CACHE_DIR/preview_${id}.png"
             cliphist list | awk -F'\t' -v id="$id" '$1 == id { print; exit }' | cliphist delete
         done
         notify_pilot "Entry Purged" "Clipboard item and thumbnail cache removed."
@@ -296,6 +319,11 @@ case $exit_code in
         ;;
 
     12) # Alt+T — Safe Auto-Type
+        if pgrep -x "hyprlock" >/dev/null; then
+            notify_pilot "Auto-Type Aborted" "Hyprlock active — keystrokes blocked."
+            exit 0
+        fi
+
         first_id=$(echo "$clip_ids" | head -n 1)
         mime_type=$(cliphist decode "$first_id" 2>/dev/null | file -b --mime-type -)
 
@@ -328,12 +356,10 @@ case $exit_code in
             done < <(echo "$raw_text" | grep -Eo '(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]')
         done <<< "$clip_ids"
 
-        # Deduplicate URLs
-        unique_urls=($(printf "%s\n" "${urls[@]}" | sort -u))
-
-        if [ ${#unique_urls[@]} -eq 0 ]; then
+        if [ ${#urls[@]} -eq 0 ]; then
             notify_pilot "No URL Found" "No valid web link detected in this clipboard entry."
         else
+            unique_urls=($(printf "%s\n" "${urls[@]}" | sort -u))
             open_count=0
             for u in "${unique_urls[@]}"; do
                 xdg-open "$u" >/dev/null 2>&1 &
@@ -344,7 +370,7 @@ case $exit_code in
         fi
         ;;
 
-    14) # Alt+E — Edit Selection (Annotate Screenshots with Swappy / Edit Text)
+    14) # Alt+E — Edit Selection (Annotate Screenshots with Satty/Swappy / Edit Text)
         first_id=$(echo "$clip_ids" | head -n 1)
         raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
         clean_head="${raw_head%$'\r'}"
@@ -353,7 +379,7 @@ case $exit_code in
         if [[ "$clean_head" == file://* ]]; then
             raw_path="${clean_head#file://}"
             target_path=$(echo -e "${raw_path//%/\\x}")
-        elif [[ "$clean_head" == /* ]] && [ -f "$clean_head" ]; then
+        elif [[ "$clean_head" == /* ]] && [ -e "$clean_head" ]; then
             target_path="$clean_head"
         fi
 
@@ -362,14 +388,16 @@ case $exit_code in
             which vim >/dev/null 2>&1 && PREFERRED_EDITOR="vim" || PREFERRED_EDITOR="nano"
         fi
 
-        if [ -n "$target_path" ] && [ -f "$target_path" ]; then
+        if [ -n "$target_path" ] && [ -e "$target_path" ]; then
             ext="${target_path##*.}"
             ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
 
             case "$ext_lc" in
                 png|jpg|jpeg|webp)
                     notify_pilot "Editing Media" "Opening image annotator for ${target_path##*/}..."
-                    if which swappy >/dev/null 2>&1; then
+                    if which satty >/dev/null 2>&1; then
+                        satty --filename "$target_path" --output-filename "$target_path" --early-exit
+                    elif which swappy >/dev/null 2>&1; then
                         swappy -f "$target_path" -o "$target_path"
                     else
                         xdg-open "$target_path" &
@@ -395,7 +423,14 @@ case $exit_code in
                 tmp_img="/tmp/cliphist-edit-$$.png"
                 cliphist decode "$first_id" > "$tmp_img"
 
-                if which swappy >/dev/null 2>&1; then
+                if which satty >/dev/null 2>&1; then
+                    notify_pilot "Editing Screenshot" "Opening screenshot in Satty..."
+                    satty --filename "$tmp_img" --output-filename "$tmp_img" --early-exit
+                    if [ -s "$tmp_img" ]; then
+                        wl-copy --type image/png < "$tmp_img"
+                        notify_pilot "Buffer Updated" "Annotated screenshot saved to clipboard."
+                    fi
+                elif which swappy >/dev/null 2>&1; then
                     notify_pilot "Editing Screenshot" "Opening screenshot in Swappy..."
                     swappy -f "$tmp_img" -o "$tmp_img"
                     if [ -s "$tmp_img" ]; then

@@ -1,0 +1,50 @@
+# ==============================================================================
+# TITANFALL PILOT EDITION — SATTY CONFIGURATION
+# Location: ~/.config/satty/config.toml
+# ==============================================================================
+
+[general]
+# Start floating (handled by Hyprland window rules)
+fullscreen = false
+early-exit = true
+
+# Primary starting tool: arrow, brush, rectangle, text
+initial-tool = "brush"
+
+# Clipboard integration
+copy-command = "wl-copy"
+
+# Annotation thickness & sizing
+annotation-size-factor = 2
+
+# Automatic saving path pattern
+output-filename = "~/Pictures/Screenshots/satty-%Y-%m-%d_%H:%M:%S.png"
+save-after-copy = false
+
+# UI / Canvas behavior
+default-hide-toolbars = false
+focus-toggles-toolbars = false
+default-fill-shapes = false
+default-round-caps = true
+primary-highlighter = "block"
+corner-roundness = 8
+
+# Hotkey action triggers
+actions-on-enter = ["save-to-clipboard"]
+actions-on-escape = ["exit"]
+
+[font]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[color-palette]
+# Pilot HUD Color Matrix (Hex RRGGBBAA)
+palette = [
+    "#00E5FFff", # Pilot Cyan (Primary Accent)
+    "#00FF66ff", # Pilot Lime / Matrix Green
+    "#FFB800ff", # Pilot Warning Amber
+    "#FF003Cff", # Titan Hazard Red
+    "#B026FFff", # Pilot Electric Violet
+    "#FFFFFFff", # Pure HUD White
+    "#0A0F14ff", # Obsidian Chassis Dark
+]
