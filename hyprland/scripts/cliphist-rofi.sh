@@ -37,6 +37,7 @@ paste_to_active_window() {
 
 generate_list() {
     local img_count=0
+    local sync_count=0
     cliphist list | head -n 150 | while IFS=$'\t' read -r id content; do
         
         # Detect file paths or file URIs (including paths containing spaces)
@@ -59,18 +60,28 @@ generate_list() {
             case "$ext_lc" in
                 mp4|mkv|webm|avi|mov|flv|wmv)
                     label="󰕧 Video • ${filename}"
-                    if [ ! -f "$preview_file" ] && [ $img_count -lt 25 ]; then
-                        img_count=$((img_count + 1))
-                        (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1) &
+                    if [ ! -f "$preview_file" ]; then
+                        if [ $sync_count -lt 2 ]; then
+                            sync_count=$((sync_count + 1))
+                            nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1
+                        elif [ $img_count -lt 20 ]; then
+                            img_count=$((img_count + 1))
+                            (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1) &
+                        fi
                     fi
                     icon_val="$preview_file"
                     [ ! -f "$preview_file" ] && icon_val="video-x-generic"
                     ;;
                 png|jpg|jpeg|gif|webp|svg)
                     label="󰈟 Image • ${filename}"
-                    if [ ! -f "$preview_file" ] && [ $img_count -lt 25 ]; then
-                        img_count=$((img_count + 1))
-                        (nice -n 19 magick "$file_path"[0] -resize '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                    if [ ! -f "$preview_file" ]; then
+                        if [ $sync_count -lt 2 ]; then
+                            sync_count=$((sync_count + 1))
+                            nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                        elif [ $img_count -lt 20 ]; then
+                            img_count=$((img_count + 1))
+                            (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                        fi
                     fi
                     icon_val="$preview_file"
                     [ ! -f "$preview_file" ] && icon_val="image-x-generic"
@@ -121,9 +132,14 @@ generate_list() {
                 label="󰋩 Image Clip"
             fi
 
-            if [ ! -f "$preview_file" ] && [ $img_count -lt 25 ]; then
-                img_count=$((img_count + 1))
-                (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -resize '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+            if [ ! -f "$preview_file" ]; then
+                if [ $sync_count -lt 2 ]; then
+                    sync_count=$((sync_count + 1))
+                    nice -n 19 cliphist decode "$id" | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                elif [ $img_count -lt 20 ]; then
+                    img_count=$((img_count + 1))
+                    (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                fi
             fi
 
             icon_val="$preview_file"
