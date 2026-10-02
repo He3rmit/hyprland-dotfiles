@@ -41,7 +41,7 @@ hl.workspace_rule({
 -- hl.window_rule({ match = { class = "^(Spotify)$" }, workspace = "special:hobby" })
 
 -- --- MEDIA & CLIPBOARD PREVIEW FLOATING RULES ---
-hl.window_rule({ match = { class = "^(imv)$" }, float = true, center = true, size = "1000 650" })
-hl.window_rule({ match = { class = "^(swappy)$" }, float = true, center = true })
-hl.window_rule({ match = { class = "^(com.gabm.satty)$" }, float = true, center = true })
-hl.window_rule({ match = { title = "^(Clip-Preview)$" }, float = true, center = true, size = "960 540" })
+hl.window_rule({ match = { class = "^(imv)$" }, float = true, center = true, size = "1000 650", no_anim = true })
+hl.window_rule({ match = { class = "^(swappy)$" }, float = true, center = true, no_anim = true })
+hl.window_rule({ match = { class = "^(com.gabm.satty)$" }, float = true, center = true, no_anim = true })
+hl.window_rule({ match = { title = "^(Clip-Preview)$" }, float = true, center = true, size = "960 540", no_anim = true })
