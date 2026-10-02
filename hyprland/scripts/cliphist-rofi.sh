@@ -16,7 +16,7 @@ export MAGICK_TIME_LIMIT=3
 (find "$CACHE_DIR" -type f -mtime +3 -delete 2>/dev/null) &
 
 # Keybind cheat sheet shown at the bottom of the popup
-KEYBIND_HINTS="Enter: Paste  |  Shift+Enter: Multi-Select  |  Alt+P: Preview  |  Alt+E: Edit  |  Alt+O: URL  |  Alt+T: Type  |  Alt+Del: Delete  |  Alt+Shift+Del: Wipe"
+KEYBIND_HINTS="Enter: Paste  |  Shift+Enter: Multi-Select  |  Alt+P: Preview  |  Alt+E: Edit  |  Alt+O: URL  |  Alt+Del: Delete  |  Alt+Shift+Del: Wipe"
 
 notify_pilot() {
     notify-send -u normal -a "Titanfall Systems" -i "terminal" "$1" "$2"
@@ -196,10 +196,9 @@ selection=$(generate_list | rofi -dmenu \
     -multi-select "Shift+Enter" \
     -kb-custom-1 "Alt+Delete" \
     -kb-custom-2 "Alt+Shift+Delete" \
-    -kb-custom-3 "Alt+t" \
-    -kb-custom-4 "Alt+o" \
-    -kb-custom-5 "Alt+e" \
-    -kb-custom-6 "Alt+p")
+    -kb-custom-3 "Alt+p" \
+    -kb-custom-4 "Alt+e" \
+    -kb-custom-5 "Alt+o")
 
 exit_code=$?
 [ -z "$selection" ] && exit 0
@@ -256,7 +255,7 @@ case $exit_code in
         fi
         ;;
 
-    15) # Alt+P — Preview / Open Media (First item)
+    12) # Alt+P — Preview / Open Media (First item)
         first_id=$(echo "$clip_ids" | head -n 1)
         raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
         clean_head="${raw_head%$'\r'}"
@@ -334,59 +333,7 @@ case $exit_code in
         notify-send -u critical -a "Titanfall Systems" "DATABASE PURGED" "History and Hydra Cache erased."
         ;;
 
-    12) # Alt+T — Safe Auto-Type
-        if pgrep -x "hyprlock" >/dev/null; then
-            notify_pilot "Auto-Type Aborted" "Hyprlock active — keystrokes blocked."
-            exit 0
-        fi
-
-        first_id=$(echo "$clip_ids" | head -n 1)
-        mime_type=$(cliphist decode "$first_id" 2>/dev/null | file -b --mime-type -)
-
-        if [[ "$mime_type" == image/* ]] || [[ "$mime_type" == video/* ]]; then
-            notify_pilot "Auto-Type Aborted" "Cannot simulate typing for media/image files."
-            exit 0
-        fi
-
-        raw_text=$(cliphist decode "$first_id" 2>/dev/null)
-        char_count=${#raw_text}
-
-        if [ "$char_count" -gt 350 ]; then
-            notify_pilot "Auto-Type Blocked" "Snippet too large (${char_count} chars). Use normal Paste (Enter) to prevent runaway typing."
-            exit 0
-        fi
-
-        # Allow Rofi to vanish before typing into focused window
-        sleep 0.15
-        echo -n "$raw_text" | wtype -d 2 -
-        notify_pilot "Buffer Typed" "Simulated typing (${char_count} chars)."
-        ;;
-
-    13) # Alt+O — Open URL(s) (Supports multiple URLs & text with embedded links)
-        urls=()
-        while read -r id; do
-            [ -z "$id" ] && continue
-            raw_text=$(cliphist decode "$id" 2>/dev/null)
-            while IFS= read -r u; do
-                [ -n "$u" ] && urls+=("$u")
-            done < <(echo "$raw_text" | grep -Eo '(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]')
-        done <<< "$clip_ids"
-
-        if [ ${#urls[@]} -eq 0 ]; then
-            notify_pilot "No URL Found" "No valid web link detected in this clipboard entry."
-        else
-            unique_urls=($(printf "%s\n" "${urls[@]}" | sort -u))
-            open_count=0
-            for u in "${unique_urls[@]}"; do
-                xdg-open "$u" >/dev/null 2>&1 &
-                open_count=$((open_count + 1))
-                [ $open_count -ge 5 ] && break
-            done
-            notify_pilot "Uplink Active" "Opening ${open_count} URL(s) in browser..."
-        fi
-        ;;
-
-    14) # Alt+E — Edit Selection (Annotate Screenshots with Satty/Swappy / Edit Text)
+    13) # Alt+E — Edit Selection (Annotate Screenshots with Satty/Swappy / Edit Text)
         first_id=$(echo "$clip_ids" | head -n 1)
         raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
         clean_head="${raw_head%$'\r'}"
@@ -480,6 +427,30 @@ case $exit_code in
                 fi
                 rm -f "$tmp_file"
             fi
+        fi
+        ;;
+
+    14) # Alt+O — Open URL(s) (Supports multiple URLs & text with embedded links)
+        urls=()
+        while read -r id; do
+            [ -z "$id" ] && continue
+            raw_text=$(cliphist decode "$id" 2>/dev/null)
+            while IFS= read -r u; do
+                [ -n "$u" ] && urls+=("$u")
+            done < <(echo "$raw_text" | grep -Eo '(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]')
+        done <<< "$clip_ids"
+
+        if [ ${#urls[@]} -eq 0 ]; then
+            notify_pilot "No URL Found" "No valid web link detected in this clipboard entry."
+        else
+            unique_urls=($(printf "%s\n" "${urls[@]}" | sort -u))
+            open_count=0
+            for u in "${unique_urls[@]}"; do
+                xdg-open "$u" >/dev/null 2>&1 &
+                open_count=$((open_count + 1))
+                [ $open_count -ge 5 ] && break
+            done
+            notify_pilot "Uplink Active" "Opening ${open_count} URL(s) in browser..."
         fi
         ;;
 esac
