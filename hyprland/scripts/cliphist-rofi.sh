@@ -22,17 +22,36 @@ notify_pilot() {
     notify-send -u normal -a "Titanfall Systems" -i "terminal" "$1" "$2"
 }
 
+is_terminal_window() {
+    local class="$1"
+    [ -z "$class" ] && return 1
+
+    local primary_term="${TERMINAL:-kitty}"
+
+    # 1. Direct match with configured $TERMINAL
+    if [[ "${class,,}" == *"${primary_term,,}"* ]]; then
+        return 0
+    fi
+
+    # 2. Dynamic system discovery: check if window matches any installed terminal emulator
+    local installed_terms
+    installed_terms=$(grep -lis "TerminalEmulator" /usr/share/applications/*.desktop ~/.local/share/applications/*.desktop 2>/dev/null | sed -E 's/.*\/([^/]+)\.desktop$/\1/' | tr '[:upper:]' '[:lower:]')
+    if echo "$installed_terms" | grep -qi "${class}"; then
+        return 0
+    fi
+
+    return 1
+}
+
 paste_to_active_window() {
     local active_class
     active_class=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' 2>/dev/null)
-    case "$active_class" in
-        kitty|Alacritty|foot|wezterm|org.wezfurlong.wezterm)
-            (sleep 0.12 && wtype -M ctrl -M shift -k v -m shift -m ctrl) &
-            ;;
-        *)
-            (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
-            ;;
-    esac
+
+    if is_terminal_window "$active_class"; then
+        (sleep 0.12 && wtype -M ctrl -M shift -k v -m shift -m ctrl) &
+    else
+        (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
+    fi
 }
 
 generate_list() {
