@@ -134,8 +134,8 @@ In this framework, your "soul" lives in your host-specific folder:
 - `hosts/[profile]/monitor.lua`: Your machine's specific monitor/resolution rules.
 - `hosts/[profile]/nvidia.lua`: (Optional) NVIDIA driver environmental variables.
 - `hosts/[profile]/hypr-host.lua`: Hardware-specific triggers (Volume, Power, etc.).
-- `hosts/[profile]/hypridle.conf`: Host-specific idle and screen timeout configuration (or legacy `hypridle-host.conf`).
-- `hosts/[profile]/hyprlock.conf`: Host-specific lock screen configuration (or legacy `hyprlock-host.conf`).
+- `hosts/[profile]/hypridle.conf`: Host-specific idle and screen timeout configuration.
+- `hosts/[profile]/hyprlock.conf`: Host-specific lock screen configuration.
 - `hosts/[profile]/shell.local`: Stores your machine-specific shell aliases and variables.
 
 ### Phase 2: Active Deployment

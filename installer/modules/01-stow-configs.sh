@@ -172,8 +172,6 @@ link_or_touch() {
 }
 
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hypr-host.lua" "$HOME/.config/hypr/host.lua"
-link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hypridle-host.conf" "$HOME/.config/hypr/hypridle-host.conf"
-link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hyprlock-host.conf" "$HOME/.config/hypr/hyprlock-host.conf"
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/hyprsunset.conf" "$HOME/.config/hypr/hyprsunset.conf"
 link_or_touch "$DOTFILES_DIR/hosts/$TARGET/kitty-host.conf" "$HOME/.config/kitty/host.conf"
 # 5. Waybar Deployment
