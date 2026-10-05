@@ -79,6 +79,8 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + B` | **Power Cycle** Performance, Balanced, Power Saver |
 | `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
+| `Super + Shift + W` | **Network Hub** | Wi-Fi selector, signal monitor & Ethernet status (Rofi). |
+| `Super + Shift + B` | **Bluetooth Hub** | Bluetooth power, device connect & scanner (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra-Omega GTK (Emoji/GIF/Stickers) picker. |
 | `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Satty/Swappy. |
 | `Super + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
