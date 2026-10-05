@@ -7,10 +7,10 @@ THEME="$HOME/.config/rofi/themes/clipboard.rasi"
 CACHE_DIR="$HOME/.cache/cliphist-thumbnails"
 mkdir -p "$CACHE_DIR"
 
-# Prevent ImageMagick from hogging CPU cores & RAM
-export MAGICK_THREAD_LIMIT=1
-export MAGICK_MEMORY_LIMIT=64MiB
-export MAGICK_TIME_LIMIT=3
+# Prevent ImageMagick from hogging CPU cores & RAM while allowing fast decoding
+export MAGICK_THREAD_LIMIT=4
+export MAGICK_MEMORY_LIMIT=256MiB
+export MAGICK_TIME_LIMIT=5
 
 # Cleanup thumbnail cache files older than 3 days in background
 (find "$CACHE_DIR" -type f -mtime +3 -delete 2>/dev/null) &
@@ -80,9 +80,9 @@ generate_list() {
                 mp4|mkv|webm|avi|mov|flv|wmv)
                     label="󰕧 Video • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        if [ $sync_count -lt 2 ]; then
+                        if [ $sync_count -lt 3 ]; then
                             sync_count=$((sync_count + 1))
-                            nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1
+                            ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1
                         elif [ $img_count -lt 20 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1) &
@@ -94,9 +94,9 @@ generate_list() {
                 png|jpg|jpeg|gif|webp|svg)
                     label="󰈟 Image • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        if [ $sync_count -lt 2 ]; then
+                        if [ $sync_count -lt 3 ]; then
                             sync_count=$((sync_count + 1))
-                            nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                            magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
                         elif [ $img_count -lt 20 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
@@ -152,9 +152,9 @@ generate_list() {
             fi
 
             if [ ! -f "$preview_file" ]; then
-                if [ $sync_count -lt 2 ]; then
+                if [ $sync_count -lt 3 ]; then
                     sync_count=$((sync_count + 1))
-                    nice -n 19 cliphist decode "$id" | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                    cliphist decode "$id" | magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
                 elif [ $img_count -lt 20 ]; then
                     img_count=$((img_count + 1))
                     (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
