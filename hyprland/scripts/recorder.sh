@@ -122,7 +122,8 @@ fi
 
 # --- 3. PARSE RECORDING OPTIONS ---
 MODE="region"
-WITH_AUDIO=false
+RECORD_AUDIO=true
+AUDIO_MODE="desktop" # "desktop", "mic", or custom device
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -130,8 +131,23 @@ while [[ $# -gt 0 ]]; do
             MODE="fullscreen"
             shift
             ;;
+        --no-audio)
+            RECORD_AUDIO=false
+            shift
+            ;;
+        --mic|-m)
+            RECORD_AUDIO=true
+            AUDIO_MODE="mic"
+            shift
+            ;;
+        --audio=*)
+            RECORD_AUDIO=true
+            AUDIO_MODE="${1#*=}"
+            shift
+            ;;
         --audio|-a)
-            WITH_AUDIO=true
+            RECORD_AUDIO=true
+            AUDIO_MODE="desktop"
             shift
             ;;
         *)
@@ -145,11 +161,26 @@ mkdir -p "$SAVE_DIR"
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 OUTPUT_FILE="$SAVE_DIR/recording_${TIMESTAMP}.mp4"
 
-# --- 5. SELECT CAPTURE TARGET ---
+# --- 5. SELECT CAPTURE TARGET & AUDIO ---
 RECORDER_ARGS=("-c" "libx264" "-p" "yuv420p" "-f" "$OUTPUT_FILE")
 
-if [[ "$WITH_AUDIO" == true ]]; then
-    RECORDER_ARGS+=("--audio")
+if [[ "$RECORD_AUDIO" == true ]]; then
+    RECORDER_ARGS+=("-C" "aac" "-R" "48000")
+    if [[ "$AUDIO_MODE" == "desktop" ]]; then
+        # Capture system/desktop audio by monitoring the active output sink
+        DEFAULT_SINK=$(pactl get-default-sink 2>/dev/null)
+        if [[ -n "$DEFAULT_SINK" ]]; then
+            RECORDER_ARGS+=("--audio=${DEFAULT_SINK}.monitor")
+        else
+            RECORDER_ARGS+=("--audio")
+        fi
+    elif [[ "$AUDIO_MODE" == "mic" ]]; then
+        # Capture microphone (default PulseAudio source)
+        RECORDER_ARGS+=("--audio")
+    else
+        # Custom device
+        RECORDER_ARGS+=("--audio=${AUDIO_MODE}")
+    fi
 fi
 
 if [[ "$MODE" == "region" ]]; then
@@ -180,8 +211,12 @@ echo "$RECORDER_PID" > "$PID_FILE"
 echo "$OUTPUT_FILE" > "$INFO_FILE"
 pkill -RTMIN+9 waybar 2>/dev/null || true
 
-if [[ "$WITH_AUDIO" == true ]]; then
-    notify "Recording Started 🎙️" "Recording region with audio...\nPress Super+Shift+R to stop."
+if [[ "$RECORD_AUDIO" == true ]]; then
+    if [[ "$AUDIO_MODE" == "mic" ]]; then
+        notify "Recording Started 🎙️" "Recording with microphone...\nPress Super+Shift+R to stop."
+    else
+        notify "Recording Started 🔊" "Recording with desktop audio...\nPress Super+Shift+R to stop."
+    fi
 else
-    notify "Recording Started 📹" "Recording screen region...\nPress Super+Shift+R to stop."
+    notify "Recording Started 📹" "Recording video only (silent)...\nPress Super+Shift+R to stop."
 fi
