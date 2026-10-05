@@ -181,7 +181,7 @@ echo "$OUTPUT_FILE" > "$INFO_FILE"
 pkill -RTMIN+9 waybar 2>/dev/null || true
 
 if [[ "$WITH_AUDIO" == true ]]; then
-    notify "Recording Started 🎙️" "Recording region with audio...\nPress Ctrl+Shift+R to stop."
+    notify "Recording Started 🎙️" "Recording region with audio...\nPress Super+Shift+R to stop."
 else
-    notify "Recording Started 📹" "Recording screen region...\nPress Ctrl+Shift+R to stop."
+    notify "Recording Started 📹" "Recording screen region...\nPress Super+Shift+R to stop."
 fi

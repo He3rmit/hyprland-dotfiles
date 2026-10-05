@@ -81,8 +81,8 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra-Omega GTK (Emoji/GIF/Stickers) picker. |
 | `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Satty/Swappy. |
-| `Ctrl + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
-| `Ctrl + Alt + R` | **Fullscreen Recorder** | Toggle full monitor screen recording. |
+| `Super + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
+| `Super + Alt + R` | **Fullscreen Recorder** | Toggle full monitor screen recording. |
 | `Print` | **Screenshot** (Full/Clipboard) |
 
 ---
