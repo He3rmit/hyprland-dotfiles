@@ -188,7 +188,7 @@ parse_bind_file() {
     local RE_CATEGORY='^-- *CLUSTER [0-9]+: *(.*)'
     local RE_BIND='^hl\.bind\(([^,]+), *(.*)\)'
     local RE_UNBIND='^hl\.unbind\(([^)]+)\)'
-    local RE_HINT='-- *(.*)'
+    local RE_HINT='\)[^"'\''\\]*-- *(.*)'
 
     if [[ ! -f "$file" ]]; then return; fi
 

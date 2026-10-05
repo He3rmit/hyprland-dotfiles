@@ -68,10 +68,11 @@ CORE_PACKAGES=(
     "zsh-syntax-highlighting"
     "zsh-history-substring-search"
     
-    # --- SCREENSHOT & WALLPAPER ---
+    # --- SCREENSHOT, RECORDING & WALLPAPER ---
     "grim"
     "slurp"
     "satty"
+    "wf-recorder"
     "swaybg"
     "mpvpaper"
     "jq"
