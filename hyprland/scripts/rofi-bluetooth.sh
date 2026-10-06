@@ -173,8 +173,18 @@ handle_scan() {
 
 # --- 4. MAIN ROUTER ---
 main() {
+    # Toggle off if Rofi is already running
+    if pgrep -x "rofi" > /dev/null; then
+        pkill rofi
+        exit 0
+    fi
+
+    local menu_content
+    menu_content=$(build_menu)
+    [[ -z "$menu_content" ]] && exit 0
+
     local choice
-    choice=$(build_menu | rofi_cmd "󰂯 Bluetooth Hub")
+    choice=$(printf "%s\n" "$menu_content" | rofi_cmd "󰂯 Bluetooth Hub")
     [[ -z "$choice" ]] && exit 0
 
     case "$choice" in

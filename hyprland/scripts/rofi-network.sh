@@ -65,20 +65,25 @@ build_menu() {
     if [[ "$WIFI_RADIO" != "enabled" ]]; then
         entries+=("󰤮 Wi-Fi is OFF (Click to Turn ON)")
     else
-        # Find active connected Wi-Fi SSID
+        # Scan nearby networks (use cached scan for instant render: ~50ms vs ~6000ms)
+        # Format: IN-USE:SSID:SIGNAL:SECURITY
+        local wifi_list
+        wifi_list=$(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan no 2>/dev/null)
+
+        # Fallback to active scan if cache is empty (e.g. fresh boot)
+        if [[ -z "$wifi_list" ]]; then
+            wifi_list=$(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list 2>/dev/null)
+        fi
+
+        # Find active connected Wi-Fi SSID from the same scan results
         local active_wifi
-        active_wifi=$(nmcli -t -f IN-USE,SSID,SIGNAL device wifi list 2>/dev/null | grep "^\*:" | head -1)
+        active_wifi=$(grep "^\*:" <<< "$wifi_list" | head -1)
         if [[ -n "$active_wifi" ]]; then
             local act_ssid act_sig
             act_ssid=$(echo "$active_wifi" | cut -d':' -f2)
             act_sig=$(echo "$active_wifi" | cut -d':' -f3)
             entries+=("● 󰤨 ${act_ssid} [Connected • ${act_sig}%]")
         fi
-
-        # Scan nearby networks
-        # Format: IN-USE:SSID:SIGNAL:SECURITY
-        local wifi_list
-        wifi_list=$(nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list 2>/dev/null)
 
         # Parse & deduplicate SSIDs
         declare -A seen_ssids
@@ -160,8 +165,13 @@ handle_wifi_connect() {
     fi
 
     # Check if network requires security
-    local sec_info
-    sec_info=$(nmcli -t -f SSID,SECURITY device wifi list 2>/dev/null | grep "^${target_ssid}:" | cut -d':' -f2 | head -1)
+    local sec_info=""
+    while IFS=: read -r s sec; do
+        if [[ "$s" == "$target_ssid" ]]; then
+            sec_info="$sec"
+            break
+        fi
+    done < <(nmcli -t -f SSID,SECURITY device wifi list --rescan no 2>/dev/null)
 
     if [[ -n "$sec_info" && "$sec_info" != "--" ]]; then
         local pass
@@ -205,8 +215,18 @@ handle_active_wifi() {
 
 # --- 4. MAIN ROUTER ---
 main() {
+    # Toggle off if Rofi is already running
+    if pgrep -x "rofi" > /dev/null; then
+        pkill rofi
+        exit 0
+    fi
+
+    local menu_content
+    menu_content=$(build_menu)
+    [[ -z "$menu_content" ]] && exit 0
+
     local choice
-    choice=$(build_menu | rofi_cmd "󰤨 Network Hub")
+    choice=$(printf "%s\n" "$menu_content" | rofi_cmd "󰤨 Network Hub")
     [[ -z "$choice" ]] && exit 0
 
     case "$choice" in
@@ -230,13 +250,13 @@ main() {
         "● "*)
             # Active connected network clicked
             local current_ssid
-            current_ssid=$(echo "$choice" | sed -E 's/● 󰤨 //; s/ \[Connected.*//')
+            current_ssid=$(echo "$choice" | sed -E 's/^● +[^ ]+ +//; s/ \[Connected.*//')
             handle_active_wifi "$current_ssid"
             ;;
         "  "*)
             # Available network clicked
             local selected_ssid
-            selected_ssid=$(echo "$choice" | sed -E 's/^  [^ ]+ //; s/ \([0-9]+%\)$//')
+            selected_ssid=$(echo "$choice" | sed -E 's/^  [^ ]+ //; s/^󰌾 //; s/ \([0-9]+%\)$//')
             handle_wifi_connect "$selected_ssid"
             ;;
     esac
