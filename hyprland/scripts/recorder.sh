@@ -2,20 +2,40 @@
 
 # ==============================================================================
 # SCRIPT: recorder.sh
-# PURPOSE: Lightweight Wayland Screen & Region Recorder for Hyprland
-#          Supports region selection, fullscreen, and audio capture.
-#          Uses wf-recorder with universal H.264 (yuv420p) encoding.
+# PURPOSE: Wayland Screen & Region Recorder with Interactive Audio/Target Menu
+#          Supports: Desktop Audio, Microphone, Mixed (Desktop+Mic), Silent.
 # ==============================================================================
 
 PID_FILE="/tmp/hypr-recorder.pid"
 INFO_FILE="/tmp/hypr-recorder.info"
+MODULES_FILE="/tmp/hypr-recorder.modules"
 SAVE_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
+ROFI_THEME="$HOME/.config/rofi/themes/selector.rasi"
 
 notify() {
     local title="$1"
     local msg="$2"
     local urgency="${3:-normal}"
     notify-send -a "Screen Recorder" -u "$urgency" -i "media-record" "$title" "$msg" 2>/dev/null || true
+}
+
+rofi_cmd() {
+    local prompt="$1"
+    local extra_args=("${@:2}")
+    if [[ -f "$ROFI_THEME" ]]; then
+        rofi -dmenu -i -p "$prompt" -theme "$ROFI_THEME" "${extra_args[@]}"
+    else
+        rofi -dmenu -i -p "$prompt" "${extra_args[@]}"
+    fi
+}
+
+cleanup_audio_modules() {
+    if [[ -f "$MODULES_FILE" ]]; then
+        while read -r mod_id; do
+            [[ -n "$mod_id" ]] && pactl unload-module "$mod_id" 2>/dev/null || true
+        done < "$MODULES_FILE"
+        rm -f "$MODULES_FILE"
+    fi
 }
 
 # --- 1. STOP ACTIVE RECORDING ---
@@ -46,6 +66,7 @@ stop_recording() {
     fi
 
     rm -f "$PID_FILE" "$INFO_FILE"
+    cleanup_audio_modules
     pkill -RTMIN+9 waybar 2>/dev/null || true
 
     # Check that output file exists and is valid
@@ -87,7 +108,7 @@ stop_recording() {
     exit 0
 }
 
-# Handle informational and stop queries first
+# --- 2. EARLY STATUS OR STOP DISPATCH ---
 if [[ "$1" == "--status" ]]; then
     if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
         echo '{"text":"󰑋 REC","class":"recording","tooltip":"Recording in progress\nClick to stop"}'
@@ -102,12 +123,12 @@ if [[ "$1" == "--stop" || "$1" == "-s" ]]; then
     exit 0
 fi
 
-# If already recording, toggle off and stop
+# If already recording, toggle off and stop immediately
 if [[ -f "$PID_FILE" ]]; then
     stop_recording
 fi
 
-# --- 2. PRE-FLIGHT DEPENDENCY CHECK ---
+# --- 3. PRE-FLIGHT DEPENDENCY CHECK ---
 if ! command -v wf-recorder >/dev/null 2>&1; then
     notify "Screen Recorder Error" "wf-recorder is not installed.\nInstall with: sudo pacman -S wf-recorder" "critical"
     echo "Error: wf-recorder is not installed. Run: sudo pacman -S wf-recorder" >&2
@@ -120,34 +141,76 @@ if ! command -v slurp >/dev/null 2>&1; then
     exit 1
 fi
 
-# --- 3. PARSE RECORDING OPTIONS ---
-MODE="region"
-RECORD_AUDIO=true
-AUDIO_MODE="desktop" # "desktop", "mic", or custom device
+# --- 4. INTERACTIVE MENU OR CLI PARSING ---
+MODE=""
+AUDIO_TYPE=""
 
+show_menu() {
+    local opt_reg_desk="🔊  Region (Desktop Audio)"
+    local opt_reg_both="🎧  Region (Desktop Audio + Mic)"
+    local opt_reg_mic="🎙️  Region (Microphone Only)"
+    local opt_reg_mute="🔇  Region (Silent / No Audio)"
+    local opt_fs_desk="🖥️   Fullscreen (Desktop Audio)"
+    local opt_fs_both="🎧  Fullscreen (Desktop Audio + Mic)"
+    local opt_fs_mic="🎙️  Fullscreen (Microphone Only)"
+    local opt_fs_mute="🔇  Fullscreen (Silent / No Audio)"
+
+    local items="$opt_reg_desk\n$opt_reg_both\n$opt_reg_mic\n$opt_reg_mute\n$opt_fs_desk\n$opt_fs_both\n$opt_fs_mic\n$opt_fs_mute"
+    local choice
+    choice=$(echo -e "$items" | rofi_cmd "󰑋 Screen Recorder")
+    [[ -z "$choice" ]] && exit 0
+
+    case "$choice" in
+        *"Region (Desktop Audio)"*)
+            MODE="region"; AUDIO_TYPE="desktop" ;;
+        *"Region (Desktop Audio + Mic)"*)
+            MODE="region"; AUDIO_TYPE="both" ;;
+        *"Region (Microphone Only)"*)
+            MODE="region"; AUDIO_TYPE="mic" ;;
+        *"Region (Silent / No Audio)"*)
+            MODE="region"; AUDIO_TYPE="none" ;;
+        *"Fullscreen (Desktop Audio)"*)
+            MODE="fullscreen"; AUDIO_TYPE="desktop" ;;
+        *"Fullscreen (Desktop Audio + Mic)"*)
+            MODE="fullscreen"; AUDIO_TYPE="both" ;;
+        *"Fullscreen (Microphone Only)"*)
+            MODE="fullscreen"; AUDIO_TYPE="mic" ;;
+        *"Fullscreen (Silent / No Audio)"*)
+            MODE="fullscreen"; AUDIO_TYPE="none" ;;
+        *)
+            exit 0 ;;
+    esac
+}
+
+# Parse CLI arguments if provided
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --menu|-m)
+            show_menu
+            shift
+            ;;
         --fullscreen|-f)
             MODE="fullscreen"
             shift
             ;;
-        --no-audio)
-            RECORD_AUDIO=false
+        --region|-r)
+            MODE="region"
             shift
             ;;
-        --mic|-m)
-            RECORD_AUDIO=true
-            AUDIO_MODE="mic"
+        --desktop)
+            AUDIO_TYPE="desktop"
             shift
             ;;
-        --audio=*)
-            RECORD_AUDIO=true
-            AUDIO_MODE="${1#*=}"
+        --mic)
+            AUDIO_TYPE="mic"
             shift
             ;;
-        --audio|-a)
-            RECORD_AUDIO=true
-            AUDIO_MODE="desktop"
+        --both)
+            AUDIO_TYPE="both"
+            shift
+            ;;
+        --no-audio|--none)
+            AUDIO_TYPE="none"
             shift
             ;;
         *)
@@ -156,54 +219,86 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# --- 4. PREPARE DESTINATION ---
+# If neither mode nor audio type specified via CLI, show interactive menu by default
+if [[ -z "$MODE" ]]; then
+    show_menu
+fi
+
+# Fallback defaults if partially set
+MODE="${MODE:-region}"
+AUDIO_TYPE="${AUDIO_TYPE:-desktop}"
+
+# --- 5. PREPARE DESTINATION ---
 mkdir -p "$SAVE_DIR"
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 OUTPUT_FILE="$SAVE_DIR/recording_${TIMESTAMP}.mp4"
 
-# --- 5. SELECT CAPTURE TARGET & AUDIO ---
+# --- 6. SETUP AUDIO STREAMS ---
 RECORDER_ARGS=("-c" "libx264" "-p" "yuv420p" "-f" "$OUTPUT_FILE")
 
-if [[ "$RECORD_AUDIO" == true ]]; then
-    RECORDER_ARGS+=("-C" "aac" "-R" "48000")
-    if [[ "$AUDIO_MODE" == "desktop" ]]; then
-        # Capture system/desktop audio by monitoring the active output sink
+setup_mixed_audio() {
+    local default_sink
+    default_sink=$(pactl get-default-sink 2>/dev/null)
+    local default_source
+    default_source=$(pactl get-default-source 2>/dev/null)
+
+    local sink_mod
+    sink_mod=$(pactl load-module module-null-sink sink_name=hypr_recorder_mix sink_properties=device.description=Hypr_Recorder_Mix 2>/dev/null)
+    local l1
+    l1=$(pactl load-module module-loopback source="${default_sink}.monitor" sink=hypr_recorder_mix latency_msec=20 2>/dev/null)
+    local l2
+    l2=$(pactl load-module module-loopback source="${default_source}" sink=hypr_recorder_mix latency_msec=20 2>/dev/null)
+
+    echo "$l2" >> "$MODULES_FILE"
+    echo "$l1" >> "$MODULES_FILE"
+    echo "$sink_mod" >> "$MODULES_FILE"
+
+    echo "hypr_recorder_mix.monitor"
+}
+
+case "$AUDIO_TYPE" in
+    desktop)
+        RECORDER_ARGS+=("-C" "aac" "-R" "48000")
         DEFAULT_SINK=$(pactl get-default-sink 2>/dev/null)
         if [[ -n "$DEFAULT_SINK" ]]; then
             RECORDER_ARGS+=("--audio=${DEFAULT_SINK}.monitor")
         else
             RECORDER_ARGS+=("--audio")
         fi
-    elif [[ "$AUDIO_MODE" == "mic" ]]; then
-        # Capture microphone (default PulseAudio source)
-        RECORDER_ARGS+=("--audio")
-    else
-        # Custom device
-        RECORDER_ARGS+=("--audio=${AUDIO_MODE}")
-    fi
-fi
+        ;;
+    mic)
+        RECORDER_ARGS+=("-C" "aac" "-R" "48000" "--audio")
+        ;;
+    both)
+        RECORDER_ARGS+=("-C" "aac" "-R" "48000")
+        MIXED_DEV=$(setup_mixed_audio)
+        RECORDER_ARGS+=("--audio=${MIXED_DEV}")
+        ;;
+    none)
+        # No audio flags added
+        ;;
+esac
 
+# --- 7. SELECT CAPTURE TARGET ---
 if [[ "$MODE" == "region" ]]; then
     # Close SwayNC panel so it doesn't block the selection overlay
     swaync-client -cp >/dev/null 2>&1 || true
     sleep 0.05
 
-    # Area selection via slurp
     GEOM=$(slurp)
     if [[ -z "$GEOM" ]]; then
-        # User pressed Esc or cancelled
+        cleanup_audio_modules
         exit 0
     fi
     RECORDER_ARGS+=("-g" "$GEOM")
 else
-    # Fullscreen mode: capture active focused output
     ACTIVE_OUTPUT=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused == true) | .name' | head -1)
     if [[ -n "$ACTIVE_OUTPUT" ]]; then
         RECORDER_ARGS+=("-o" "$ACTIVE_OUTPUT")
     fi
 fi
 
-# --- 6. LAUNCH RECORDING ---
+# --- 8. LAUNCH RECORDING ---
 wf-recorder "${RECORDER_ARGS[@]}" >/dev/null 2>&1 &
 RECORDER_PID=$!
 
@@ -211,12 +306,17 @@ echo "$RECORDER_PID" > "$PID_FILE"
 echo "$OUTPUT_FILE" > "$INFO_FILE"
 pkill -RTMIN+9 waybar 2>/dev/null || true
 
-if [[ "$RECORD_AUDIO" == true ]]; then
-    if [[ "$AUDIO_MODE" == "mic" ]]; then
-        notify "Recording Started 🎙️" "Recording with microphone...\nPress Super+Shift+R to stop."
-    else
-        notify "Recording Started 🔊" "Recording with desktop audio...\nPress Super+Shift+R to stop."
-    fi
-else
-    notify "Recording Started 📹" "Recording video only (silent)...\nPress Super+Shift+R to stop."
-fi
+case "$AUDIO_TYPE" in
+    desktop)
+        notify "Recording Started 🔊" "Recording screen + desktop audio...\nPress Super+Shift+R to stop."
+        ;;
+    both)
+        notify "Recording Started 🎧" "Recording screen + desktop audio + microphone...\nPress Super+Shift+R to stop."
+        ;;
+    mic)
+        notify "Recording Started 🎙️" "Recording screen + microphone...\nPress Super+Shift+R to stop."
+        ;;
+    none)
+        notify "Recording Started 📹" "Recording screen (video only)...\nPress Super+Shift+R to stop."
+        ;;
+esac
