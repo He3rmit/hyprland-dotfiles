@@ -24,8 +24,8 @@ hl.bind(mainMod .. " + ALT + E", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpap
 --  These are personal mappings for 'Special Workspaces' using Home Row keys.
 --  Uncomment and customize in your local user-keybinds.lua if needed.
 -- ──────────────────────────────────────────────────────────────────────────────
-hl.bind(mainMod .. " + code:39", hl.dsp.workspace.toggle_special("standard"))        -- code:39 = S
-hl.bind(mainMod .. " + SHIFT + code:39", hl.dsp.window.move({ workspace = "special:standard" }))
+hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("standard"))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:standard" }))
 -- ──────────────────────────────────────────────────────────────────────────────
 --  CLUSTER 3: WINDOW STATE (Bottom Left: Z-X-C-V)
 -- ──────────────────────────────────────────────────────────────────────────────
