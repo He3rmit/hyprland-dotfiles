@@ -55,6 +55,21 @@
         }
     },
     // -------------------------------------------------------------------------
+    // KEYBOARD & LANGUAGE
+    // -------------------------------------------------------------------------
+    "hyprland/language": {
+        "format": "󰌌\n{}",
+        "format-en": "US",
+        "format-de": "DE",
+        "format-fr": "FR",
+        "format-es": "ES",
+        "format-ru": "RU",
+        "format-jp": "JP",
+        "on-click": "hyprctl switchxkblayout current next",
+        "tooltip": true,
+        "tooltip-format": "Keyboard Layout: {long}"
+    },
+    // -------------------------------------------------------------------------
     // HARDWARE MODULES
     // -------------------------------------------------------------------------
     "cpu": {

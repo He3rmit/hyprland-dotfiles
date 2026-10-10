@@ -6,7 +6,7 @@
   "height": 45,
   "modules-left": ["hyprland/workspaces"],
   "modules-center": [],
-  "modules-right": ["tray", "clock", "custom/notification", "custom/peripheral", "custom/power"],
+  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"],
 
   "hyprland/workspaces": { "format": "{icon}" },
   "clock": { "format": "\n{:%H\n%M}" },

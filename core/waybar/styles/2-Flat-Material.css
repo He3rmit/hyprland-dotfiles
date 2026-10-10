@@ -25,7 +25,7 @@ window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
 window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
 window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
 
-#cpu, #memory, #network, #clock, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
     background: @color0;
     border-radius: 6px;
     padding: 4px 0px;
@@ -40,6 +40,7 @@ window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
 window#waybar.horizontal #network, window#waybar.top #network, window#waybar.bottom #network,
 window#waybar.horizontal #clock, window#waybar.top #clock, window#waybar.bottom #clock,
+window#waybar.horizontal #language, window#waybar.top #language, window#waybar.bottom #language,
 window#waybar.horizontal #custom-peripheral, window#waybar.top #custom-peripheral, window#waybar.bottom #custom-peripheral,
 window#waybar.horizontal #custom-power, window#waybar.top #custom-power, window#waybar.bottom #custom-power,
 window#waybar.horizontal #custom-notification, window#waybar.top #custom-notification, window#waybar.bottom #custom-notification,

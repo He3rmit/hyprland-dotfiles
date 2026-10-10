@@ -264,7 +264,8 @@ cat > "$KB_CONF" << EOF
 hl.config({
     input = {
         kb_layout = "${KB_LAYOUT:-us}",
-        kb_variant = "${KB_VARIANT:-}"
+        kb_variant = "${KB_VARIANT:-}",
+        kb_options = "${KB_OPTIONS:-}"
     }
 })
 EOF

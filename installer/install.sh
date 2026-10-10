@@ -80,8 +80,9 @@ if [[ "$SELECTION" == "+ Create New Profile" ]]; then
 
     # Keyboard Layout Selection
     print_step ">> Configuring Input Methods..."
-    KB_LAYOUT=$(gum input --placeholder "Enter Keyboard Layout (e.g. us, fr, de, jp)" --value "us")
+    KB_LAYOUT=$(gum input --placeholder "Enter Keyboard Layout (e.g. us, or us,de)" --value "us")
     KB_VARIANT=$(gum input --placeholder "Enter Keyboard Variant (optional, e.g. mac, dvorak)")
+    KB_OPTIONS=$(gum input --placeholder "Enter Keyboard Options (e.g. grp:alt_shift_toggle,caps:escape)" --value "")
     
     NEW_DIR="$DOTFILES_DIR/hosts/$PROFILE_NAME"
     if [[ -d "$NEW_DIR" ]]; then
@@ -100,6 +101,7 @@ if [[ "$SELECTION" == "+ Create New Profile" ]]; then
     sed -i "s/HOST_NAME=.*/HOST_NAME=\"$PROFILE_NAME\"/" "$NEW_DIR/profile.conf"
     sed -i "s/KB_LAYOUT=.*/KB_LAYOUT=\"$KB_LAYOUT\"/" "$NEW_DIR/profile.conf"
     sed -i "s/KB_VARIANT=.*/KB_VARIANT=\"$KB_VARIANT\"/" "$NEW_DIR/profile.conf"
+    sed -i "s/KB_OPTIONS=.*/KB_OPTIONS=\"$KB_OPTIONS\"/" "$NEW_DIR/profile.conf"
     
     # --- Monitor & Scaling Wizard ---
     echo ""
@@ -140,7 +142,7 @@ fi
 
 if [[ -f "$DOTFILES_DIR/hosts/$TARGET/profile.conf" ]]; then
     source "$DOTFILES_DIR/hosts/$TARGET/profile.conf"
-    export HOST_TYPE HOST_NAME HAS_BATTERY HAS_BACKLIGHT HAS_TOUCHPAD WAYBAR_LAYOUT WAYBAR_STYLE WAYBAR_POSITION KB_LAYOUT KB_VARIANT MONITOR_NAME SCALE
+    export HOST_TYPE HOST_NAME HAS_BATTERY HAS_BACKLIGHT HAS_TOUCHPAD WAYBAR_LAYOUT WAYBAR_STYLE WAYBAR_POSITION KB_LAYOUT KB_VARIANT KB_OPTIONS MONITOR_NAME SCALE
 fi
 
 print_success "Target locked: $TARGET ($HOST_TYPE)"

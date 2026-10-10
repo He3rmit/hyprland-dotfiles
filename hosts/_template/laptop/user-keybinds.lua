@@ -20,3 +20,4 @@
 -- you MUST unbind it first before re-binding it here:
 -- hl.unbind(mainMod .. " + Q")
 -- hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("alacritty"))
+

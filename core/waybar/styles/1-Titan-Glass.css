@@ -43,7 +43,7 @@ window#waybar.bottom {
     padding: 5px 10px;
 }
 
-#cpu, #memory, #network, #clock, #custom-peripheral, #custom-power, #custom-notification, #tray, #workspaces {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #tray, #workspaces {
     background: alpha(@color0, 0.8);
     border: 1px solid alpha(@color6, 0.25);
     border-radius: 8px;
@@ -61,6 +61,7 @@ window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
 window#waybar.horizontal #network, window#waybar.top #network, window#waybar.bottom #network,
 window#waybar.horizontal #clock, window#waybar.top #clock, window#waybar.bottom #clock,
+window#waybar.horizontal #language, window#waybar.top #language, window#waybar.bottom #language,
 window#waybar.horizontal #custom-peripheral, window#waybar.top #custom-peripheral, window#waybar.bottom #custom-peripheral,
 window#waybar.horizontal #custom-power, window#waybar.top #custom-power, window#waybar.bottom #custom-power,
 window#waybar.horizontal #custom-notification, window#waybar.top #custom-notification, window#waybar.bottom #custom-notification,

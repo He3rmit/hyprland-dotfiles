@@ -14,13 +14,20 @@ declare -A KEYCODES
 
 # --- ENGINE: KEYCODE DISCOVERY ---
 generate_keycode_map() {
-    local layout=$(grep "kb_layout" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | tr -d '", ' | xargs)
-    local variant=$(grep "kb_variant" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | tr -d '", ' | xargs)
+    # Extract layout and variant, safely stripping quotes/spaces while preserving commas for multi-layout configs
+    local layout=$(grep "kb_layout" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | sed -e 's/["'\'' ]//g' | xargs)
+    local variant=$(grep "kb_variant" "$KB_CONFIG" 2>/dev/null | awk -F '=' '{print $2}' | sed -e 's/["'\'' ]//g' | xargs)
 
     layout=${layout:-us}
     variant=${variant:-""}
 
     local xkb_dump=$(xkbcli compile-keymap --layout "$layout" --variant "$variant" 2>/dev/null)
+    # If compilation fails on combined string, fallback to primary layout
+    if [[ -z "$xkb_dump" && "$layout" == *","* ]]; then
+        local primary_layout="${layout%%,*}"
+        local primary_variant="${variant%%,*}"
+        xkb_dump=$(xkbcli compile-keymap --layout "$primary_layout" --variant "$primary_variant" 2>/dev/null)
+    fi
     if [[ -z "$xkb_dump" ]]; then return; fi
 
     while read -r entry; do
@@ -56,6 +63,7 @@ clean_key() {
     k="${k//mouse_down/Scroll Down}"
     k="${k//mouse_up/Scroll Up}"
     k="${k//code:202/Fn + F9 (Touchpad)}"
+    k="${k//slash//}"
 
     # Dynamic XKB Keycode mapping (e.g., code:61 -> /, code:10 -> 1)
     if [[ "$k" =~ code:([0-9]+) ]]; then

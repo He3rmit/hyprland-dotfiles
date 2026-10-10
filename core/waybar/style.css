@@ -49,6 +49,7 @@ window#waybar.bottom {
 #memory,
 #network,
 #clock,
+#language,
 #custom-peripheral,
 #custom-power,
 #custom-notification {
