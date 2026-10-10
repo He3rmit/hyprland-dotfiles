@@ -126,6 +126,7 @@ class HydraHub(Gtk.Window):
         self._cleanup_cache()
         self._load_vault()
         threading.Thread(target=self._load_emojis, daemon=True).start()
+        GLib.idle_add(self._dispatch_page, "", 0)
 
     # ─── SETUP ───────────────────────────────────────────────────────────────
 
@@ -170,10 +171,9 @@ class HydraHub(Gtk.Window):
     def _on_tab_switched(self, notebook, page, page_num):
         """Re-fire the search when switching tabs so the grid is never stale."""
         query = self.search.get_text().strip()
-        if query or page_num == 3:
-            if self.debounce_id:
-                GLib.source_remove(self.debounce_id)
-            self.debounce_id = GLib.timeout_add(100, self._dispatch_page, query, page_num)
+        if self.debounce_id:
+            GLib.source_remove(self.debounce_id)
+        self.debounce_id = GLib.timeout_add(100, self._dispatch_page, query, page_num)
 
     def _dispatch_page(self, query, page):
         self.debounce_id = None
@@ -196,8 +196,6 @@ class HydraHub(Gtk.Window):
         self.current_query = query
 
         page = self.notebook.get_current_page()
-        if not query and page != 3:
-            return False
         if page == 0:
             threading.Thread(target=self._fetch_gifs, args=(query, gen), daemon=True).start()
         elif page == 1:
@@ -210,10 +208,16 @@ class HydraHub(Gtk.Window):
 
     def _fetch_gifs(self, query, gen):
         if self.api_keys["giphy"]:
-            url = f"https://api.giphy.com/v1/gifs/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            if query:
+                url = f"https://api.giphy.com/v1/gifs/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            else:
+                url = f"https://api.giphy.com/v1/gifs/trending?api_key={self.api_keys['giphy']}&limit=30"
             provider = "GIPHY"
         elif self.api_keys["klipy"]:
-            url = f"https://api.klipy.co/v2/search?q={query}&key={self.api_keys['klipy']}&limit=30"
+            if query:
+                url = f"https://api.klipy.co/v2/search?q={query}&key={self.api_keys['klipy']}&limit=30"
+            else:
+                url = f"https://api.klipy.co/v2/featured?key={self.api_keys['klipy']}&limit=30"
             provider = "KLIPY"
         else:
             return
@@ -222,10 +226,16 @@ class HydraHub(Gtk.Window):
 
     def _fetch_stickers(self, query, gen):
         if self.api_keys["giphy"]:
-            url = f"https://api.giphy.com/v1/stickers/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            if query:
+                url = f"https://api.giphy.com/v1/stickers/search?q={query}&api_key={self.api_keys['giphy']}&limit=30"
+            else:
+                url = f"https://api.giphy.com/v1/stickers/trending?api_key={self.api_keys['giphy']}&limit=30"
             provider = "GIPHY"
         elif self.api_keys["klipy"]:
-            url = f"https://api.klipy.co/v2/stickers/search?q={query}&key={self.api_keys['klipy']}&limit=30"
+            if query:
+                url = f"https://api.klipy.co/v2/search?q={query}&searchfilter=sticker&key={self.api_keys['klipy']}&limit=30"
+            else:
+                url = f"https://api.klipy.co/v2/featured?searchfilter=sticker&key={self.api_keys['klipy']}&limit=30"
             provider = "KLIPY"
         else:
             return
@@ -235,7 +245,8 @@ class HydraHub(Gtk.Window):
     def _show_empty_message(self, grid, query):
         self._clear(grid)
         lbl = Gtk.Label()
-        lbl.set_markup(f"<span color='#a6adc8'>No items found for '<b>{query}</b>'</span>")
+        msg = f"No items found for '<b>{query}</b>'" if query else "No items available."
+        lbl.set_markup(f"<span color='#a6adc8'>{msg}</span>")
         lbl.set_padding(20, 20)
         grid.add(lbl)
         grid.show_all()
@@ -250,7 +261,7 @@ class HydraHub(Gtk.Window):
             if self.search_gen != gen or r.status_code != 200:
                 return
 
-            data_key = "data" if (provider == "GIPHY" or is_sticker) else "results"
+            data_key = "data" if provider == "GIPHY" else "results"
             items = r.json().get(data_key, [])
 
             if self.search_gen != gen:
@@ -269,18 +280,20 @@ class HydraHub(Gtk.Window):
                         thumb = item["images"]["fixed_width_small"]["url"]
                         full  = item["images"]["original"]["url"]
                     else:
+                        mf = item.get("media_formats", {})
                         if is_sticker:
-                            imgs = item.get("images", {})
-                            fw_small = imgs.get("fixed_width_small", {})
-                            thumb = (fw_small.get("webp")
-                                  or fw_small.get("url")
-                                  or imgs.get("preview_webp", {}).get("url")
-                                  or imgs.get("preview_gif", {}).get("url"))
-                            full  = (imgs.get("original", {}).get("url") or thumb)
+                            thumb = (mf.get("tinygif_transparent", {}).get("url")
+                                  or mf.get("nanogif_transparent", {}).get("url")
+                                  or mf.get("tinygif", {}).get("url")
+                                  or mf.get("nanogif", {}).get("url")
+                                  or mf.get("gif", {}).get("url"))
+                            full  = (mf.get("gif_transparent", {}).get("url")
+                                  or mf.get("gif", {}).get("url")
+                                  or mf.get("webp_transparent", {}).get("url")
+                                  or mf.get("webp", {}).get("url"))
                         else:
-                            mf = item.get("media_formats", {})
-                            thumb = mf.get("nanogif", {}).get("url") or mf.get("gif", {}).get("url")
-                            full  = mf.get("gif", {}).get("url")
+                            thumb = mf.get("nanogif", {}).get("url") or mf.get("tinygif", {}).get("url") or mf.get("gif", {}).get("url")
+                            full  = mf.get("gif", {}).get("url") or mf.get("mediumgif", {}).get("url")
 
                     if thumb and full:
                         download_targets.append((thumb, full))
@@ -474,17 +487,32 @@ class HydraHub(Gtk.Window):
             url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
             cache_dir = os.path.expanduser("~/.cache/pilot-hydra")
             os.makedirs(cache_dir, exist_ok=True)
-            cache_gif = os.path.join(cache_dir, f"ck_{url_hash}.gif")
 
-            # 1. Download full animated GIF (only if not already cached)
-            if not os.path.exists(cache_gif):
+            ext = ".gif"
+            url_clean = url.lower().split("?")[0]
+            if url_clean.endswith(".webp"):
+                ext = ".webp"
+            elif url_clean.endswith(".png"):
+                ext = ".png"
+
+            cache_file = os.path.join(cache_dir, f"ck_{url_hash}{ext}")
+
+            # 1. Download full animated GIF or Sticker (only if not already cached)
+            if not os.path.exists(cache_file):
                 data = requests.get(url, timeout=10).content
-                with open(cache_gif, "wb") as f:
+                if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+                    ext = ".webp"
+                elif data[:8] == b"\x89PNG\r\n\x1a\n":
+                    ext = ".png"
+                elif data[:3] == b"GIF":
+                    ext = ".gif"
+                cache_file = os.path.join(cache_dir, f"ck_{url_hash}{ext}")
+                with open(cache_file, "wb") as f:
                     f.write(data)
 
             # 2. Copy as a File URI (The "Attachment Protocol")
             # This makes Ctrl+V trigger a file upload in Discord/Telegram/Browsers
-            file_uri = f"file://{cache_gif}"
+            file_uri = f"file://{cache_file}"
             subprocess.run(
                 ["wl-copy", "--type", "text/uri-list"],
                 input=file_uri.encode()
@@ -492,7 +520,7 @@ class HydraHub(Gtk.Window):
 
             self._notify(
                 "Payload Ready",
-                f"Animation cached → Ctrl+V to Upload"
+                f"Media cached → Ctrl+V to Upload"
             )
         except Exception as e:
             print(f"[Hydra] capture error: {e}")
