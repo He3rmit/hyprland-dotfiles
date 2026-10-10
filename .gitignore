@@ -33,3 +33,7 @@ __pycache__/
 *.tar.gz
 titanfall-media-pack.tar.gz
 
+# for Code Testing
+*.vscode
+
+
