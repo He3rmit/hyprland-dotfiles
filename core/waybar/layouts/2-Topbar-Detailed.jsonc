@@ -6,9 +6,19 @@
   "margin": "0 10 0 10",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
-  "modules-right": ["cpu", "memory", "network", "hyprland/language", "tray", "custom/peripheral", "custom/notification", "custom/power"],
+  "modules-right": ["cpu", "memory", "network", "tray", "hyprland/language", "custom/peripheral", "custom/notification", "custom/power"],
 
-  "hyprland/language": { "format": "󰌌 {}" },
+  "hyprland/language": {
+      "format": "󰌌 {}",
+      "format-en": "󰌌 US",
+      "format-us": "󰌌 US",
+      "format-de": "󰌌 DE",
+      "format-fr": "󰌌 FR",
+      "format-es": "󰌌 ES",
+      "format-ru": "󰌌 RU",
+      "format-ja": "󰌌 JP",
+      "format-jp": "󰌌 JP"
+  },
   "hyprland/workspaces": { "format": "{icon}" },
   "cpu": { "format": "  CPU: {usage}%" },
   "memory": { "format": "  RAM: {used:0.1f}G / {total:0.1f}G" },

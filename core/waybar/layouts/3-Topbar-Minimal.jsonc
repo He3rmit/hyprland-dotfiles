@@ -6,8 +6,19 @@
   "margin": "0 10 0 10",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "custom/notification", "custom/peripheral", "custom/power"],
+  "modules-right": ["tray", "hyprland/language", "custom/peripheral", "custom/notification", "custom/power"],
 
+  "hyprland/language": {
+      "format": "󰌌 {}",
+      "format-en": "󰌌 US",
+      "format-us": "󰌌 US",
+      "format-de": "󰌌 DE",
+      "format-fr": "󰌌 FR",
+      "format-es": "󰌌 ES",
+      "format-ru": "󰌌 RU",
+      "format-ja": "󰌌 JP",
+      "format-jp": "󰌌 JP"
+  },
   "hyprland/workspaces": { "format": "{icon}" },
   "custom/peripheral": {
       "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"

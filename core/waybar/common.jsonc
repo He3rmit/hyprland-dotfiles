@@ -59,12 +59,14 @@
     // -------------------------------------------------------------------------
     "hyprland/language": {
         "format": "󰌌\n{}",
-        "format-en": "US",
-        "format-de": "DE",
-        "format-fr": "FR",
-        "format-es": "ES",
-        "format-ru": "RU",
-        "format-jp": "JP",
+        "format-en": "󰌌\nUS",
+        "format-us": "󰌌\nUS",
+        "format-de": "󰌌\nDE",
+        "format-fr": "󰌌\nFR",
+        "format-es": "󰌌\nES",
+        "format-ru": "󰌌\nRU",
+        "format-ja": "󰌌\nJP",
+        "format-jp": "󰌌\nJP",
         "on-click": "hyprctl switchxkblayout current next",
         "tooltip": true,
         "tooltip-format": "Keyboard Layout: {long}"

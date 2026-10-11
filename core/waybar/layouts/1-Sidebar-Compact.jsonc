@@ -2,5 +2,5 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "position": "left",
   "modules-left": ["cpu", "memory", "network", "hyprland/workspaces"],
-  "modules-right": ["tray", "clock", "custom/notification", "custom/peripheral", "custom/power"]
+  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"]
 }
