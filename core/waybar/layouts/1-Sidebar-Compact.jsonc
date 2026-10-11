@@ -2,5 +2,17 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "position": "left",
   "modules-left": ["cpu", "memory", "network", "hyprland/workspaces"],
-  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"]
+  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"],
+
+  "hyprland/language": {
+      "format": "󰌌\n{}",
+      "format-en": "US",
+      "format-us": "US",
+      "format-de": "DE",
+      "format-fr": "FR",
+      "format-es": "ES",
+      "format-ru": "RU",
+      "format-ja": "JP",
+      "format-jp": "JP"
+  }
 }
