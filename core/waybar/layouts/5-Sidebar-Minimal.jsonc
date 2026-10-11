@@ -8,17 +8,6 @@
   "modules-center": [],
   "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"],
 
-  "hyprland/language": {
-      "format": "󰌌\n{}",
-      "format-en": "US",
-      "format-us": "US",
-      "format-de": "DE",
-      "format-fr": "FR",
-      "format-es": "ES",
-      "format-ru": "RU",
-      "format-ja": "JP",
-      "format-jp": "JP"
-  },
   "hyprland/workspaces": { "format": "{icon}" },
   "clock": { "format": "\n{:%H\n%M}" },
   "custom/peripheral": {
