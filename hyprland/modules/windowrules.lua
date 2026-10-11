@@ -45,3 +45,7 @@ hl.window_rule({ match = { class = "^(imv)$" }, float = true, center = true, siz
 hl.window_rule({ match = { class = "^(swappy)$" }, float = true, center = true, no_anim = true })
 hl.window_rule({ match = { class = "^(com.gabm.satty)$" }, float = true, center = true, no_anim = true })
 hl.window_rule({ match = { title = "^(Clip-Preview)$" }, float = true, center = true, size = "960 540", no_anim = true })
+
+-- --- CALENDAR & PIP RULES ---
+hl.window_rule({ match = { class = "^(gsimplecal)$" }, float = true, no_anim = true, pin = true })
+hl.window_rule({ match = { title = "^(Picture-in-Picture)$" }, float = true, pin = true })

@@ -72,20 +72,23 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + P` | Toggle **Pseudo** |
 
 ### 🛰️ Group 4: System & UI (Right Hand)
-| Key | Action |
-|:---|:---|
-| `Super + N` | **Notification Center** |
-| `Super + L` | **Screen Lock** (Hyprlock) |
-| `Super + B` | **Power Cycle** Performance, Balanced, Power Saver |
-| `Super + Alt + B` | **Waybar Switcher** (Gen 2) |
+| Key | Action | Details |
+|:---|:---|:---|
+| `Super + N` | **Notification Center** | Toggle SwayNC notification center. |
+| `Super + L` | **Screen Lock** | Lock screen with Hyprlock. |
+| `Super + B` | **Power Cycle** | Cycle Performance, Balanced, Power Saver modes. |
+| `Super + Alt + B` | **Waybar Switcher** | Open Generation 2 Waybar layout and style switcher. |
 | `Super + Shift + V` | **Clipboard History** | Browse and paste clipboard history (Rofi). |
 | `Super + Shift + W` | **Network Hub** | Wi-Fi selector, signal monitor & Ethernet status (Rofi). |
 | `Super + Shift + B` | **Bluetooth Hub** | Bluetooth power, device connect & scanner (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra-Omega GTK (Emoji/GIF/Stickers) picker. |
+| `Super + Shift + G` | **Game Mode** | Toggle low-latency gaming mode (disables animations, blur, decorations). |
+| `Super + Space` | **Language / Layout** | Cycle through configured keyboard layouts (`hyprctl switchxkblayout`). |
+| `Super + M` | **Display Project** | Open Windows 11-style projection menu (Duplicate, Extend, PC/Second only). |
 | `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Satty/Swappy. |
 | `Super + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
 | `Super + Alt + R` | **Fullscreen Recorder** | Toggle full monitor screen recording. |
-| `Print` | **Screenshot** (Full/Clipboard) |
+| `Print` | **Screenshot** | Quick full monitor screenshot copied to clipboard. |
 
 ---
 
@@ -151,6 +154,7 @@ In this framework, your "soul" lives in your host-specific folder:
 ### Phase 3: Profile Customization & Deployment
 Customize your host vault files in `~/hyprland-dotfiles/hosts/[your-profile]/`:
 - Edit `monitor.lua` to lock in your refresh rates and display scale.
+- Edit `profile.conf` to configure your keyboard layouts (`KB_LAYOUT="us,jp"`) and layout switching options (`KB_OPTIONS="grp:alt_shift_toggle"`).
 - Edit `user-keybinds.lua` to add your personal application shortcuts.
 - Edit `hypridle.conf` to customize listeners, timeouts, or power-saving rules for your specific hardware.
 
