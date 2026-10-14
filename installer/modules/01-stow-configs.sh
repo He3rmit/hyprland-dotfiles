@@ -70,7 +70,9 @@ if [[ -d "$HOST_CONFIG_DIR" ]]; then
 fi
 
 # Auto-detect and align backlight controller (Intel, AMD, etc.) for SwayNC
-BACKLIGHT_DEV=$(ls /sys/class/backlight 2>/dev/null | head -n 1)
+devs=(/sys/class/backlight/*)
+BACKLIGHT_DEV="${devs[0]##*/}"
+[[ "$BACKLIGHT_DEV" == "*" ]] && BACKLIGHT_DEV=""
 if [[ -n "$BACKLIGHT_DEV" && -f "$HOME/.config/swaync/config.json" ]]; then
     print_step ">> Auto-aligning SwayNC backlight controller ($BACKLIGHT_DEV)..."
     sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$HOME/.config/swaync/config.json"
