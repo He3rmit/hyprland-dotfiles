@@ -43,5 +43,5 @@ alias logout='hyprctl dispatch exit'
 # Put your aliases, distro-specific tools, and custom exports in ~/.zshrc.local
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
-# 9. 🖼️ Fetch on Terminal Open
-fastfetch
+# 9. 🖼️ Fetch on Terminal Open (Interactive terminal window only)
+[[ -o interactive && -t 1 ]] && fastfetch

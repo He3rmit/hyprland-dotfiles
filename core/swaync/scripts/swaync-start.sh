@@ -8,7 +8,9 @@
 CONFIG_FILE="$HOME/.config/swaync/config.json"
 
 if [ -f "$CONFIG_FILE" ]; then
-    BACKLIGHT_DEV=$(ls /sys/class/backlight 2>/dev/null | head -n 1)
+    devs=(/sys/class/backlight/*)
+    BACKLIGHT_DEV="${devs[0]##*/}"
+    [[ "$BACKLIGHT_DEV" == "*" ]] && BACKLIGHT_DEV=""
     if [ -n "$BACKLIGHT_DEV" ]; then
         if grep -q '"device":' "$CONFIG_FILE"; then
             sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$CONFIG_FILE"

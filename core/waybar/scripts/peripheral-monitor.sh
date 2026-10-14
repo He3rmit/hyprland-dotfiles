@@ -16,9 +16,10 @@ SEPARATOR="\n"
 BAT_DEVICE=$(timeout 1s upower -e 2>/dev/null | grep -m 1 'BAT')
 
 if [ -n "$BAT_DEVICE" ]; then
-    RAW_LEVEL=$(timeout 1s upower -i "$BAT_DEVICE" 2>/dev/null | grep -E "percentage:" | awk '{print $2}' | tr -d '%')
+    BAT_INFO=$(timeout 1s upower -i "$BAT_DEVICE" 2>/dev/null)
+    RAW_LEVEL=$(echo "$BAT_INFO" | grep -E "percentage:" | awk '{print $2}' | tr -d '%')
     BAT_LEVEL=${RAW_LEVEL%.*} # Strips any decimals just in case
-    BAT_STATE=$(timeout 1s upower -i "$BAT_DEVICE" 2>/dev/null | grep -E "state:" | awk '{print $2}')
+    BAT_STATE=$(echo "$BAT_INFO" | grep -E "state:" | awk '{print $2}')
     
     ICON="BAT"
     [[ "$BAT_STATE" == "charging" ]] && ICON="⚡"

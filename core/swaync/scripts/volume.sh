@@ -15,16 +15,21 @@ esac
 sleep 0.08
 OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
 
-if echo "$OUT" | grep -qi "MUTED"; then
+if [[ "$OUT" == *"[MUTED]"* || "$OUT" == *"MUTED"* ]]; then
     VOL_PERC=0
     MUTED=true
 else
     MUTED=false
-    NUM=$(echo "$OUT" | grep -oP '\d+(\.\d+)?')
-    if [[ "$NUM" == *.* ]]; then
-        VOL_PERC=$(awk "BEGIN{printf \"%d\", $NUM*100}")
+    num="${OUT#*Volume: }"
+    num="${num%% *}"
+    num="${num%%%*}"
+    if [[ "$num" =~ ^([0-9]+)\.([0-9]{1,2}) ]]; then
+        int_part="${BASH_REMATCH[1]}"
+        dec_part="${BASH_REMATCH[2]}"
+        [[ ${#dec_part} -eq 1 ]] && dec_part="${dec_part}0"
+        VOL_PERC=$(( 10#$int_part * 100 + 10#$dec_part ))
     else
-        VOL_PERC=$NUM
+        VOL_PERC=$(( 10#${num:-0} ))
     fi
 fi
 

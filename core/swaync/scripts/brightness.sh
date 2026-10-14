@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # ~/.config/swaync/scripts/brightness.sh
-DEVICE=$(ls /sys/class/backlight/ 2>/dev/null | head -n 1)
+devs=(/sys/class/backlight/*)
+DEVICE="${devs[0]##*/}"
+[[ "$DEVICE" == "*" ]] && DEVICE=""
 if [ -z "$DEVICE" ]; then
     notify-send -u critical "Brightness" "No backlight device found"
     exit 1
