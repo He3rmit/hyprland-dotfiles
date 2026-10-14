@@ -9,18 +9,7 @@
   "modules-center": ["hyprland/workspaces"],
   "modules-right": ["tray", "clock", "hyprland/language", "custom/peripheral", "custom/notification", "custom/power"],
 
-  "hyprland/language": {
-      "format": "󰌌 {}",
-      "format-en": "US",
-      "format-us": "US",
-      "format-de": "DE",
-      "format-fr": "FR",
-      "format-es": "ES",
-      "format-ru": "RU",
-      "format-ja": "JP",
-      "format-jp": "JP"
-  },
-  "hyprland/workspaces": { "format": "{icon}" },
+  "hyprland/language": { "format": "󰌌 {}" },
   "cpu": { "format": "  {usage}%" },
   "memory": { "format": "  {used:0.1f}G" },
   "network": { "format-wifi": "  {signalStrength}%", "format-ethernet": "󰈀", "format-disconnected": "⚠" },
