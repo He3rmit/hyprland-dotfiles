@@ -24,9 +24,27 @@ SAVEHIST=10000
 HISTFILE=~/.zsh_history
 
 # 5. 📂 Environment
-export EDITOR=$(command -v nvim || command -v micro || command -v nano || echo "vi")
-export TERMINAL=kitty
-export BROWSER=$(command -v brave || command -v firefox || command -v chromium || echo "xdg-open")
+if (( $+commands[nvim] )); then
+    export EDITOR="nvim"
+elif (( $+commands[micro] )); then
+    export EDITOR="micro"
+elif (( $+commands[nano] )); then
+    export EDITOR="nano"
+else
+    export EDITOR="vi"
+fi
+
+export TERMINAL="kitty"
+
+if (( $+commands[brave] )); then
+    export BROWSER="brave"
+elif (( $+commands[firefox] )); then
+    export BROWSER="firefox"
+elif (( $+commands[chromium] )); then
+    export BROWSER="chromium"
+else
+    export BROWSER="xdg-open"
+fi
 
 # Add your custom scripts to PATH so you can run them from anywhere
 export PATH=$HOME/.local/bin:$HOME/.config/hypr/scripts:$PATH

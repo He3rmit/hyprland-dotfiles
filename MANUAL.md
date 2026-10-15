@@ -44,6 +44,8 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 - **Super + [1-0]**: Switch to Workspaces 1-10 (Global Engine).
 - **Super + [F1-F12]**: Switch to Special Workspaces 11-22 (Personal Vault — see Section 4).
 - **Super + Shift + [1-0]**: Move window to workspace.
+- **Super + [Arrows]**: Focus window in direction (Left, Right, Up, Down).
+- **Super + Shift + [Arrows]**: Move/swap window in direction.
 
 ### 🚀 Group 1: Basic App Launchers
 | Key | Action |
@@ -85,10 +87,10 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Shift + G` | **Game Mode** | Toggle low-latency gaming mode (disables animations, blur, decorations). |
 | `Super + Space` | **Language / Layout** | Cycle through configured keyboard layouts (`hyprctl switchxkblayout`). |
 | `Super + M` | **Display Project** | Open Windows 11-style projection menu (Duplicate, Extend, PC/Second only). |
-| `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Satty/Swappy. |
+| `Print` | **Screenshot** | Quick full monitor screenshot copied to clipboard. |
+| `Shift + Print` / `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Swappy. |
 | `Super + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
 | `Super + Alt + R` | **Fullscreen Recorder** | Toggle full monitor screen recording. |
-| `Print` | **Screenshot** | Quick full monitor screenshot copied to clipboard. |
 
 ---
 

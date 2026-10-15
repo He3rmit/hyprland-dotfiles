@@ -38,21 +38,22 @@ if [ -z "$OUT" ]; then
 fi
 
 # 4. PARSE: Extract volume and mute status
-if echo "$OUT" | grep -qi "MUTED"; then
+if [[ "$OUT" == *"[MUTED]"* || "$OUT" == *"MUTED"* ]]; then
   VOL_PERC=0
   MUTED=true
 else
   MUTED=false
-  # Robust parsing for both percentage and decimal outputs
-  VOL_PERC=$(echo "$OUT" | awk '{
-    for(i=1;i<=NF;i++){
-      if($i ~ /[0-9]+%/){ gsub(/[^0-9]/,"",$i); print $i; exit }
-    }
-  }')
-  if [ -z "$VOL_PERC" ]; then
-    VOL_PERC=$(echo "$OUT" | awk '{ for(i=1;i<=NF;i++) if($i ~ /[0-9]+\.[0-9]+/){ printf "%d", $i*100; exit } }')
+  num="${OUT#*Volume: }"
+  num="${num%% *}"
+  num="${num%%%*}"
+  if [[ "$num" =~ ^([0-9]+)\.([0-9]{1,2}) ]]; then
+    int_part="${BASH_REMATCH[1]}"
+    dec_part="${BASH_REMATCH[2]}"
+    [[ ${#dec_part} -eq 1 ]] && dec_part="${dec_part}0"
+    VOL_PERC=$(( 10#$int_part * 100 + 10#$dec_part ))
+  else
+    VOL_PERC=$(( 10#${num:-0} ))
   fi
-  VOL_PERC=${VOL_PERC:-0}
 fi
 
 # 5. NOTIFY: Update the SwayNC HUD

@@ -3,6 +3,7 @@
 CORE_WALL_DIR="$HOME/.config/wallpapers/library"
 USER_WALL_DIR="$HOME/Pictures/Wallpapers"
 CURRENT_WALLPAPER_FILE="$HOME/.config/wallpapers/.current_wallpaper"
+SCRIPT_ACTION="$1"
 
 # Create user directory if missing to prevent find errors
 mkdir -p "$USER_WALL_DIR"
@@ -77,7 +78,7 @@ apply_wallpaper() {
         # Hot reload UI to fetch new colors
         pkill -SIGUSR2 waybar
         swaync-client -rs 2>/dev/null
-        hyprctl reload 2>/dev/null
+        [[ "$SCRIPT_ACTION" != "--init" ]] && hyprctl reload 2>/dev/null
     fi
 }
 

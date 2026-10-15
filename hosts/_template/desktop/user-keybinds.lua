@@ -8,8 +8,8 @@
 -- hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))
 
 -- Example: Custom Special Workspace
--- hl.bind(mainMod .. " + SPACE", hl.dsp.workspace.toggle_special("chat"))
--- hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.window.move({ workspace = "special:chat" }))
+-- hl.bind(mainMod .. " + T", hl.dsp.workspace.toggle_special("chat"))
+-- hl.bind(mainMod .. " + SHIFT + T", hl.dsp.window.move({ workspace = "special:chat" }))
 
 -- Example: Override a core bind
 -- If you want to change a core bind (e.g. Super + Q), you should unbind it first:

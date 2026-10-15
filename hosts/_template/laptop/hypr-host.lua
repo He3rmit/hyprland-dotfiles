@@ -40,7 +40,7 @@ hl.config({
     -- --- HOST-SPECIFIC STARTUP APPS ---
     -- Launch daemons that are only needed on this specific machine.
     -- Example: Start a bluetooth applet if this machine has bluetooth
-    -- hl.exec_cmd("sleep 2 && blueman-applet &")
+    -- hl.exec_cmd("(sleep 2 && exec blueman-applet) &")
     -- --- HOST-SPECIFIC ENVIRONMENT VARIABLES ---
     -- Example: Force screencasting to use Shared Memory (SHM) to fix EGL_BAD_MATCH CPU spikes on Intel
     -- hl.env("XDG_DESKTOP_PORTAL_HYPRLAND_FORCE_SHM", 1)

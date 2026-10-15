@@ -12,8 +12,8 @@
 
 -- --- CUSTOM WORKSPACES ---
 -- Example: A hidden "Special" workspace for a chat app
--- hl.bind(mainMod .. " + SPACE", hl.dsp.workspace.toggle_special("chat"))
--- hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.window.move({ workspace = "special:chat" }))
+-- hl.bind(mainMod .. " + T", hl.dsp.workspace.toggle_special("chat"))
+-- hl.bind(mainMod .. " + SHIFT + T", hl.dsp.window.move({ workspace = "special:chat" }))
 
 -- --- OVERRIDING CORE BINDS ---
 -- Example: If you want to change a core bind (e.g. Super + Q to close), 

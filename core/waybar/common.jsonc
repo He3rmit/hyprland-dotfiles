@@ -160,7 +160,7 @@
     // Master Power Scout (Battery + Bluetooth Combined)
     "custom/peripheral": {
         "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh",
-        "interval": 5,
+        "interval": 20,
         "return-type": "json",
         "format": "{}",
         "on-click": "blueman-manager"

@@ -75,6 +75,9 @@ clean_key() {
         fi
     fi
 
+    # Capitalize arrow keys uniformly
+    k=$(echo "$k" | sed -E 's/\bleft\b/Left/g; s/\bright\b/Right/g; s/\bup\b/Up/g; s/\bdown\b/Down/g')
+
     # Format XF86 keys into readable titles (e.g. XF86MonBrightnessUp -> Mon Brightness Up)
     k=$(echo "$k" | sed -E 's/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
     k=$(echo "$k" | sed 's/+/ + /g; s/  */ /g')
@@ -99,7 +102,13 @@ clean_pseudocode() {
     if [[ "$action" =~ hl\.dsp\.window\.([a-zA-Z0-9_]+) ]]; then
         local method="${BASH_REMATCH[1]}"
         if [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
-            echo "move window -> ${BASH_REMATCH[1]}"
+            local ws=$(echo "${BASH_REMATCH[1]}" | xargs)
+            echo "move window -> $ws"
+            return
+        fi
+        if [[ "$action" =~ direction\ *=\ *\"?([^\"\}]+) ]]; then
+            local dir=$(echo "${BASH_REMATCH[1]}" | xargs)
+            echo "move: $dir"
             return
         fi
         case "$method" in
@@ -120,14 +129,16 @@ clean_pseudocode() {
             echo "focus: ${BASH_REMATCH[1]}"
             return
         elif [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
-            echo "workspace: ${BASH_REMATCH[1]}"
+            local ws=$(echo "${BASH_REMATCH[1]}" | xargs)
+            echo "workspace: $ws"
             return
         fi
     fi
 
     # Special Workspaces / Scratchpads
     if [[ "$action" =~ hl\.dsp\.workspace\.toggle_special\(\"?([^\"]+)\"?\) ]]; then
-        echo "scratchpad: ${BASH_REMATCH[1]}"
+        local sp=$(echo "${BASH_REMATCH[1]}" | xargs)
+        echo "scratchpad: $sp"
         return
     fi
 
