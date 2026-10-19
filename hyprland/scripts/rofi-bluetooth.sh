@@ -41,6 +41,30 @@ is_powered() {
     bluetoothctl show 2>/dev/null | grep -q "Powered: yes"
 }
 
+is_discoverable() {
+    bluetoothctl show 2>/dev/null | grep -q "Discoverable: yes"
+}
+
+show_device_details() {
+    local mac="$1"
+    local name="$2"
+    local info
+    info=$(bluetoothctl info "$mac" 2>/dev/null)
+    local paired="no" trusted="no" blocked="no" connected="no" bat="N/A"
+    while IFS= read -r line; do
+        [[ "$line" =~ Paired:[[:space:]]+([a-zA-Z]+) ]] && paired="${BASH_REMATCH[1]}"
+        [[ "$line" =~ Trusted:[[:space:]]+([a-zA-Z]+) ]] && trusted="${BASH_REMATCH[1]}"
+        [[ "$line" =~ Blocked:[[:space:]]+([a-zA-Z]+) ]] && blocked="${BASH_REMATCH[1]}"
+        [[ "$line" =~ Connected:[[:space:]]+([a-zA-Z]+) ]] && connected="${BASH_REMATCH[1]}"
+        if [[ "$line" =~ Battery[[:space:]]+Percentage: ]]; then
+            if [[ "$line" =~ \(([0-9]+)\) ]]; then bat="${BASH_REMATCH[1]}%"; fi
+        fi
+    done <<< "$info"
+
+    local msg="MAC: ${mac}\nConnected: ${connected}\nBattery: ${bat}\nPaired: ${paired}\nTrusted: ${trusted}"
+    notify_bt "Device: ${name}" "$msg" "normal"
+}
+
 # --- 1. BUILD MENU ---
 build_menu() {
     local entries=()
@@ -52,7 +76,7 @@ build_menu() {
 
     # Read paired devices
     local paired_devices
-    paired_devices=$(bluetoothctl devices 2>/dev/null)
+    paired_devices=$(bluetoothctl devices Paired 2>/dev/null)
 
     if [[ -n "$paired_devices" ]]; then
         while read -r _ mac name; do
@@ -90,6 +114,11 @@ build_menu() {
     fi
 
     entries+=("󰑐 Scan for Nearby Devices")
+    if is_discoverable; then
+        entries+=("󰂯 Discoverable: ON (Click to Turn OFF)")
+    else
+        entries+=("󰂯 Make PC Discoverable (60 seconds)")
+    fi
     entries+=("󰂲 Turn Bluetooth OFF")
 
     printf "%s\n" "${entries[@]}"
@@ -101,43 +130,55 @@ handle_device() {
     local name="$2"
     local is_connected="$3"
 
-    if [[ "$is_connected" == "no" ]]; then
-        notify_bt "Bluetooth" "Connecting to ${name}..."
-        local res
-        res=$(bluetoothctl connect "$mac" 2>&1)
-        if [[ "$res" == *"Connection successful"* ]]; then
-            notify_bt "Bluetooth Connected" "Connected to ${name}."
-        else
-            notify_bt "Bluetooth Failed" "Failed to connect to ${name}." "critical"
-        fi
+    local opt
+    if [[ "$is_connected" == "yes" ]]; then
+        opt=$(printf "󰂲 Disconnect %s\n🔄 Reconnect %s\n🗑️ Forget / Unpair %s\nℹ️ Device Details\n🔙 Back" "$name" "$name" "$name" | rofi_cmd "Device: ${name} [Connected]")
     else
-        local opt
-        opt=$(printf "󰂲 Disconnect %s\n🔄 Reconnect %s\n🗑️ Forget / Unpair %s\n🔙 Back" "$name" "$name" "$name" | rofi_cmd "Device: ${name}")
-        case "$opt" in
-            *"Disconnect"*)
-                notify_bt "Bluetooth" "Disconnecting ${name}..."
-                bluetoothctl disconnect "$mac" >/dev/null 2>&1
-                notify_bt "Bluetooth" "Disconnected ${name}."
-                ;;
-            *"Reconnect"*)
-                notify_bt "Bluetooth" "Re-connecting ${name}..."
-                bluetoothctl disconnect "$mac" >/dev/null 2>&1
-                sleep 0.5
-                bluetoothctl connect "$mac" >/dev/null 2>&1
-                notify_bt "Bluetooth" "Reconnected ${name}."
-                ;;
-            *"Forget"*)
-                notify_bt "Bluetooth" "Removing pairing with ${name}..."
-                bluetoothctl remove "$mac" >/dev/null 2>&1
-                notify_bt "Bluetooth" "Unpaired ${name}."
-                ;;
-        esac
+        opt=$(printf "🔗 Connect to %s\n🗑️ Forget / Unpair %s\nℹ️ Device Details\n🔙 Back" "$name" "$name" | rofi_cmd "Device: ${name} [Disconnected]")
     fi
+
+    case "$opt" in
+        *"Connect to"*)
+            notify_bt "Bluetooth" "Connecting to ${name}..."
+            local res
+            res=$(bluetoothctl connect "$mac" 2>&1)
+            if [[ "$res" == *"Connection successful"* ]]; then
+                notify_bt "Bluetooth Connected" "Connected to ${name}."
+            else
+                notify_bt "Bluetooth Failed" "Failed to connect to ${name}." "critical"
+            fi
+            ;;
+        *"Disconnect"*)
+            notify_bt "Bluetooth" "Disconnecting ${name}..."
+            bluetoothctl disconnect "$mac" >/dev/null 2>&1
+            notify_bt "Bluetooth" "Disconnected ${name}."
+            ;;
+        *"Reconnect"*)
+            notify_bt "Bluetooth" "Re-connecting ${name}..."
+            bluetoothctl disconnect "$mac" >/dev/null 2>&1
+            sleep 0.5
+            bluetoothctl connect "$mac" >/dev/null 2>&1
+            notify_bt "Bluetooth" "Reconnected ${name}."
+            ;;
+        *"Forget"*)
+            notify_bt "Bluetooth" "Removing pairing with ${name}..."
+            bluetoothctl remove "$mac" >/dev/null 2>&1
+            notify_bt "Bluetooth" "Unpaired ${name}."
+            ;;
+        *"Details"*)
+            show_device_details "$mac" "$name"
+            ;;
+        *"Back"*)
+            main
+            ;;
+    esac
 }
 
 # --- 3. SCAN & PAIR ---
 handle_scan() {
-    notify_bt "Bluetooth" "Scanning for nearby devices (5 seconds)..."
+    notify_bt "Bluetooth" "Scanning for nearby devices (and discoverable for 60s)..."
+    bluetoothctl discoverable on >/dev/null 2>&1
+    bluetoothctl discoverable-timeout 60 >/dev/null 2>&1
     bluetoothctl --timeout 5 scan on >/dev/null 2>&1
 
     local discovered=()
@@ -205,6 +246,15 @@ main() {
             ;;
         *"Scan for Nearby Devices"*)
             handle_scan
+            ;;
+        *"Make PC Discoverable"*)
+            bluetoothctl discoverable on >/dev/null 2>&1
+            bluetoothctl discoverable-timeout 60 >/dev/null 2>&1
+            notify_bt "Bluetooth" "PC is now discoverable for 60 seconds."
+            ;;
+        *"Discoverable: ON"*)
+            bluetoothctl discoverable off >/dev/null 2>&1
+            notify_bt "Bluetooth" "PC is no longer discoverable."
             ;;
         *" | "*)
             local mac="${choice##* | }"
