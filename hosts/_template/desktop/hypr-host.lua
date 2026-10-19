@@ -18,10 +18,19 @@ hl.config({
     input = {
         sensitivity = 0,
     },
-    -- 2. Desktop Keybinds
-    -- (Add any macro keys or specific desktop tools here)
-    -- --- HOST-SPECIFIC ENVIRONMENT VARIABLES ---
-    -- Example: Force screencasting to use Shared Memory (SHM) to fix EGL_BAD_MATCH CPU spikes on Intel
-    -- hl.env("XDG_DESKTOP_PORTAL_HYPRLAND_FORCE_SHM", 1)
 })
+
+-- 2. Desktop Keybinds & Custom Tools
+-- (Add any macro keys or desktop-specific application hotkeys here)
+
+-- 3. Host-Specific Environment Variables
+-- Example: Force screencasting to use Shared Memory (SHM) to fix EGL_BAD_MATCH CPU spikes on Intel
+-- hl.env("XDG_DESKTOP_PORTAL_HYPRLAND_FORCE_SHM", 1)
+
+-- 4. Host-Specific Autostart Daemons
+-- Launch background tools specific to this machine (e.g. RGB controllers, fan management)
+hl.on("hyprland.start", function()
+    -- hl.exec_cmd("openrgb --profile default -b 50 &")
+    -- hl.exec_cmd("corectrl --minimize-systray &")
+end)
 

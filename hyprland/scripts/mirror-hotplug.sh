@@ -24,18 +24,14 @@ notify_display() {
 # --- 1. HARDWARE DETECTION ---
 MONITORS_JSON=$(hyprctl monitors all -j 2>/dev/null || echo "[]")
 
-# Find built-in laptop panel (eDP, LVDS, DSI)
-LAPTOP=$(echo "$MONITORS_JSON" | jq -r '.[] | select(.name | test("^(eDP|LVDS|DSI)")) | .name' | head -1)
-
-# Find first external display (HDMI, DP, DisplayPort, etc.)
-EXTERNAL=$(echo "$MONITORS_JSON" | jq -r '.[] | select(.name | test("^(eDP|LVDS|DSI)") | not) | .name' | head -1)
-
-# Preserve configured scaling
-LAPTOP_SCALE=$(echo "$MONITORS_JSON" | jq -r ".[] | select(.name == \"$LAPTOP\") | .scale // 1" | head -1)
-[[ -z "$LAPTOP_SCALE" || "$LAPTOP_SCALE" == "null" ]] && LAPTOP_SCALE="1"
-
-EXT_SCALE=$(echo "$MONITORS_JSON" | jq -r ".[] | select(.name == \"$EXTERNAL\") | .scale // 1" | head -1)
-[[ -z "$EXT_SCALE" || "$EXT_SCALE" == "null" ]] && EXT_SCALE="1"
+# Find laptop and external display properties in a single pass
+read -r LAPTOP EXTERNAL LAPTOP_SCALE EXT_SCALE < <(echo "$MONITORS_JSON" | jq -r '
+  (map(select(.name | test("^(eDP|LVDS|DSI)"))) | .[0]) as $lap |
+  (map(select(.name | test("^(eDP|LVDS|DSI)") | not)) | .[0]) as $ext |
+  "\($lap.name // "-") \($ext.name // "-") \($lap.scale // 1) \($ext.scale // 1)"
+')
+[[ "$LAPTOP" == "-" ]] && LAPTOP=""
+[[ "$EXTERNAL" == "-" ]] && EXTERNAL=""
 
 if [[ -z "$LAPTOP" ]]; then
     notify_display "Display Error" "No built-in laptop screen detected." "critical"

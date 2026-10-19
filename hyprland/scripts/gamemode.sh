@@ -19,6 +19,13 @@ notify_game() {
 }
 
 is_active() {
+    # Check live compositor state first to prevent desync across reloads
+    local opt
+    opt=$(hyprctl getoption animations:enabled 2>/dev/null)
+    if [[ -n "$opt" ]]; then
+        [[ "$opt" == *"false"* || "$opt" == *"int: 0"* ]]
+        return $?
+    fi
     [[ -f "$STATE_FILE" ]]
 }
 
@@ -67,20 +74,26 @@ enable_gamemode() {
 }
 
 disable_gamemode() {
-    # Reload config to restore all user visual settings, animations & host overrides
+    # 1. Immediately re-enable animations via live eval for instant visual feedback
+    hyprctl eval "hl.config({ animations = { enabled = true } })" >/dev/null 2>&1 || \
+    hyprctl keyword animations:enabled 1 >/dev/null 2>&1
+
+    # 2. Reload config to restore all user visual settings, blur, gaps & rounding
     hyprctl reload >/dev/null 2>&1
 
-    # Resume hypridle
+    # 3. Resume hypridle
     killall -CONT hypridle 2>/dev/null || true
 
-    # Restore previous power profile
-    if [[ -f "$PROFILE_FILE" ]] && command -v powerprofilesctl >/dev/null 2>&1; then
-        local prev_profile
-        prev_profile=$(cat "$PROFILE_FILE" 2>/dev/null)
-        if [[ -n "$prev_profile" ]]; then
-            powerprofilesctl set "$prev_profile" 2>/dev/null || true
+    # 4. Restore previous power profile (with fallback to balanced)
+    if command -v powerprofilesctl >/dev/null 2>&1; then
+        local prev_profile="balanced"
+        if [[ -f "$PROFILE_FILE" ]]; then
+            local saved_profile
+            saved_profile=$(cat "$PROFILE_FILE" 2>/dev/null)
+            [[ -n "$saved_profile" ]] && prev_profile="$saved_profile"
+            rm -f "$PROFILE_FILE"
         fi
-        rm -f "$PROFILE_FILE"
+        powerprofilesctl set "$prev_profile" 2>/dev/null || true
     fi
 
     rm -f "$STATE_FILE"

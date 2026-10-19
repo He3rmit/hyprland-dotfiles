@@ -25,8 +25,18 @@ rofi_cmd() {
 }
 
 # --- 1. PROBE HARDWARE ---
-WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device status | grep ":wifi$" | cut -d':' -f1 | head -1)
-ETH_DEV=$(nmcli -t -f DEVICE,TYPE device status | grep ":ethernet$" | cut -d':' -f1 | head -1)
+WIFI_DEV=""
+ETH_DEV=""
+ETH_STATE=""
+
+while IFS=':' read -r dev type state; do
+    if [[ "$type" == "wifi" && -z "$WIFI_DEV" ]]; then
+        WIFI_DEV="$dev"
+    elif [[ "$type" == "ethernet" && -z "$ETH_DEV" ]]; then
+        ETH_DEV="$dev"
+        ETH_STATE="$state"
+    fi
+done < <(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null)
 
 # Check Wi-Fi Radio state
 WIFI_RADIO=$(nmcli radio wifi 2>/dev/null)
@@ -37,12 +47,12 @@ build_menu() {
 
     # --- ETHERNET STATUS ---
     if [[ -n "$ETH_DEV" ]]; then
-        local eth_state
-        eth_state=$(nmcli -t -f DEVICE,STATE device status | grep "^${ETH_DEV}:" | cut -d':' -f2)
-        local eth_ip
-        eth_ip=$(nmcli -g IP4.ADDRESS device show "$ETH_DEV" 2>/dev/null | head -1 | cut -d'/' -f1)
+        local eth_ip=""
+        if [[ "$ETH_STATE" == "connected" ]]; then
+            eth_ip=$(nmcli -g IP4.ADDRESS device show "$ETH_DEV" 2>/dev/null | head -1 | cut -d'/' -f1)
+        fi
 
-        case "$eth_state" in
+        case "$ETH_STATE" in
             connected)
                 entries+=("󰈀 Ethernet (${ETH_DEV}) • Connected [${eth_ip:-Active}]")
                 ;;
@@ -56,7 +66,7 @@ build_menu() {
                 entries+=("󰈂 Ethernet (${ETH_DEV}) • Cable Unplugged")
                 ;;
             *)
-                entries+=("󰈂 Ethernet (${ETH_DEV}) • ${eth_state}")
+                entries+=("󰈂 Ethernet (${ETH_DEV}) • ${ETH_STATE}")
                 ;;
         esac
     fi
@@ -76,13 +86,8 @@ build_menu() {
         fi
 
         # Find active connected Wi-Fi SSID from the same scan results
-        local active_wifi
-        active_wifi=$(grep "^\*:" <<< "$wifi_list" | head -1)
-        if [[ -n "$active_wifi" ]]; then
-            local act_ssid act_sig
-            act_ssid=$(echo "$active_wifi" | cut -d':' -f2)
-            act_sig=$(echo "$active_wifi" | cut -d':' -f3)
-            entries+=("● 󰤨 ${act_ssid} [Connected • ${act_sig}%]")
+        if [[ "$wifi_list" =~ (^|$'\n')\*:([^:]+):([^:]+): ]]; then
+            entries+=("● 󰤨 ${BASH_REMATCH[2]} [Connected • ${BASH_REMATCH[3]}%]")
         fi
 
         # Parse & deduplicate SSIDs

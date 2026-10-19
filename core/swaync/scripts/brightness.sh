@@ -12,8 +12,12 @@ ID_FILE="/tmp/brightness_notif_id"
 BRCTL="/usr/bin/brightnessctl"
 NOTIFY="/usr/bin/notify-send"
 
-# Get hardware max
-MAX=$($BRCTL --class=backlight max | head -n 1 2>/dev/null)
+# Get hardware max directly from sysfs if available
+if [[ -r "/sys/class/backlight/$DEVICE/max_brightness" ]]; then
+    MAX=$(< "/sys/class/backlight/$DEVICE/max_brightness")
+else
+    MAX=$($BRCTL --class=backlight max 2>/dev/null)
+fi
 
 # Apply 95% cap workaround ONLY for AMD GPU devices (amdgpu_bl*) due to driver 65535 PWM wraparound bug
 if [[ "$DEVICE" == amdgpu* ]]; then
@@ -24,7 +28,11 @@ fi
 
 case "$1" in
   up)
-    CURRENT=$($BRCTL --class=backlight get | head -n 1 2>/dev/null)
+    if [[ -r "/sys/class/backlight/$DEVICE/brightness" ]]; then
+        CURRENT=$(< "/sys/class/backlight/$DEVICE/brightness")
+    else
+        CURRENT=$($BRCTL --class=backlight get 2>/dev/null)
+    fi
     NEXT=$(( CURRENT + (MAX * 5 / 100) ))
     if [ "$NEXT" -ge "$SAFE_MAX" ]; then
       $BRCTL --class=backlight set "$SAFE_MAX" >/dev/null 2>&1
@@ -36,10 +44,13 @@ case "$1" in
   *) echo "Usage: $0 {up|down}" >&2; exit 1 ;;
 esac
 
-sleep 0.08
+# Get current state from sysfs
+if [[ -r "/sys/class/backlight/$DEVICE/brightness" ]]; then
+    BRIGHT=$(< "/sys/class/backlight/$DEVICE/brightness")
+else
+    BRIGHT=$($BRCTL --class=backlight get 2>/dev/null)
+fi
 
-# Get current state from the backlight class (universal)
-BRIGHT=$($BRCTL --class=backlight get | head -n 1 2>/dev/null)
 if [ -z "$BRIGHT" ] || [ -z "$MAX" ] || [ "$MAX" -eq 0 ]; then
   $NOTIFY -u critical "Brightness" "Unable to read brightness"
   exit 1
@@ -49,8 +60,10 @@ PERC=$(( BRIGHT * 100 / SAFE_MAX ))
 if [ "$PERC" -gt 100 ]; then PERC=100; fi
 
 OLD_ID=0
-if [ -f "$ID_FILE" ]; then OLD_ID=$(cat "$ID_FILE" 2>/dev/null || echo 0); fi
+if [[ -s "$ID_FILE" ]]; then
+    read -r val < "$ID_FILE" 2>/dev/null
+    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
+fi
 
-NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -h int:value:"$PERC" -i display-brightness-symbolic "Brightness" "${PERC}%")
-if [ -z "$NEW_ID" ]; then NEW_ID="$OLD_ID"; fi
-echo "$NEW_ID" > "$ID_FILE"
+NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -h int:value:"$PERC" -i display-brightness-symbolic "Brightness" "${PERC}%" 2>/dev/null)
+[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"

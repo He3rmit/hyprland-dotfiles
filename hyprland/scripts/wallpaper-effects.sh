@@ -53,27 +53,19 @@ generate_micro_grid() {
 # All geometry is calculated relative to a reference resolution
 get_geometry() {
     local input="$1"
-    W=$(magick identify -format "%w" "$input")
-    H=$(magick identify -format "%h" "$input")
+    read -r W H < <(magick identify -format "%w %h" "$input")
     
     # Scale factor relative to 1920px (Dynamic resolution support)
     SCALE=$(awk "BEGIN {print $W / 1920}")
-    
-    # Aspect ratio check for ultra-wide vs portrait hardening
-    RATIO=$(awk "BEGIN {print $W / $H}")
     
     # HUD Geometry
     HALF_W=$((W/2))
     HALF_H=$((H/2))
     
-    # Reticle (Centered)
-    RW=$(awk "BEGIN {print int(40 * $SCALE)}")
-    RH=$(awk "BEGIN {print int(25 * $SCALE)}")
-    RL=$(awk "BEGIN {print int(15 * $SCALE)}")
-    
-    # Data Bars (Top/Bottom)
-    BAR_Y=$(awk "BEGIN {print int(40 * $SCALE)}")
-    BAR_MARGIN=$(awk "BEGIN {print int(300 * $SCALE)}")
+    # Reticle (Centered) and Data Bars (Top/Bottom) in a single calculation
+    read -r RW RH RL BAR_Y BAR_MARGIN < <(awk -v s="$SCALE" 'BEGIN {
+        printf "%d %d %d %d %d\n", int(40 * s), int(25 * s), int(15 * s), int(40 * s), int(300 * s)
+    }')
 }
 
 apply_helmet_optics() {
@@ -132,7 +124,7 @@ case "$selected_effect" in
     "Glitch (Purge)")
         # Dynamic Chromatic aberration shift based on width
         local w=$(magick identify -format "%w" "$selected_path")
-        local shift=$(awk "BEGIN {print int(15 * $w / 1920)}")
+        local shift=$(( 15 * w / 1920 ))
         magick "$selected_path" \
             \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \
@@ -142,7 +134,7 @@ case "$selected_effect" in
     "CRT Retro")
         # Generates colored analog TV scanlines with dynamic shift
         local w=$(magick identify -format "%w" "$selected_path")
-        local shift=$(awk "BEGIN {print int(5 * $w / 1920)}")
+        local shift=$(( 5 * w / 1920 ))
         magick "$selected_path" \
             \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \

@@ -59,15 +59,23 @@ build_menu() {
             [[ -z "$mac" ]] && continue
             local info
             info=$(bluetoothctl info "$mac" 2>/dev/null)
-            local connected
-            connected=$(echo "$info" | grep "Connected:" | awk '{print $2}')
-            local icon_type
-            icon_type=$(echo "$info" | grep "Icon:" | awk '{print $2}')
+            local connected="no" icon_type="" bat=""
+            while IFS= read -r line; do
+                if [[ "$line" =~ Connected:[[:space:]]+([a-zA-Z]+) ]]; then
+                    connected="${BASH_REMATCH[1]}"
+                elif [[ "$line" =~ Icon:[[:space:]]+([^[:space:]]+) ]]; then
+                    icon_type="${BASH_REMATCH[1]}"
+                elif [[ "$line" =~ Battery[[:space:]]+Percentage: ]]; then
+                    if [[ "$line" =~ \(([0-9]+)\) ]]; then
+                        bat="${BASH_REMATCH[1]}"
+                    elif [[ "$line" =~ ([0-9]+)%? ]]; then
+                        bat="${BASH_REMATCH[1]}"
+                    fi
+                fi
+            done <<< "$info"
+
             local icon
             icon=$(get_device_icon "$icon_type")
-
-            local bat
-            bat=$(echo "$info" | grep "Battery Percentage" | awk -F'[(%)]' '{print $2}')
 
             if [[ "$connected" == "yes" ]]; then
                 if [[ -n "$bat" ]]; then
@@ -154,10 +162,9 @@ handle_scan() {
     choice=$(printf "%s\n" "${discovered[@]}" | rofi_cmd "󰑐 Available Devices")
     [[ -z "$choice" ]] && return
 
-    local target_mac
-    target_mac=$(echo "$choice" | awk -F' \\| ' '{print $2}')
-    local target_name
-    target_name=$(echo "$choice" | awk -F' \\| ' '{print $1}' | sed 's/󰂯 //')
+    local target_mac="${choice##* | }"
+    local target_name="${choice%% | *}"
+    target_name="${target_name#󰂯 }"
 
     notify_bt "Bluetooth" "Pairing with ${target_name}..."
     bluetoothctl pair "$target_mac" >/dev/null 2>&1
@@ -200,12 +207,11 @@ main() {
             handle_scan
             ;;
         *" | "*)
-            local mac
-            mac=$(echo "$choice" | awk -F' \\| ' '{print $2}')
-            local name_part
-            name_part=$(echo "$choice" | awk -F' \\| ' '{print $1}')
-            local dev_name
-            dev_name=$(echo "$name_part" | sed -E 's/^[● ]*[^ ]+ //; s/ \[.*//')
+            local mac="${choice##* | }"
+            local name_part="${choice%% | *}"
+            local dev_name="${name_part#[● ] }"
+            dev_name="${dev_name#* }"
+            dev_name="${dev_name% \[*}"
 
             if [[ "$choice" == "● "* ]]; then
                 handle_device "$mac" "$dev_name" "yes"

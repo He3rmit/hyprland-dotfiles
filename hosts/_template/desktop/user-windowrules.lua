@@ -18,5 +18,5 @@
 -- hl.window_rule({ match = { class = "^(pavucontrol)$" }, float = true })
 -- hl.window_rule({ match = { class = "^(blueman-manager)$" }, float = true })
 
--- Picture-in-Picture floating & pinned on top
-hl.window_rule({ match = { title = "^(Picture-in-Picture)$" }, float = true, pin = true })
+-- Picture-in-Picture floating & pinned on top (already defined globally in modules/windowrules.lua)
+-- hl.window_rule({ match = { title = "^(Picture-in-Picture)$" }, float = true, pin = true })

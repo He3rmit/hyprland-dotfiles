@@ -4,13 +4,23 @@
 # The file that holds the state
 STATE_FILE="$HOME/.config/hypr/touchpad.lua"
 
-# Auto-detect the touchpad device
-# Phase 1: Explicitly look for a device with "touchpad" in its name (Safest)
-DEVICE=$(hyprctl devices -j | jq -r '.mice[] | select(.name | test("touchpad"; "i")) | .name' | head -1)
+# Auto-detect or load cached touchpad device name & state
+DEVICE=""
+CURR_STATE=""
 
-# Phase 2: If none found, fallback to known manufacturer aliases (ASUS, Elan, Synaptics)
+if [[ -f "$STATE_FILE" ]]; then
+    while IFS= read -r line; do
+        if [[ "$line" =~ name[[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+            DEVICE="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ enabled[[:space:]]*=[[:space:]]*(true|false) ]]; then
+            CURR_STATE="${BASH_REMATCH[1]}"
+        fi
+    done < "$STATE_FILE"
+fi
+
+# Fallback: Single-pass hardware discovery if state file is missing or invalid
 if [ -z "$DEVICE" ]; then
-    DEVICE=$(hyprctl devices -j | jq -r '.mice[] | select(.name | test("synaptics|asif|elan|asue"; "i")) | .name' | head -1)
+    DEVICE=$(hyprctl devices -j 2>/dev/null | jq -r '.mice[] | select(.name | test("touchpad|synaptics|asif|elan|asue"; "i")) | .name' | head -1)
 fi
 
 if [ -z "$DEVICE" ]; then
@@ -18,16 +28,8 @@ if [ -z "$DEVICE" ]; then
     exit 0
 fi
 
-# Create state file with defaults if it doesn't exist
-if [ ! -f "$STATE_FILE" ]; then
-    echo "hl.device({
-    name = \"$DEVICE\",
-    enabled = true
-})" > "$STATE_FILE"
-fi
-
-# Check if the file currently says "enabled = false"
-if grep -q "enabled = false" "$STATE_FILE"; then
+# Check if currently disabled
+if [[ "$CURR_STATE" == "false" ]]; then
     # TOGGLE ON: Enable it
     echo "hl.device({
     name = \"$DEVICE\",

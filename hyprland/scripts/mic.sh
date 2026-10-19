@@ -19,17 +19,15 @@ case "$1" in
   *) echo "Usage: $0 {up|down|toggle}" >&2; exit 1 ;;
 esac
 
-# Give WirePlumber a split second to apply the state change
-sleep 0.05
-
-# 2. PILOT'S WAIT LOOP: Wait for the source to respond (Self-Healing)
-# This loop checks 5 times with a 0.1s delay. 
-# It catches the device if it's "waking up" from a suspended state.
-for i in {1..5}; do
-    OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SOURCE@ 2>/dev/null)
-    if [ -n "$OUT" ]; then break; fi
-    sleep 0.1
-done
+# 2. Query audio source state (immediate check with retry fallback for waking devices)
+OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SOURCE@ 2>/dev/null)
+if [ -z "$OUT" ]; then
+    for i in {1..5}; do
+        sleep 0.1
+        OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SOURCE@ 2>/dev/null)
+        if [ -n "$OUT" ]; then break; fi
+    done
+fi
 
 # 3. VERIFY: If after 0.5s there is still no output, report a telemetry failure
 if [ -z "$OUT" ]; then
@@ -58,7 +56,10 @@ fi
 
 # 5. NOTIFY: Update the SwayNC HUD
 OLD_ID=0
-if [ -f "$ID_FILE" ]; then OLD_ID=$(cat "$ID_FILE" 2>/dev/null || echo 0); fi
+if [[ -s "$ID_FILE" ]]; then
+    read -r val < "$ID_FILE" 2>/dev/null
+    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
+fi
 
 if [ "$MUTED" = "true" ]; then
   ICON="microphone-sensitivity-muted-symbolic"
@@ -79,7 +80,6 @@ if command -v brightnessctl >/dev/null 2>&1; then
   fi
 fi
 
-NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Microphone" "$MSG")
-if [ -z "$NEW_ID" ]; then NEW_ID=$OLD_ID; fi
-echo "$NEW_ID" > "$ID_FILE"
+NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Microphone" "$MSG" 2>/dev/null)
+[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"
 exit 0

@@ -28,12 +28,14 @@ is_terminal_window() {
 
     local primary_term="${TERMINAL:-kitty}"
 
-    # 1. Direct match with configured $TERMINAL
-    if [[ "${class,,}" == *"${primary_term,,}"* ]]; then
-        return 0
-    fi
+    # 1. Direct match with configured $TERMINAL or common terminal emulators
+    case "${class,,}" in
+        *"${primary_term,,}"*|kitty|alacritty|foot|wezterm|ghostty|contour|xterm|urxvt|gnome-terminal*|konsole|terminator|xfce4-terminal)
+            return 0
+            ;;
+    esac
 
-    # 2. Dynamic system discovery: check if window matches any installed terminal emulator
+    # 2. Dynamic system discovery fallback: check if window matches any installed terminal emulator
     local installed_terms
     installed_terms=$(grep -lis "TerminalEmulator" /usr/share/applications/*.desktop ~/.local/share/applications/*.desktop 2>/dev/null | sed -E 's/.*\/([^/]+)\.desktop$/\1/' | tr '[:upper:]' '[:lower:]')
     if echo "$installed_terms" | grep -qi "${class}"; then
@@ -71,10 +73,10 @@ generate_list() {
 
         if [ -n "$file_path" ] && [ -f "$file_path" ]; then
             filename="${file_path##*/}"
-            clean_hash=$(echo -n "$file_path" | md5sum | awk '{print $1}')
+            read -r clean_hash _ < <(echo -n "$file_path" | md5sum)
             preview_file="$CACHE_DIR/uri_${clean_hash}.png"
             ext="${file_path##*.}"
-            ext_lc=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+            ext_lc="${ext,,}"
 
             case "$ext_lc" in
                 mp4|mkv|webm|avi|mov|flv|wmv)

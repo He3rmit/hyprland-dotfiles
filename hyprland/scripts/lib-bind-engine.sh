@@ -30,10 +30,8 @@ generate_keycode_map() {
     fi
     if [[ -z "$xkb_dump" ]]; then return; fi
 
-    while read -r entry; do
-        local code=$(echo "$entry" | cut -d':' -f1)
-        local symbol=$(echo "$entry" | cut -d':' -f2)
-        KEYCODES["code:$code"]="${symbol^^}"
+    while IFS=":" read -r code symbol; do
+        [[ -n "$code" && -n "$symbol" ]] && KEYCODES["code:$code"]="${symbol^^}"
     done < <(echo "$xkb_dump" | awk '
         {
             if (match($0, /<([A-Za-z0-9_]+)>[ \t]*=[ \t]*([0-9]+);/, arr)) {
@@ -55,7 +53,9 @@ clean_key() {
     local k="$1"
 
     # Normalize Lua string concatenation & mainMod
-    k=$(echo "$k" | sed 's/mainMod/"SUPER"/g; s/ \.\. / /g; s/"//g; s/  */ /g; s/ \+ /+/g')
+    k="${k//mainMod/SUPER}"
+    k="${k// \.\. / }"
+    k="${k//\"/}"
 
     # Mouse & Touchpad Special mappings
     k="${k//mouse:272/LMB (Drag)}"
@@ -75,12 +75,23 @@ clean_key() {
         fi
     fi
 
-    # Capitalize arrow keys uniformly
-    k=$(echo "$k" | sed -E 's/\bleft\b/Left/g; s/\bright\b/Right/g; s/\bup\b/Up/g; s/\bdown\b/Down/g')
+    # Capitalize arrow keys uniformly without corrupting words like Brightness
+    k=" $k "
+    k="${k// left / Left }"
+    k="${k// right / Right }"
+    k="${k// up / Up }"
+    k="${k// down / Down }"
+    k="${k# }"
+    k="${k% }"
 
     # Format XF86 keys into readable titles (e.g. XF86MonBrightnessUp -> Mon Brightness Up)
-    k=$(echo "$k" | sed -E 's/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
-    k=$(echo "$k" | sed 's/+/ + /g; s/  */ /g')
+    if [[ "$k" == *XF86* ]]; then
+        k=$(echo "$k" | sed -E 's/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
+    fi
+    k="${k//+/ + }"
+    while [[ "$k" == *"  "* ]]; do k="${k//  / }"; done
+    k="${k#"${k%%[![:space:]]*}"}"
+    k="${k%"${k##*[![:space:]]}"}"
     echo "$k"
 }
 
@@ -91,23 +102,31 @@ clean_pseudocode() {
 
     # Priority 1: User inline comment (excluding keycode reminders like "code:39 = S")
     if [[ -n "$comment" && ! "$comment" =~ ^code:[0-9]+ ]]; then
-        echo "$comment" | xargs
+        comment="${comment#"${comment%%[![:space:]]*}"}"
+        comment="${comment%"${comment##*[![:space:]]}"}"
+        echo "$comment"
         return
     fi
 
     # Strip trailing Lua table options (e.g. , { locked = true, repeating = true })
-    action=$(echo "$action" | sed -E 's/, *\{.*\} *$//')
+    if [[ "$action" =~ ^(.*),[[:space:]]*\{.*\}[[:space:]]*$ ]]; then
+        action="${BASH_REMATCH[1]}"
+    fi
 
     # Window management actions
     if [[ "$action" =~ hl\.dsp\.window\.([a-zA-Z0-9_]+) ]]; then
         local method="${BASH_REMATCH[1]}"
         if [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
-            local ws=$(echo "${BASH_REMATCH[1]}" | xargs)
+            local ws="${BASH_REMATCH[1]}"
+            ws="${ws#"${ws%%[![:space:]]*}"}"
+            ws="${ws%"${ws##*[![:space:]]}"}"
             echo "move window -> $ws"
             return
         fi
         if [[ "$action" =~ direction\ *=\ *\"?([^\"\}]+) ]]; then
-            local dir=$(echo "${BASH_REMATCH[1]}" | xargs)
+            local dir="${BASH_REMATCH[1]}"
+            dir="${dir#"${dir%%[![:space:]]*}"}"
+            dir="${dir%"${dir##*[![:space:]]}"}"
             echo "move: $dir"
             return
         fi
@@ -129,7 +148,9 @@ clean_pseudocode() {
             echo "focus: ${BASH_REMATCH[1]}"
             return
         elif [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
-            local ws=$(echo "${BASH_REMATCH[1]}" | xargs)
+            local ws="${BASH_REMATCH[1]}"
+            ws="${ws#"${ws%%[![:space:]]*}"}"
+            ws="${ws%"${ws##*[![:space:]]}"}"
             echo "workspace: $ws"
             return
         fi
@@ -137,7 +158,9 @@ clean_pseudocode() {
 
     # Special Workspaces / Scratchpads
     if [[ "$action" =~ hl\.dsp\.workspace\.toggle_special\(\"?([^\"]+)\"?\) ]]; then
-        local sp=$(echo "${BASH_REMATCH[1]}" | xargs)
+        local sp="${BASH_REMATCH[1]}"
+        sp="${sp#"${sp%%[![:space:]]*}"}"
+        sp="${sp%"${sp##*[![:space:]]}"}"
         echo "scratchpad: $sp"
         return
     fi
@@ -151,7 +174,8 @@ clean_pseudocode() {
     # Executed commands & scripts: strip paths and wrappers
     if [[ "$action" =~ hl\.dsp\.exec_cmd\((.*)\) ]]; then
         local cmd="${BASH_REMATCH[1]}"
-        cmd=$(echo "$cmd" | sed -E "s/^[ \"'\''\(]+//; s/[ \"'\''\)]+$//")
+        cmd="${cmd#"${cmd%%[![:space:]\"\'\(]*}"}"
+        cmd="${cmd%"${cmd##*[![:space:]\"\'\)]}"}"
         if [[ "$cmd" =~ /([^/]+)$ ]]; then
             echo "exec: ${BASH_REMATCH[1]}"
         else

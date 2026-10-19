@@ -12,7 +12,6 @@ case "$1" in
   *) echo "Usage: $0 {up|down|toggle}" >&2; exit 1 ;;
 esac
 
-sleep 0.08
 OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
 
 if [[ "$OUT" == *"[MUTED]"* || "$OUT" == *"MUTED"* ]]; then
@@ -34,7 +33,10 @@ else
 fi
 
 OLD_ID=0
-if [ -f "$ID_FILE" ]; then OLD_ID=$(cat "$ID_FILE" 2>/dev/null || echo 0); fi
+if [[ -s "$ID_FILE" ]]; then
+    read -r val < "$ID_FILE" 2>/dev/null
+    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
+fi
 
 if [ "$MUTED" = "true" ]; then
     ICON="audio-volume-muted-symbolic"
@@ -46,6 +48,5 @@ else
     HINT_VAL=$VOL_PERC
 fi
 
-NEW_ID=$($NOTIFY -p -t 1000 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Volume" "$MSG")
-if [ -z "$NEW_ID" ]; then NEW_ID=$OLD_ID; fi
-echo "$NEW_ID" > "$ID_FILE"
+NEW_ID=$($NOTIFY -p -t 1000 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Volume" "$MSG" 2>/dev/null)
+[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"
