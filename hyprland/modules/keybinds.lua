@@ -10,7 +10,6 @@
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + CTRL + R", hl.dsp.exec_cmd(runner))
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("hyprctl switchxkblayout current next")) -- Cycle keyboard layout
 
 -- ──────────────────────────────────────────────────────────────────────────────

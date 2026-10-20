@@ -52,11 +52,19 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 |:---|:---|
 | `Super + Q` | **Terminal** (Kitty) |
 | `Super + E` | **File Manager** (Thunar) |
-| `Super + R` | **App Launcher** (Rofi Drun) |
-| `Super + Ctrl + R` | **Command Runner** (Rofi Run) |
+| `Super + R` | **Command Palette** (Apps, Math, Web Bangs, Terminal Runner) |
 | `Super + Alt + W` | **Wallpaper Selector** |
 | `Super + Alt + E` | **Visual Effects Menu** |
 | `Super + Alt + /` | **Tactical Briefing** (Searchable Cheat Sheet) |
+
+> [!TIP]
+> **Command Palette Capabilities (`Super + R`)**:
+> - **Desktop Apps**: Instant launch with application icons and metadata fuzzy search.
+> - **In-line Calculator**: Type `50 * 12 + 10`, `sqrt(144)`, or `2^8` and press Enter &rarr; copies result to clipboard.
+> - **Web Search Bangs**: Type `? <query>` or `!g` (Google), `!w` (ArchWiki), `!yt` (YouTube), `!gh` (GitHub), `!ddg` (DuckDuckGo), `!r` (Reddit).
+> - **Direct URLs**: Type `https://...` or `github.com` to open directly in default browser.
+> - **Terminal Execution**: Type `> <command>` to run inside a floating Kitty window.
+> - **Smart Fallback**: Any unmatched query automatically searches Google.
 
 ### 🎯 Group 2: Personal Workspaces
 *The "Standard" special workspace is enabled globally by default. You can create your own custom workspaces (like Work, Gaming, Hobby) in your local `hosts/[profile]/user-keybinds.lua` file.*
