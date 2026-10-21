@@ -10,6 +10,8 @@
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("~/.config/hypr/scripts/rofi-window.sh"))
+hl.bind("ALT + TAB", hl.dsp.exec_cmd("~/.config/hypr/scripts/window-quick-flip.sh"))
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("hyprctl switchxkblayout current next")) -- Cycle keyboard layout
 
 -- ──────────────────────────────────────────────────────────────────────────────

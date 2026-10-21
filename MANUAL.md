@@ -53,6 +53,8 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Q` | **Terminal** (Kitty) |
 | `Super + E` | **File Manager** (Thunar) |
 | `Super + R` | **Command Palette** (Apps, Math, Web Bangs, Terminal Runner) |
+| `Super + Tab` | **Window Switcher** (Search & Focus across all workspaces) |
+| `Alt + Tab` | **Instant Window Flip** (Instant A/B toggle between last 2 windows, zero menu) |
 | `Super + Alt + W` | **Wallpaper Selector** |
 | `Super + Alt + E` | **Visual Effects Menu** |
 | `Super + Alt + /` | **Tactical Briefing** (Searchable Cheat Sheet) |

@@ -310,6 +310,7 @@ def main():
         {"name": "󰣇  Search ArchWiki", "icon": "archlinux", "meta": "arch archlinux wiki documentation manual !w", "action": "helper:!w "},
         {"name": "󰗃  Search YouTube", "icon": "youtube", "meta": "youtube video stream media !yt", "action": "helper:!yt "},
         {"name": "󰊤  Search GitHub", "icon": "github", "meta": "github git repo code source !gh", "action": "helper:!gh "},
+        {"name": "󰍹  Switch Open Window", "icon": "preferences-system-windows", "meta": "window task switch alt tab ws workspace @", "action": "helper:window"},
         {"name": "󰪚  Math Calculator", "icon": "accessories-calculator", "meta": "calculator math eval calculate plus minus times divide", "action": "helper:calc"},
     ]
     helper_dict = {h["name"]: h["action"] for h in helpers}
@@ -360,8 +361,17 @@ def main():
             prefix = action[7:]
             if prefix == "calc":
                 os.execv(sys.executable, [sys.executable, __file__, "24 * 60"])
+            elif prefix == "window":
+                window_script = os.path.join(os.path.dirname(__file__), "rofi-window.py")
+                os.execv(sys.executable, [sys.executable, window_script])
             else:
                 os.execv(sys.executable, [sys.executable, __file__, prefix])
+        return
+
+    # ── Window Switcher Prefix (@ <query> or w <query>) ───────────────────────
+    if choice.startswith("@ ") or choice.startswith("w "):
+        window_script = os.path.join(os.path.dirname(__file__), "rofi-window.py")
+        os.execv(sys.executable, [sys.executable, window_script])
         return
 
     # ── 1. Terminal Command Runner (> <cmd> or : <cmd>) ───────────────────────
