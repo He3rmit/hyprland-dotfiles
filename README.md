@@ -78,7 +78,7 @@ dotfiles/
 
 ---
 
-### [v4.1.0] — Hyprland 0.57 Modernization, Legacy .conf Purge & HUD Hardening (Current)
+### [v4.3.0] — Hyprland 0.57 Modernization, Legacy .conf Purge & HUD Hardening (Current)
 - **Hyprland 0.57+ Upstream Alignment**: Hardened configuration and runtime scripts against Hyprland 0.57 changes—purged deprecated `hyprctl keyword` calls across `gamemode.sh` and `mirror-hotplug.sh` in favor of native `hyprctl eval ("hl.config({...})")` and `hl.monitor({...})`.
 - **Legacy `.conf` Purge**: Removed the obsolete `hyprland/hyprland.conf` transition stub, pruned dual-exported `colors.conf`, and sanitized `.gitignore` and `.stow-local-ignore` for pure Lua runtime operation.
 - **Hyprlock HUD Layout Redesign**: Relocated the lockscreen keyboard layout indicator (`$LAYOUT`) to the bottom-right corner (`-30, 30`) with a dedicated keyboard glyph (`󰌌  $LAYOUT`), resolving visual overlap across the password input field.
@@ -86,6 +86,10 @@ dotfiles/
 - **Tactical Briefing HUD & Keybind Casing Standardization**: Unified inline action descriptions across global, host-space (`hypr-host.lua`), and user-space (`user-keybinds.lua`) keybinds, with enhanced keycode mappings (`Brightness Up/Down`, `MSI Center`, and title-cased directional actions).
 - **Installer Host Scale Synchronization**: Hardened `01-stow-configs.sh` to automatically sync display scaling (`SCALE`) from `profile.conf` into host `monitor.lua` during deployment.
 - **Wallpaper State Preservation**: Hardened the installer deployment routine to cache and restore the active wallpaper state file, preventing wallpaper loss on reinstall.
+
+### [v4.2.0] — Satty Migration, Clipboard Overhaul & Dynamic Terminal Detection
+- **Screenshot & Annotation Migration**: Migrated default screenshot annotation tool to Satty (`com.gabm.satty`), pruning deprecated `swappy` and redundant utility packages.
+- **Clipboard Architecture Overhaul**: Unified terminal editor launches under `$TERMINAL`, integrated desktop discovery for clipboard paste operations, and eliminated fresh screenshot race conditions.
 
 ### [v4.0.0] — Full Lua Runtime Compliance, Bilingual Script Engine & Host Auto-Bridging
 - **Complete Hyprland Lua Modernization**: Finalized migration of the core window manager configuration to modern Hyprland Lua syntax (`hl.*`, `hl.dsp.*`), ensuring native compatibility with Hyprland 0.55+.
