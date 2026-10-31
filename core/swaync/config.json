@@ -91,7 +91,7 @@
     },
     "backlight": {
       "label": "󰃠",
-      "device": "amdgpu_bl2"
+      "device": ""
     },
     "mpris": {
       "image-size": 68

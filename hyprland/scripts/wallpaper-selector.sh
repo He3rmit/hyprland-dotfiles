@@ -75,9 +75,8 @@ apply_wallpaper() {
         # Run pywal silently, skip its own wallpaper setting (-n)
         wal -q -n -i "$wal_target"
         
-        # Copy the dynamically generated hyprland variables to the permanent source (both Lua and legacy conf)
+        # Copy the dynamically generated hyprland variables to the permanent source
         [[ -f "$HOME/.cache/wal/colors.lua" ]] && cp "$HOME/.cache/wal/colors.lua" "$HOME/.config/hypr/modules/colors.lua" 2>/dev/null
-        [[ -f "$HOME/.cache/wal/colors-hyprland.conf" ]] && cp "$HOME/.cache/wal/colors-hyprland.conf" "$HOME/.config/hypr/modules/colors.conf" 2>/dev/null
         
         # Hot reload UI to fetch new colors
         pkill -SIGUSR2 waybar

@@ -78,13 +78,22 @@ dotfiles/
 
 ---
 
-### [v4.0.0] — Full Lua Runtime Compliance, Bilingual Script Engine & Host Auto-Bridging (Current)
+### [v4.1.0] — Hyprland 0.57 Modernization, Legacy .conf Purge & HUD Hardening (Current)
+- **Hyprland 0.57+ Upstream Alignment**: Hardened configuration and runtime scripts against Hyprland 0.57 changes—purged deprecated `hyprctl keyword` calls across `gamemode.sh` and `mirror-hotplug.sh` in favor of native `hyprctl eval ("hl.config({...})")` and `hl.monitor({...})`.
+- **Legacy `.conf` Purge**: Removed the obsolete `hyprland/hyprland.conf` transition stub, pruned dual-exported `colors.conf`, and sanitized `.gitignore` and `.stow-local-ignore` for pure Lua runtime operation.
+- **Hyprlock HUD Layout Redesign**: Relocated the lockscreen keyboard layout indicator (`$LAYOUT`) to the bottom-right corner (`-30, 30`) with a dedicated keyboard glyph (`󰌌  $LAYOUT`), resolving visual overlap across the password input field.
+- **Hyprland 0.57 Feature Stubs**: Integrated template stubs and documentation for new 0.57 capabilities, including window wobble (`decoration.wobble`), inner edge glow (`decoration.glow`), proportional blur (`decoration.blur.proportional`), cursor warping (`cursor.warp_on_monitor_change`), and the native config reload dispatcher (`hl.dsp.reload_config()`).
+- **Tactical Briefing HUD & Keybind Casing Standardization**: Unified inline action descriptions across global, host-space (`hypr-host.lua`), and user-space (`user-keybinds.lua`) keybinds, with enhanced keycode mappings (`Brightness Up/Down`, `MSI Center`, and title-cased directional actions).
+- **Installer Host Scale Synchronization**: Hardened `01-stow-configs.sh` to automatically sync display scaling (`SCALE`) from `profile.conf` into host `monitor.lua` during deployment.
+- **Wallpaper State Preservation**: Hardened the installer deployment routine to cache and restore the active wallpaper state file, preventing wallpaper loss on reinstall.
+
+### [v4.0.0] — Full Lua Runtime Compliance, Bilingual Script Engine & Host Auto-Bridging
 - **Complete Hyprland Lua Modernization**: Finalized migration of the core window manager configuration to modern Hyprland Lua syntax (`hl.*`, `hl.dsp.*`), ensuring native compatibility with Hyprland 0.55+.
 - **Bilingual Control Script Engine**: Updated helper scripts (`mirror-hotplug.sh`, `wallpaper-selector.sh`, `waybar-switcher.sh`, `wlogout`, and `hypridle`) to support bilingual execution—executing Lua dispatchers (`hl.dsp.*`) first with seamless fallbacks to legacy dispatchers, eliminating interpreter syntax errors and accidental session termination.
 - **Installer Host Auto-Bridging**: Upgraded `01-stow-configs.sh` to automatically detect legacy `.conf` user overrides (`user-keybinds.conf`, `user-windowrules.conf`, `user-visuals.conf`) and compile them to `.lua` via `hyprlang2lua` during deployment.
 - **Desktop & Laptop Profile Template Parity**: Added missing `user-visuals.lua` and `user-windowrules.lua` templates for desktop environments and cleaned up legacy migration artifacts across host templates.
 - **Waybar Switcher Race Condition Hardening**: Replaced naive process termination in `waybar-switcher.sh` with an explicit PID polling wait loop to ensure clean UI lifecycle reloads.
-- **Dynamic Pywal Dual-Export**: Updated `wallpaper-selector.sh` to populate both `colors.lua` and `colors.conf` upon color scheme generation, followed by live `hyprctl reload`.
+- **Dynamic Pywal Lua Export**: Updated `wallpaper-selector.sh` to populate `colors.lua` upon color scheme generation, followed by live `hyprctl reload`.
 - **Interchangeable Hypridle & Hyprlock Architecture**: Elevated `hypridle.conf` and `hyprlock.conf` to first-class interchangeable host modules (Host First, Default Fallback). Allows hosts (e.g. desktops vs. laptops) to fully customize or omit listeners without rigid variable constraints, while maintaining seamless fallback to core defaults.
 
 ### [v3.3.0] — Decoupled Media Assets, Hardware Alignment & Bloat Pruning

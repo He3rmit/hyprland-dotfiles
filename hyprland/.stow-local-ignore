@@ -1,4 +1,6 @@
-hyprland.conf
 hyprland.lua
 user-keybinds.lua
+user-windowrules.lua
+user-visuals.lua
+xdph.conf
 

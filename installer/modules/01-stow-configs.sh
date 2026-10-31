@@ -44,8 +44,9 @@ find "$HOME/.config" -type l 2>/dev/null | while read -r link; do
 done
 rm -f "$HOME/.config/swaync/config.json"
 rm -f "$HOME/.config/waybar/config.jsonc"
-rm -f "$HOME/.config/waybar/style.css"
-rm -f "$HOME/.config/wireplumber/wireplumber.conf.d/51-host-rescue.conf"
+# Preserve active wallpaper state across installer sweeps
+SAVED_WALL=""
+[[ -f "$HOME/.config/wallpapers/.current_wallpaper" ]] && SAVED_WALL=$(cat "$HOME/.config/wallpapers/.current_wallpaper")
 rm -rf "$HOME/.config/wallpapers"
 
 print_step ">> Stowing Core Configs..."
@@ -75,7 +76,14 @@ BACKLIGHT_DEV="${devs[0]##*/}"
 [[ "$BACKLIGHT_DEV" == "*" ]] && BACKLIGHT_DEV=""
 if [[ -n "$BACKLIGHT_DEV" && -f "$HOME/.config/swaync/config.json" ]]; then
     print_step ">> Auto-aligning SwayNC backlight controller ($BACKLIGHT_DEV)..."
-    sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$HOME/.config/swaync/config.json"
+    # Ensure active swaync config is a local file before modifying to protect git repo source
+    if [[ -L "$HOME/.config/swaync/config.json" ]]; then
+        real_swaync=$(readlink -f "$HOME/.config/swaync/config.json")
+        rm -f "$HOME/.config/swaync/config.json"
+        cp "$real_swaync" "$HOME/.config/swaync/config.json"
+        chmod 644 "$HOME/.config/swaync/config.json"
+    fi
+    sed -i -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$HOME/.config/swaync/config.json"
 fi
 
 # 3.1 LEGACY HOST AUTO-BRIDGE
@@ -129,6 +137,7 @@ rm -f "$HOME/.config/hypr/hypridle-host.conf"
 rm -f "$HOME/.config/hypr/hyprlock.conf"
 rm -f "$HOME/.config/hypr/hyprlock-host.conf"
 rm -f "$HOME/.config/hypr/hyprsunset.conf"
+rm -f "$HOME/.config/hypr/xdph.conf"
 rm -f "$HOME/.config/hypr/user-keybinds.lua"
 rm -f "$HOME/.config/hypr/user-windowrules.lua"
 rm -f "$HOME/.config/hypr/user-visuals.lua"
@@ -160,6 +169,16 @@ if [[ -f "$HOST_HYPRLOCK" ]]; then
 else
     print_step ">> Linking Default Core Hyprlock Configuration..."
     safe_link "$DOTFILES_DIR/hyprland/hyprlock.conf" "$HOME/.config/hypr/hyprlock.conf"
+fi
+
+# 4.3 XDPH PROTOCOL (Host First, Default Fallback)
+HOST_XDPH="$DOTFILES_DIR/hosts/$TARGET/xdph.conf"
+if [[ -f "$HOST_XDPH" ]]; then
+    print_step ">> Linking Host-Specific xdph.conf..."
+    safe_link "$HOST_XDPH" "$HOME/.config/hypr/xdph.conf"
+else
+    print_step ">> Linking Default Core xdph.conf..."
+    safe_link "$DOTFILES_DIR/hyprland/xdph.conf" "$HOME/.config/hypr/xdph.conf"
 fi
 
 # Helper to link or touch required source files
@@ -276,6 +295,10 @@ EOF
 MONITOR_VAULT="$DOTFILES_DIR/hosts/$TARGET/monitor.lua"
 if [[ -f "$MONITOR_VAULT" ]]; then
     print_step ">> Linking Host-Specific Monitor Calibration..."
+    # Keep monitor.lua aligned with profile.conf SCALE if defined
+    if [[ -n "$SCALE" ]]; then
+        sed -i -E "s/scale = \"[0-9.]+\"/scale = \"$SCALE\"/" "$MONITOR_VAULT" 2>/dev/null || true
+    fi
     safe_link "$MONITOR_VAULT" "$HOME/.config/hypr/modules/monitor.lua"
 else
     print_warning "No monitor calibration found in vault. Generating default fallback..."
@@ -334,7 +357,11 @@ else
     # Safeguard: Even if colors exist, ensure the state file exists for a fresh clone
     if [[ ! -f "$HOME/.config/wallpapers/.current_wallpaper" ]]; then
         mkdir -p "$HOME/.config/wallpapers"
-        echo "$HOME/.config/wallpapers/library/$(basename "$DEFAULT_WALL")" > "$HOME/.config/wallpapers/.current_wallpaper"
+        if [[ -n "$SAVED_WALL" && -f "$SAVED_WALL" ]]; then
+            echo "$SAVED_WALL" > "$HOME/.config/wallpapers/.current_wallpaper"
+        else
+            echo "$HOME/.config/wallpapers/library/$(basename "$DEFAULT_WALL")" > "$HOME/.config/wallpapers/.current_wallpaper"
+        fi
     fi
     print_success "Pywal cache already exists. Skipping bootstrap."
 fi
@@ -359,16 +386,8 @@ if [[ -f "$SHELL_LOCAL" ]]; then
     safe_link "$SHELL_LOCAL" "$HOME/.zshrc.local"
 fi
 
-# 10. WIREPLUMBER AUDIO PROTOCOL — Host Overrides & Cache Wipe
-HOST_WP_CONFIG="$DOTFILES_DIR/hosts/$TARGET/wireplumber/51-host-rescue.conf"
-if [[ -f "$HOST_WP_CONFIG" ]]; then
-    print_step ">> Linking host-specific Wireplumber rescue config..."
-    mkdir -p "$HOME/.config/wireplumber/wireplumber.conf.d"
-    safe_link "$HOST_WP_CONFIG" "$HOME/.config/wireplumber/wireplumber.conf.d/51-host-rescue.conf"
-fi
-
-# We must clear the wireplumber cache regardless of whether a host config exists,
-# so that the newly stowed universal 50-common-priorities.conf is recognized on first boot.
+# 10. WIREPLUMBER AUDIO PROTOCOL — Cache Wipe for Priority Updates
+# We clear the wireplumber cache so that the universal 50-common-priorities.conf is recognized.
 print_step ">> Clearing Wireplumber cache to force priority updates..."
 systemctl --user stop wireplumber 2>/dev/null || true
 rm -rf ~/.local/state/wireplumber/* 2>/dev/null || true

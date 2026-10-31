@@ -12,8 +12,7 @@ The configuration architecture is divided into two parts:
 
 ### 0. `profile.conf` (Hardware & Identity Manifest)
 This is the master profile configuration file read by `./installer/install.sh` during deployment. It tells the installer what hardware features your machine has and how to configure your desktop defaults:
-*   `HOST_TYPE`: `"laptop"` or `"desktop"`. Determines which starter templates and rules apply.
-*   `HOST_NAME`: The name of your machine profile/vault (e.g. `"msi-thin-a15"`).
+*   `HOST_TYPE`: `"laptop"` or `"desktop"`. Determines which starter templates and rules apply. The folder name under `hosts/` (e.g. `hosts/msi-thin-a15`) serves as your unique machine profile identity.
 *   `HAS_BATTERY`, `HAS_BACKLIGHT`, `HAS_TOUCHPAD`: Set to `true` or `false` to conditionally enable or disable widgets in Waybar and SwayNC.
 *   `WAYBAR_LAYOUT`: Default layout from `core/waybar/layouts/` (e.g. `"2-Topbar-Detailed"`, `"1-Sidebar-Compact"`, `"5-Sidebar-Minimal"`).
 *   `WAYBAR_STYLE`: Default visual theme from `core/waybar/styles/` (e.g. `"5-Glass-Pill"`, `"4-Cyberpunk-Glitch"`).

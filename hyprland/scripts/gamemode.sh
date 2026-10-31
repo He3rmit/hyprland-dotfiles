@@ -45,18 +45,7 @@ enable_gamemode() {
             gaps_out = 0,
             border_size = 1,
         }
-    })" >/dev/null 2>&1 || \
-    # 2. Legacy Parser Fallback
-    hyprctl --batch "\
-        keyword animations:enabled 0;\
-        keyword decoration:blur:enabled 0;\
-        keyword decoration:shadow:enabled 0;\
-        keyword decoration:rounding 0;\
-        keyword decoration:active_opacity 1.0;\
-        keyword decoration:inactive_opacity 1.0;\
-        keyword general:gaps_in 0;\
-        keyword general:gaps_out 0;\
-        keyword general:border_size 1" >/dev/null 2>&1
+    })" >/dev/null 2>&1
 
     # Pause hypridle so controller/gamepad sessions don't get screens timed out
     killall -STOP hypridle 2>/dev/null || true
@@ -75,8 +64,7 @@ enable_gamemode() {
 
 disable_gamemode() {
     # 1. Immediately re-enable animations via live eval for instant visual feedback
-    hyprctl eval "hl.config({ animations = { enabled = true } })" >/dev/null 2>&1 || \
-    hyprctl keyword animations:enabled 1 >/dev/null 2>&1
+    hyprctl eval "hl.config({ animations = { enabled = true } })" >/dev/null 2>&1
 
     # 2. Reload config to restore all user visual settings, blur, gaps & rounding
     hyprctl reload >/dev/null 2>&1

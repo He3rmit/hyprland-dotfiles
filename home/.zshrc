@@ -52,7 +52,7 @@ export PATH=$HOME/.local/bin:$HOME/.config/hypr/scripts:$PATH
 # 6. 🔗 Universal Aliases (Safe on ALL Arch-based distros)
 alias battery='upower -i $(upower -e | grep -m 1 "BAT")'
 alias refresh='hyprctl reload && killall waybar; waybar & disown && killall swaync && rm -rf ~/.cache/swaync && swaync & disown'
-alias logout='hyprctl dispatch exit'
+alias logout="hyprctl dispatch 'hl.dsp.exit()' 2>/dev/null || hyprctl dispatch exit"
 
 # 7. 🔒 Secrets (gitignored, loaded if present)
 [[ -f ~/.secrets.sh ]] && source ~/.secrets.sh

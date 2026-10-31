@@ -56,14 +56,6 @@ set_monitor() {
 
     local res
     res=$(hyprctl eval "$lua_cmd" 2>&1)
-    if [[ "$res" != *"ok"* ]]; then
-        # Legacy parser fallback
-        if [[ -n "$mirror" ]]; then
-            hyprctl keyword monitor "$output, $mode, $pos, $scale, mirror, $mirror" 2>/dev/null || true
-        else
-            hyprctl keyword monitor "$output, $mode, $pos, $scale" 2>/dev/null || true
-        fi
-    fi
 }
 
 disable_monitor() {
@@ -71,9 +63,6 @@ disable_monitor() {
     local lua_cmd="hl.monitor({ output = \"$output\", disabled = true })"
     local res
     res=$(hyprctl eval "$lua_cmd" 2>&1)
-    if [[ "$res" != *"ok"* ]]; then
-        hyprctl keyword monitor "$output, disable" 2>/dev/null || true
-    fi
 }
 
 # --- 3. ENVIRONMENT HEALING (Wallpaper & Waybar) ---

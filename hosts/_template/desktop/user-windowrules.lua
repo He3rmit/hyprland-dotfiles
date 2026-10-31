@@ -20,3 +20,9 @@
 
 -- Picture-in-Picture floating & pinned on top (already defined globally in modules/windowrules.lua)
 -- hl.window_rule({ match = { title = "^(Picture-in-Picture)$" }, float = true, pin = true })
+
+-- --- HYPRLAND 0.57+ RULES [TEMPLATE] ---
+-- Custom per-window visual exceptions
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_wobble = true }) -- Disable wobble for specific app
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_glow = true })   -- Disable glow for specific app
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_xdg_drags = true }) -- Disallow xdg drag operations

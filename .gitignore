@@ -4,7 +4,6 @@
 # Wallpaper State
 core/wallpapers/.current_wallpaper
 core/wallpapers/.current_effect_image
-hyprland/modules/colors.conf
 
 # --- Secrets & Personal Overrides ---
 home/.secrets.sh
@@ -19,10 +18,14 @@ home/.zshrc.local
 hosts/*/
 !hosts/_template/
 
+# Git worktrees
+main/
+
 # Hardware Specific Modules (Handled by Installer/Vault)
-hyprland/modules/monitor.conf
-hyprland/modules/nvidia.conf
-hyprland/modules/touchpad.conf
+hyprland/modules/monitor.lua
+hyprland/modules/nvidia.lua
+hyprland/modules/touchpad.lua
+hyprland/modules/keyboard.lua
 
 # Python Cache
 __pycache__/

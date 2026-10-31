@@ -110,16 +110,29 @@ hl.config({
         preserve_split = true,
     },
     -- ──────────────────────────────────────────────────────────────────────────────
-    --  HOST-SPECIFIC TUNING [TEMPLATE]
+    --  HOST-SPECIFIC TUNING & 0.57+ EFFECTS [TEMPLATE]
     --  Machine-specific rendering and hardware optimizations (VRR, VFR, Rendering).
     --  Uncomment and customize in your local user-visuals.lua.
     -- ──────────────────────────────────────────────────────────────────────────────
-    -- misc {
-    --     vrr = 0 
-    -- }
-    -- 
-    -- render {
-    --     direct_scanout = 0
-    -- }
+    -- misc = {
+    --     vrr = 0,
+    -- },
+    -- render = {
+    --     direct_scanout = 0,
+    -- },
+    -- decoration = {
+    --     wobble = {
+    --         enabled = false,      -- Compiz-style elastic window deformation (v0.57+)
+    --     },
+    --     glow = {
+    --         enabled = false,      -- Inner window edge glow (v0.57+)
+    --     },
+    --     blur = {
+    --         proportional = false, -- Proportional blur scaling (v0.57+)
+    --     },
+    -- },
+    -- cursor = {
+    --     warp_on_monitor_change = false, -- Cursor warping across monitor switches (v0.57+)
+    -- },
 })
 

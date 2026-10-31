@@ -33,5 +33,20 @@ hl.config({
     render = {
         direct_scanout = 0,
     },
+    -- --- HYPRLAND 0.57+ EFFECTS [TEMPLATE] ---
+    -- decoration = {
+    --     wobble = {
+    --         enabled = false,      -- Compiz-style elastic window deformation
+    --     },
+    --     glow = {
+    --         enabled = false,      -- Inner window edge glow
+    --     },
+    --     blur = {
+    --         proportional = false, -- Proportional blur scaling (v0.57+)
+    --     },
+    -- },
+    -- cursor = {
+    --     warp_on_monitor_change = false, -- Cursor warping across monitor switches (v0.57+)
+    -- },
 })
 

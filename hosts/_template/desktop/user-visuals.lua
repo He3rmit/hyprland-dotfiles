@@ -26,4 +26,19 @@ hl.config({
         -- Prevents blurred rendering for X11/XWayland apps (e.g. Steam, Discord) when scaling
         force_zero_scaling = true,
     },
+    -- --- HYPRLAND 0.57+ EFFECTS [TEMPLATE] ---
+    -- decoration = {
+    --     wobble = {
+    --         enabled = false,      -- Compiz-style elastic window deformation
+    --     },
+    --     glow = {
+    --         enabled = false,      -- Inner window edge glow
+    --     },
+    --     blur = {
+    --         proportional = false, -- Proportional blur scaling (v0.57+)
+    --     },
+    -- },
+    -- cursor = {
+    --     warp_on_monitor_change = false, -- Cursor warping across monitor switches (v0.57+)
+    -- },
 })

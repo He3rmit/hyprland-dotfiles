@@ -84,9 +84,13 @@ clean_key() {
     k="${k# }"
     k="${k% }"
 
-    # Format XF86 keys into readable titles (e.g. XF86MonBrightnessUp -> Mon Brightness Up)
-    if [[ "$k" == *XF86* ]]; then
-        k=$(echo "$k" | sed -E 's/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
+    # Format XF86 keys into readable titles
+    if [[ "$k" == *XF86Tools* ]]; then
+        k="Fn + F7 (MSI Center)"
+    elif [[ "$k" == *XF86Assistant* ]]; then
+        k="Assistant Key"
+    elif [[ "$k" == *XF86* ]]; then
+        k=$(echo "$k" | sed -E 's/XF86MonBrightness/Brightness/g; s/XF86([A-Z])/ \1/g; s/([a-z])([A-Z])/\1 \2/g; s/  */ /g; s/^ //')
     fi
     k="${k//+/ + }"
     while [[ "$k" == *"  "* ]]; do k="${k//  / }"; done
@@ -120,24 +124,28 @@ clean_pseudocode() {
             local ws="${BASH_REMATCH[1]}"
             ws="${ws#"${ws%%[![:space:]]*}"}"
             ws="${ws%"${ws##*[![:space:]]}"}"
-            echo "move window -> $ws"
+            if [[ "$ws" == "special:"* ]]; then
+                echo "Move Window to Special (${ws#special:})"
+            else
+                echo "Move Window to Workspace $ws"
+            fi
             return
         fi
         if [[ "$action" =~ direction\ *=\ *\"?([^\"\}]+) ]]; then
             local dir="${BASH_REMATCH[1]}"
             dir="${dir#"${dir%%[![:space:]]*}"}"
             dir="${dir%"${dir##*[![:space:]]}"}"
-            echo "move: $dir"
+            echo "Move Window (${dir^})"
             return
         fi
         case "$method" in
-            drag)       echo "window: drag" ;;
-            resize)     echo "window: resize" ;;
-            close)      echo "window: close" ;;
-            float)      echo "window: toggle float" ;;
-            fullscreen) echo "window: toggle fullscreen" ;;
-            pseudo)     echo "window: pseudo tile" ;;
-            *)          echo "window: $method" ;;
+            drag)       echo "Drag Window" ;;
+            resize)     echo "Resize Window" ;;
+            close)      echo "Close Window" ;;
+            float)      echo "Toggle Floating Mode" ;;
+            fullscreen) echo "Toggle Fullscreen Mode" ;;
+            pseudo)     echo "Toggle Pseudo Tile" ;;
+            *)          echo "Window: $method" ;;
         esac
         return
     fi
@@ -145,13 +153,20 @@ clean_pseudocode() {
     # Navigation / Focus
     if [[ "$action" =~ hl\.dsp\.focus ]]; then
         if [[ "$action" =~ direction\ *=\ *\"?([a-zA-Z0-9_]+) ]]; then
-            echo "focus: ${BASH_REMATCH[1]}"
+            local dir="${BASH_REMATCH[1]}"
+            echo "Focus Window (${dir^})"
             return
         elif [[ "$action" =~ workspace\ *=\ *\"?([^\"\}]+) ]]; then
             local ws="${BASH_REMATCH[1]}"
             ws="${ws#"${ws%%[![:space:]]*}"}"
             ws="${ws%"${ws##*[![:space:]]}"}"
-            echo "workspace: $ws"
+            if [[ "$ws" == "e+1" ]]; then
+                echo "Switch to Next Workspace"
+            elif [[ "$ws" == "e-1" ]]; then
+                echo "Switch to Previous Workspace"
+            else
+                echo "Switch to Workspace $ws"
+            fi
             return
         fi
     fi
@@ -161,26 +176,66 @@ clean_pseudocode() {
         local sp="${BASH_REMATCH[1]}"
         sp="${sp#"${sp%%[![:space:]]*}"}"
         sp="${sp%"${sp##*[![:space:]]}"}"
-        echo "scratchpad: $sp"
+        if [[ "$sp" == "scratchpad" ]]; then
+            echo "Toggle Scratchpad Workspace"
+        else
+            echo "Toggle Special Workspace ($sp)"
+        fi
         return
     fi
 
     # Layout actions
     if [[ "$action" =~ hl\.dsp\.layout\(\"?([^\"]+)\"?\) ]]; then
-        echo "layout: ${BASH_REMATCH[1]}"
+        local lmode="${BASH_REMATCH[1]}"
+        if [[ "$lmode" == "togglesplit" ]]; then
+            echo "Toggle Split / Join Layout"
+        else
+            echo "Layout: $lmode"
+        fi
         return
     fi
 
-    # Executed commands & scripts: strip paths and wrappers
+    # Config reload actions (v0.57+)
+    if [[ "$action" =~ hl\.dsp\.reload_config ]]; then
+        echo "Reload Hyprland Configuration"
+        return
+    fi
+
+    # Executed commands & scripts: strip paths, variables, extensions, and wrappers
     if [[ "$action" =~ hl\.dsp\.exec_cmd\((.*)\) ]]; then
         local cmd="${BASH_REMATCH[1]}"
         cmd="${cmd#"${cmd%%[![:space:]\"\'\(]*}"}"
         cmd="${cmd%"${cmd##*[![:space:]\"\'\)]}"}"
+
+        # Clean well-known variables and commands
+        case "$cmd" in
+            terminal)         echo "Launch Terminal (Kitty)"; return ;;
+            fileManager)      echo "Launch File Manager (Thunar)"; return ;;
+            menu)             echo "Command Palette (Spotlight / Raycast)"; return ;;
+            "hyprctl kill")   echo "Kill Window (Interactive Click)"; return ;;
+            "wlogout")        echo "Power Session Menu (Wlogout)"; return ;;
+            "mcontrolcenter") echo "MSI Center Control Panel"; return ;;
+            *"brightness.sh up"*)     echo "Screen Brightness Up"; return ;;
+            *"brightness.sh down"*)   echo "Screen Brightness Down"; return ;;
+            *"volume.sh up"*)         echo "Volume Up"; return ;;
+            *"volume.sh down"*)       echo "Volume Down"; return ;;
+            *"volume.sh toggle"*)     echo "Mute Audio Output"; return ;;
+            *"mic.sh toggle"*)        echo "Mute Microphone"; return ;;
+            *"touchpad-toggle.sh"*)   echo "Toggle Touchpad"; return ;;
+            *"mirror-hotplug.sh"*)    echo "Display Projection Menu (Mirror / Extend)"; return ;;
+            *"playerctl next"*)       echo "Media Next"; return ;;
+            *"playerctl play-pause"*) echo "Media Play / Pause"; return ;;
+            *"playerctl previous"*)   echo "Media Previous"; return ;;
+        esac
+
+        # Strip directory paths
         if [[ "$cmd" =~ /([^/]+)$ ]]; then
-            echo "exec: ${BASH_REMATCH[1]}"
-        else
-            echo "exec: $cmd"
+            cmd="${BASH_REMATCH[1]}"
         fi
+
+        # Clean extensions and known flags
+        cmd=$(echo "$cmd" | sed -E 's/\.(sh|py)//g; s/ --fullscreen/ (Fullscreen)/g; s/ -t -sw//g')
+        echo "$cmd"
         return
     fi
 

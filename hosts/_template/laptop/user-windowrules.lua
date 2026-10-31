@@ -23,3 +23,9 @@
 -- Force an app to always open as a floating window
 -- hl.window_rule({ match = { class = "^(pavucontrol)$" }, float = true })
 -- hl.window_rule({ match = { class = "^(pavucontrol)$" }, size = "800 600" })
+
+-- --- HYPRLAND 0.57+ RULES [TEMPLATE] ---
+-- Custom per-window visual exceptions
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_wobble = true }) -- Disable wobble for specific app
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_glow = true })   -- Disable glow for specific app
+-- hl.window_rule({ match = { class = "^(your_app)$" }, no_xdg_drags = true }) -- Disallow xdg drag operations

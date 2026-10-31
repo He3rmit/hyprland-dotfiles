@@ -52,7 +52,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 |:---|:---|
 | `Super + Q` | **Terminal** (Kitty) |
 | `Super + E` | **File Manager** (Thunar) |
-| `Super + R` | **Command Palette** (Apps, Math, Web Bangs, Terminal Runner) |
+| `Super + Space` / `Super + R` | **Command Palette** (Apps, Math, Web Bangs, Terminal Runner) |
 | `Super + Tab` | **Window Switcher** (Search & Focus across all workspaces) |
 | `Alt + Tab` | **Instant Window Flip** (Instant A/B toggle between last 2 windows, zero menu) |
 | `Super + Alt + W` | **Wallpaper Selector** |
@@ -60,7 +60,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Alt + /` | **Tactical Briefing** (Searchable Cheat Sheet) |
 
 > [!TIP]
-> **Command Palette Capabilities (`Super + R`)**:
+> **Command Palette Capabilities (`Super + Space` / `Super + R`)**:
 > - **Desktop Apps**: Instant launch with application icons and metadata fuzzy search.
 > - **In-line Calculator**: Type `50 * 12 + 10`, `sqrt(144)`, or `2^8` and press Enter &rarr; copies result to clipboard.
 > - **Web Search Bangs**: Type `? <query>` or `!g` (Google), `!w` (ArchWiki), `!yt` (YouTube), `!gh` (GitHub), `!ddg` (DuckDuckGo), `!r` (Reddit).
@@ -95,7 +95,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Shift + B` | **Bluetooth Hub** | Bluetooth power, device connect & scanner (Rofi). |
 | `Super + Shift + E` | **Media Hub** | Launch the Hydra-Omega GTK (Emoji/GIF/Stickers) picker. |
 | `Super + Shift + G` | **Game Mode** | Toggle low-latency gaming mode (disables animations, blur, decorations). |
-| `Super + Space` | **Language / Layout** | Cycle through configured keyboard layouts (`hyprctl switchxkblayout`). |
+| `Super + Alt + Space` | **Language / Layout** | Cycle through configured keyboard layouts (`hyprctl switchxkblayout`). |
 | `Super + M` | **Display Project** | Open Windows 11-style projection menu (Duplicate, Extend, PC/Second only). |
 | `Print` | **Screenshot** | Quick full monitor screenshot copied to clipboard. |
 | `Shift + Print` / `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Swappy. |

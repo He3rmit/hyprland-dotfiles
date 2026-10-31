@@ -136,6 +136,7 @@ if [[ "$MODULES" == *"Unstow Configs"* ]] || [ "$FULL_EJECT" = true ]; then
     rm -f "$HOME/.config/hypr/hyprlock.conf"
     rm -f "$HOME/.config/hypr/hyprlock-host.conf"
     rm -f "$HOME/.config/hypr/hyprsunset.conf"
+    rm -f "$HOME/.config/hypr/xdph.conf"
     rm -f "$HOME/.config/hypr/hyprland.lua"
     rm -f "$HOME/.zshrc.local"
 
@@ -176,7 +177,6 @@ if [[ "$MODULES" == *"Clean Wireplumber"* ]] || [ "$FULL_EJECT" = true ]; then
     print_step ">> Removing Wireplumber overrides..."
     WP_DIR="$HOME/.config/wireplumber/wireplumber.conf.d"
     remove_link "$WP_DIR/50-common-priorities.conf"
-    remove_link "$WP_DIR/51-host-rescue.conf"
     systemctl --user stop wireplumber 2>/dev/null
     rm -rf ~/.local/state/wireplumber/* 2>/dev/null
     systemctl --user start wireplumber 2>/dev/null

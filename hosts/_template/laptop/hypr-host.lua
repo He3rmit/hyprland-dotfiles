@@ -4,24 +4,24 @@
 -- and replace the auto-detect line below.
 
 -- Source the dynamic touchpad state (Laptop only)
-require("touchpad")
+pcall(require, "touchpad")
 
 -- 1. Input: Hardware Quirks
 
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/scripts/mirror-hotplug.sh"))
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("~/.config/swaync/scripts/brightness.sh up"), { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("~/.config/swaync/scripts/brightness.sh down"), { locked = true, repeating = true })
-hl.bind("XF86PowerOff", hl.dsp.exec_cmd("wlogout"))
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/scripts/mirror-hotplug.sh")) -- Display Projection Menu (Mirror / Extend)
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("~/.config/swaync/scripts/brightness.sh up"), { locked = true, repeating = true }) -- Screen Brightness Up
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("~/.config/swaync/scripts/brightness.sh down"), { locked = true, repeating = true }) -- Screen Brightness Down
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd("wlogout")) -- Power Session Menu (Wlogout)
 
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh up"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh down"), { locked = true, repeating = true })
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh toggle"), { locked = true })
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("~/.config/hypr/scripts/mic.sh toggle"), { locked = true })
-hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
-hl.bind("code:202", hl.dsp.exec_cmd("~/.config/hypr/scripts/touchpad-toggle.sh"), { locked = true, ignore_mods = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh up"), { locked = true, repeating = true }) -- Volume Up
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh down"), { locked = true, repeating = true }) -- Volume Down
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.config/swaync/scripts/volume.sh toggle"), { locked = true }) -- Mute Audio Output
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("~/.config/hypr/scripts/mic.sh toggle"), { locked = true }) -- Mute Microphone
+hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true }) -- Media Next
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true }) -- Media Play / Pause
+hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true }) -- Media Play / Pause
+hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true }) -- Media Previous
+hl.bind("code:202", hl.dsp.exec_cmd("~/.config/hypr/scripts/touchpad-toggle.sh"), { locked = true, ignore_mods = true }) -- Toggle Touchpad
 
 hl.config({
     input = {
