@@ -10,7 +10,7 @@ while true; do
 
     # Check if we are stuck at a portal
     if [ "$(nmcli connectivity)" = "portal" ]; then
-        notify-send -u critical "Captive Portal Detected" "Network requires sign-in. Opening browser..."
+        notify-send -u critical "Captive Portal Detected" "Network requires sign-in. Opening browser..." 2>/dev/null &
         # Using neverssl as the trigger URL
         xdg-open "http://neverssl.com"
         # Sleep longer to avoid opening multiple tabs during the login process

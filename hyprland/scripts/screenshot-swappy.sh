@@ -19,5 +19,5 @@ elif command -v swappy >/dev/null 2>&1; then
     grim -g "$GEOM" - | swappy -f -
 else
     grim -g "$GEOM" - | wl-copy --type image/png
-    notify-send -u normal -a "Titanfall Systems" -i "camera-photo" "Screenshot Captured" "Saved directly to clipboard."
+    notify-send -u normal -a "Titanfall Systems" -i "camera-photo" "Screenshot Captured" "Saved directly to clipboard." 2>/dev/null &
 fi

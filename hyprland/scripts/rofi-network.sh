@@ -11,7 +11,7 @@ notify_net() {
     local title="$1"
     local msg="$2"
     local urgency="${3:-normal}"
-    notify-send -a "Network Hub" -u "$urgency" -i "network-wireless" "$title" "$msg" 2>/dev/null || true
+    notify-send -a "Network Hub" -u "$urgency" -i "network-wireless" "$title" "$msg" 2>/dev/null &
 }
 
 rofi_cmd() {
@@ -254,15 +254,19 @@ main() {
             ;;
         "● "*)
             # Active connected network clicked
-            local current_ssid
-            current_ssid=$(echo "$choice" | sed -E 's/^● +[^ ]+ +//; s/ \[Connected.*//')
-            handle_active_wifi "$current_ssid"
+            local current_ssid=""
+            if [[ "$choice" =~ ^●[[:space:]]+[^[:space:]]+[[:space:]]+(.*)[[:space:]]\[Connected ]]; then
+                current_ssid="${BASH_REMATCH[1]}"
+            fi
+            [[ -n "$current_ssid" ]] && handle_active_wifi "$current_ssid"
             ;;
         "  "*)
             # Available network clicked
-            local selected_ssid
-            selected_ssid=$(echo "$choice" | sed -E 's/^  [^ ]+ //; s/^󰌾 //; s/ \([0-9]+%\)$//')
-            handle_wifi_connect "$selected_ssid"
+            local s="${choice#  }"
+            s="${s#* }"
+            s="${s#󰌾 }"
+            local selected_ssid="${s% (*}"
+            [[ -n "$selected_ssid" ]] && handle_wifi_connect "$selected_ssid"
             ;;
     esac
 }

@@ -16,7 +16,7 @@ notify() {
     local title="$1"
     local msg="$2"
     local urgency="${3:-normal}"
-    notify-send -a "Screen Recorder" -u "$urgency" -i "media-record" "$title" "$msg" 2>/dev/null || true
+    notify-send -a "Screen Recorder" -u "$urgency" -i "media-record" "$title" "$msg" 2>/dev/null &
 }
 
 rofi_cmd() {
@@ -45,9 +45,9 @@ stop_recording() {
     fi
 
     local pid
-    pid=$(cat "$PID_FILE" 2>/dev/null)
+    pid=$(< "$PID_FILE")
     local target_file=""
-    [[ -f "$INFO_FILE" ]] && target_file=$(cat "$INFO_FILE" 2>/dev/null)
+    [[ -f "$INFO_FILE" ]] && target_file=$(< "$INFO_FILE")
 
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
         # Send SIGINT to allow recorder to gracefully flush MP4 MOOV atom index
@@ -71,10 +71,8 @@ stop_recording() {
 
     # Check that output file exists and is valid
     if [[ -n "$target_file" && -s "$target_file" ]]; then
-        local dir
-        dir=$(dirname "$target_file")
-        local base
-        base=$(basename "$target_file")
+        local dir="${target_file%/*}"
+        local base="${target_file##*/}"
 
         # Spawn interactive notification with quick actions
         (
@@ -110,7 +108,7 @@ stop_recording() {
 
 # --- 2. EARLY STATUS OR STOP DISPATCH ---
 if [[ "$1" == "--status" ]]; then
-    if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
+    if [[ -f "$PID_FILE" ]] && kill -0 "$(< "$PID_FILE")" 2>/dev/null; then
         echo '{"text":"󰑋 REC","class":"recording","tooltip":"Recording in progress\nClick to stop"}'
     else
         echo '{"text":"","class":"idle","tooltip":"Screen Recorder"}'
@@ -230,7 +228,7 @@ AUDIO_TYPE="${AUDIO_TYPE:-desktop}"
 
 # --- 5. PREPARE DESTINATION ---
 mkdir -p "$SAVE_DIR"
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+printf -v TIMESTAMP '%(%Y-%m-%d_%H-%M-%S)T' -1
 OUTPUT_FILE="$SAVE_DIR/recording_${TIMESTAMP}.mp4"
 
 # --- 6. SETUP AUDIO STREAMS ---

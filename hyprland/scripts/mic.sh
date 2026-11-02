@@ -2,11 +2,10 @@
 # ~/.config/swaync/scripts/mic.sh
 WPCTL=$(command -v wpctl)
 NOTIFY=$(command -v notify-send)
-ID_FILE="/tmp/mic_notif_id"
 STEP="5%"
 
 if [[ -z "$WPCTL" ]]; then
-  [[ -n "$NOTIFY" ]] && $NOTIFY -u critical "Mic" "Error: 'wpctl' (Wireplumber) not found in PATH."
+  [[ -n "$NOTIFY" ]] && $NOTIFY -u critical "Mic" "Error: 'wpctl' (Wireplumber) not found in PATH." &
   echo "Error: wpctl not found." >&2
   exit 1
 fi
@@ -31,7 +30,7 @@ fi
 
 # 3. VERIFY: If after 0.5s there is still no output, report a telemetry failure
 if [ -z "$OUT" ]; then
-  $NOTIFY -u critical "Mic" "Telemetry Lost: Microphone source not responding."
+  $NOTIFY -u critical "Mic" "Telemetry Lost: Microphone source not responding." &
   exit 1
 fi
 
@@ -55,12 +54,6 @@ else
 fi
 
 # 5. NOTIFY: Update the SwayNC HUD
-OLD_ID=0
-if [[ -s "$ID_FILE" ]]; then
-    read -r val < "$ID_FILE" 2>/dev/null
-    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
-fi
-
 if [ "$MUTED" = "true" ]; then
   ICON="microphone-sensitivity-muted-symbolic"
   MSG="Microphone muted"
@@ -80,6 +73,5 @@ if command -v brightnessctl >/dev/null 2>&1; then
   fi
 fi
 
-NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Microphone" "$MSG" 2>/dev/null)
-[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"
+$NOTIFY -t 1200 -u low -i "$ICON" -h string:x-canonical-private-synchronous:sys-mic -h int:value:"$HINT_VAL" "Microphone" "$MSG" 2>/dev/null &
 exit 0

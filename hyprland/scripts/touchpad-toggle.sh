@@ -24,7 +24,7 @@ if [ -z "$DEVICE" ]; then
 fi
 
 if [ -z "$DEVICE" ]; then
-    notify-send -u low -i input-touchpad-off "Touchpad" "No touchpad device detected"
+    notify-send -u low -i input-touchpad-off "Touchpad" "No touchpad device detected" 2>/dev/null &
     exit 0
 fi
 
@@ -36,7 +36,7 @@ if [[ "$CURR_STATE" == "false" ]]; then
     enabled = true
 })" > "$STATE_FILE"
     hyprctl eval "hl.device({ name = \"$DEVICE\", enabled = true })"
-    notify-send -u low -i input-touchpad-on "Touchpad" "Enabled ✅"
+    notify-send -u low -i input-touchpad-on -h string:x-canonical-private-synchronous:sys-touchpad "Touchpad" "Enabled ✅" 2>/dev/null &
 else
     # TOGGLE OFF: Disable it
     echo "hl.device({
@@ -44,5 +44,5 @@ else
     enabled = false
 })" > "$STATE_FILE"
     hyprctl eval "hl.device({ name = \"$DEVICE\", enabled = false })"
-    notify-send -u low -i input-touchpad-off "Touchpad" "Disabled 🚫"
+    notify-send -u low -i input-touchpad-off -h string:x-canonical-private-synchronous:sys-touchpad "Touchpad" "Disabled 🚫" 2>/dev/null &
 fi

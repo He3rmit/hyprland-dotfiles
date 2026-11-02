@@ -18,7 +18,7 @@ notify_display() {
     local urgency="${3:-normal}"
     notify-send -a "Display" -u "$urgency" -t 2500 \
         -h "string:x-canonical-private-synchronous:display-project" \
-        "$title" "$msg" 2>/dev/null || true
+        "$title" "$msg" 2>/dev/null &
 }
 
 # --- 1. HARDWARE DETECTION ---
@@ -174,7 +174,7 @@ case "$1" in
         fi
 
         CURRENT_STATE=0
-        [[ -f "$STATE_FILE" ]] && CURRENT_STATE=$(cat "$STATE_FILE")
+        [[ -f "$STATE_FILE" ]] && CURRENT_STATE=$(< "$STATE_FILE")
         NEXT_STATE=$(( (CURRENT_STATE + 1) % 4 ))
 
         case "$NEXT_STATE" in

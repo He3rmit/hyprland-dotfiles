@@ -2,7 +2,6 @@
 # ~/.config/swaync/scripts/volume.sh
 WPCTL="/usr/bin/wpctl"
 NOTIFY="/usr/bin/notify-send"
-ID_FILE="/tmp/volume_notif_id"
 STEP="5%"
 
 case "$1" in
@@ -32,12 +31,6 @@ else
     fi
 fi
 
-OLD_ID=0
-if [[ -s "$ID_FILE" ]]; then
-    read -r val < "$ID_FILE" 2>/dev/null
-    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
-fi
-
 if [ "$MUTED" = "true" ]; then
     ICON="audio-volume-muted-symbolic"
     MSG="Volume muted"
@@ -48,5 +41,4 @@ else
     HINT_VAL=$VOL_PERC
 fi
 
-NEW_ID=$($NOTIFY -p -t 1000 -r "$OLD_ID" -u low -i "$ICON" -h int:value:"$HINT_VAL" "Volume" "$MSG" 2>/dev/null)
-[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"
+$NOTIFY -t 1000 -u low -i "$ICON" -h string:x-canonical-private-synchronous:sys-volume -h int:value:"$HINT_VAL" "Volume" "$MSG" 2>/dev/null &

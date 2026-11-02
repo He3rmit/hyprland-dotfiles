@@ -4,11 +4,10 @@ devs=(/sys/class/backlight/*)
 DEVICE="${devs[0]##*/}"
 [[ "$DEVICE" == "*" ]] && DEVICE=""
 if [ -z "$DEVICE" ]; then
-    notify-send -u critical "Brightness" "No backlight device found"
+    notify-send -u critical "Brightness" "No backlight device found" &
     exit 1
 fi
 STEP="5%"                           
-ID_FILE="/tmp/brightness_notif_id"  
 BRCTL="/usr/bin/brightnessctl"
 NOTIFY="/usr/bin/notify-send"
 
@@ -52,18 +51,11 @@ else
 fi
 
 if [ -z "$BRIGHT" ] || [ -z "$MAX" ] || [ "$MAX" -eq 0 ]; then
-  $NOTIFY -u critical "Brightness" "Unable to read brightness"
+  $NOTIFY -u critical "Brightness" "Unable to read brightness" &
   exit 1
 fi
 
 PERC=$(( BRIGHT * 100 / SAFE_MAX ))
 if [ "$PERC" -gt 100 ]; then PERC=100; fi
 
-OLD_ID=0
-if [[ -s "$ID_FILE" ]]; then
-    read -r val < "$ID_FILE" 2>/dev/null
-    [[ "$val" =~ ^[0-9]+$ ]] && OLD_ID="$val"
-fi
-
-NEW_ID=$($NOTIFY -p -t 1200 -r "$OLD_ID" -u low -h int:value:"$PERC" -i display-brightness-symbolic "Brightness" "${PERC}%" 2>/dev/null)
-[[ "$NEW_ID" =~ ^[0-9]+$ ]] && echo "$NEW_ID" > "$ID_FILE"
+$NOTIFY -t 1200 -u low -h string:x-canonical-private-synchronous:sys-brightness -h int:value:"$PERC" -i display-brightness-symbolic "Brightness" "${PERC}%" 2>/dev/null &

@@ -31,12 +31,17 @@ if [[ -z "$MODE" ]]; then
 fi
 
 if [[ "$MODE" == "Change Layout (Modules)" ]]; then
-    # 2a. List layouts
+    # 2a. List layouts (pure bash globbing, zero child processes)
     cd "$LAYOUTS_DIR" || exit 1
-    options=$(ls -1 *.jsonc 2>/dev/null | sed 's/\.jsonc$//')
+    options_arr=()
+    for f in *.jsonc; do
+        [[ -e "$f" ]] || continue
+        options_arr+=("${f%.jsonc}")
+    done
+    options=$(printf "%s\n" "${options_arr[@]}")
     
     if [[ -z "$options" ]]; then
-        notify-send "Waybar Switcher" "No layouts found!"
+        notify-send "Waybar Switcher" "No layouts found!" &
         exit 1
     fi
     
@@ -95,12 +100,17 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
     fi
 
 elif [[ "$MODE" == "Change Style (CSS)" ]]; then
-    # 2b. List styles
+    # 2b. List styles (pure bash globbing, zero child processes)
     cd "$STYLES_DIR" || exit 1
-    options=$(ls -1 *.css 2>/dev/null | sed 's/\.css$//')
+    options_arr=()
+    for f in *.css; do
+        [[ -e "$f" ]] || continue
+        options_arr+=("${f%.css}")
+    done
+    options=$(printf "%s\n" "${options_arr[@]}")
     
     if [[ -z "$options" ]]; then
-        notify-send "Waybar Switcher" "No styles found!"
+        notify-send "Waybar Switcher" "No styles found!" &
         exit 1
     fi
     
@@ -110,7 +120,7 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         target_file="$STYLES_DIR/${selected_name}.css"
         
         if [[ ! -f "$target_file" ]]; then
-            notify-send "Waybar Engine" "ERROR: Source style not found!"
+            notify-send "Waybar Engine" "ERROR: Source style not found!" &
             exit 1
         fi
         
@@ -119,14 +129,15 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         rm -f "$STYLE_FILE"
         cp "$target_file" "$STYLE_FILE"
         chmod 644 "$STYLE_FILE"
-        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name"
+        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name" &
         
         # ENGINE RESTART
         reload_waybar
     fi
 elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
     # 2c. Ask for direction based on layout type (from Identity Memory)
-    LAYOUT_TYPE=$(cat "$TYPE_FILE" 2>/dev/null)
+    LAYOUT_TYPE=""
+    [[ -f "$TYPE_FILE" ]] && LAYOUT_TYPE=$(< "$TYPE_FILE")
     
     if [[ "$LAYOUT_TYPE" == "Sidebar" ]]; then
         DIRECTION=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Direction (Sidebar Mode)" -theme "$ROFI_THEME")
@@ -166,7 +177,14 @@ sync_swaync_position() {
             chmod 644 "$swaync_config"
         fi
 
-        local wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$wbb_config" | cut -d'"' -f4 | head -n 1)
+        local wb_pos="top"
+        if [[ -r "$wbb_config" ]]; then
+            local wb_content
+            wb_content=$(< "$wbb_config")
+            if [[ "$wb_content" =~ \"position\":[[:space:]]*\"([a-zA-Z]+)\" ]]; then
+                wb_pos="${BASH_REMATCH[1]}"
+            fi
+        fi
         
         # Determine the module block containing the notification/tray icon
         local has_left=$(grep -E '"modules-left":.*("custom/notification"|"tray")' "$wbb_config")

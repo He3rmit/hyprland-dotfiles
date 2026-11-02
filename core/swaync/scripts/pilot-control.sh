@@ -2,11 +2,19 @@
 
 case "$1" in
     wifi)
-        # Toggle Wifi
-        nmcli radio wifi | grep -q "enabled" && nmcli radio wifi off || nmcli radio wifi on
+        # Toggle Wifi without subshell grep
+        if [[ "$(nmcli radio wifi)" == *"enabled"* ]]; then
+            nmcli radio wifi off
+        else
+            nmcli radio wifi on
+        fi
         ;;
     bluetooth)
-        # Toggle Bluetooth
-        rfkill list bluetooth | grep -q "Soft blocked: yes" && rfkill unblock bluetooth || rfkill block bluetooth
+        # Toggle Bluetooth without subshell grep
+        if [[ "$(rfkill list bluetooth)" == *"Soft blocked: yes"* ]]; then
+            rfkill unblock bluetooth
+        else
+            rfkill block bluetooth
+        fi
         ;;
 esac
