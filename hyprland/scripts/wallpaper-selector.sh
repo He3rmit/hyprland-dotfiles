@@ -125,18 +125,21 @@ while IFS= read -r wall; do
     [[ -z "$wall" ]] && continue
     name="${wall##*/}"
     
-    # Generate thumbnail
+    # Non-blocking thumbnail resolution: use cache if ready, otherwise fallback icon & render async
     thumb="$CACHE_DIR/${name}.jpg"
-    if [[ ! -f "$thumb" ]]; then
-        if [[ "$wall" =~ \.(mp4|webm|mkv)$ ]]; then
-            ffmpegthumbnailer -i "$wall" -o "$thumb" -s 256 -q 8 -c jpeg >/dev/null 2>&1
-        else
-            magick "$wall[0]" -resize 256x256^ -gravity center -extent 256x256 "$thumb" >/dev/null 2>&1
-        fi
+    if [[ -f "$thumb" ]]; then
+        icon_path="$thumb"
+    elif [[ "$wall" =~ \.(mp4|webm|mkv)$ ]]; then
+        icon_path="video-x-generic"
+        (nice -n 19 ffmpegthumbnailer -i "$wall" -o "$thumb" -s 256 -q 8 -c jpeg >/dev/null 2>&1) &
+    else
+        # Static images can be rendered directly by Rofi while thumbnail caches in background
+        icon_path="$wall"
+        (nice -n 19 magick "$wall[0]" -resize 256x256^ -gravity center -extent 256x256 "$thumb" >/dev/null 2>&1) &
     fi
     
     # Append to input list
-    rofi_input+="${name}\0icon\x1f${thumb}\n"
+    rofi_input+="${name}\0icon\x1f${icon_path}\n"
 done <<< "$all_walls"
 
 # Show in rofi

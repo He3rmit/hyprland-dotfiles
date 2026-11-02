@@ -21,6 +21,14 @@ generate_keycode_map() {
     layout=${layout:-us}
     variant=${variant:-""}
 
+    local cache_file="/tmp/hypr_keycode_map_${layout//,/_}_${variant//,/_}.cache"
+    if [[ -f "$cache_file" && -s "$cache_file" ]]; then
+        while IFS=":" read -r code symbol; do
+            [[ -n "$code" && -n "$symbol" ]] && KEYCODES["code:$code"]="$symbol"
+        done < "$cache_file"
+        return
+    fi
+
     local xkb_dump=$(xkbcli compile-keymap --layout "$layout" --variant "$variant" 2>/dev/null)
     # If compilation fails on combined string, fallback to primary layout
     if [[ -z "$xkb_dump" && "$layout" == *","* ]]; then
@@ -30,8 +38,12 @@ generate_keycode_map() {
     fi
     if [[ -z "$xkb_dump" ]]; then return; fi
 
+    local tmp_cache=""
     while IFS=":" read -r code symbol; do
-        [[ -n "$code" && -n "$symbol" ]] && KEYCODES["code:$code"]="${symbol^^}"
+        if [[ -n "$code" && -n "$symbol" ]]; then
+            KEYCODES["code:$code"]="${symbol^^}"
+            tmp_cache+="${code}:${symbol^^}"$'\n'
+        fi
     done < <(echo "$xkb_dump" | awk '
         {
             if (match($0, /<([A-Za-z0-9_]+)>[ \t]*=[ \t]*([0-9]+);/, arr)) {
@@ -46,6 +58,7 @@ generate_keycode_map() {
             }
         }
     ')
+    [[ -n "$tmp_cache" ]] && echo -n "$tmp_cache" > "$cache_file" 2>/dev/null
 }
 
 # --- ENGINE: KEY SANITIZER ---

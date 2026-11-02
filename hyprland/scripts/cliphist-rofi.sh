@@ -7,6 +7,10 @@ THEME="$HOME/.config/rofi/themes/clipboard.rasi"
 CACHE_DIR="$HOME/.cache/cliphist-thumbnails"
 mkdir -p "$CACHE_DIR"
 
+# Capture originating window address & class before Rofi takes focus
+TARGET_WINDOW_ADDR=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty' 2>/dev/null)
+TARGET_WINDOW_CLASS=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' 2>/dev/null)
+
 # Prevent ImageMagick from hogging CPU cores & RAM while allowing fast decoding
 export MAGICK_THREAD_LIMIT=4
 export MAGICK_MEMORY_LIMIT=256MiB
@@ -46,14 +50,35 @@ is_terminal_window() {
 }
 
 paste_to_active_window() {
-    local active_class
-    active_class=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' 2>/dev/null)
+    (
+        # Explicitly direct Hyprland to focus the originating target window
+        if [ -n "$TARGET_WINDOW_ADDR" ]; then
+            hyprctl dispatch focuswindow "address:${TARGET_WINDOW_ADDR}" >/dev/null 2>&1
+        fi
 
-    if is_terminal_window "$active_class"; then
-        (sleep 0.12 && wtype -M ctrl -M shift -k v -m shift -m ctrl) &
-    else
-        (sleep 0.12 && wtype -M ctrl -k v -m ctrl) &
-    fi
+        # Adaptive focus check: wait until target window is verified active (max 500ms in 20ms steps)
+        local waited=0
+        while [ $waited -lt 25 ]; do
+            local current_addr
+            current_addr=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty' 2>/dev/null)
+            if [ -n "$TARGET_WINDOW_ADDR" ] && [ "$current_addr" = "$TARGET_WINDOW_ADDR" ]; then
+                break
+            elif [ -z "$TARGET_WINDOW_ADDR" ] && [ -n "$current_addr" ] && [[ "${current_addr,,}" != *"rofi"* ]]; then
+                break
+            fi
+            sleep 0.02
+            waited=$((waited + 1))
+        done
+
+        # Micro-settle buffer for Wayland input server & client focus event processing
+        sleep 0.03
+
+        if is_terminal_window "$TARGET_WINDOW_CLASS"; then
+            wtype -M ctrl -M shift -s 30 -k v -s 30 -m shift -m ctrl
+        else
+            wtype -M ctrl -s 30 -k v -s 30 -m ctrl
+        fi
+    ) &
 }
 
 generate_list() {
@@ -82,30 +107,26 @@ generate_list() {
                 mp4|mkv|webm|avi|mov|flv|wmv)
                     label="󰕧 Video • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        if [ $sync_count -lt 3 ]; then
-                            sync_count=$((sync_count + 1))
-                            ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1
-                        elif [ $img_count -lt 20 ]; then
+                        icon_val="video-x-generic"
+                        if [ $img_count -lt 25 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1) &
                         fi
+                    else
+                        icon_val="$preview_file"
                     fi
-                    icon_val="$preview_file"
-                    [ ! -f "$preview_file" ] && icon_val="video-x-generic"
                     ;;
                 png|jpg|jpeg|gif|webp|svg)
                     label="󰈟 Image • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        if [ $sync_count -lt 3 ]; then
-                            sync_count=$((sync_count + 1))
-                            magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
-                        elif [ $img_count -lt 20 ]; then
+                        icon_val="image-x-generic"
+                        if [ $img_count -lt 25 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                         fi
+                    else
+                        icon_val="$preview_file"
                     fi
-                    icon_val="$preview_file"
-                    [ ! -f "$preview_file" ] && icon_val="image-x-generic"
                     ;;
                 mp3|flac|wav|ogg|m4a)
                     label="󰎈 Audio • ${filename}"
@@ -154,17 +175,14 @@ generate_list() {
             fi
 
             if [ ! -f "$preview_file" ]; then
-                if [ $sync_count -lt 3 ]; then
-                    sync_count=$((sync_count + 1))
-                    cliphist decode "$id" | magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
-                elif [ $img_count -lt 20 ]; then
+                icon_val="image-x-generic"
+                if [ $img_count -lt 25 ]; then
                     img_count=$((img_count + 1))
-                    (nice -n 19 cliphist decode "$id" | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                    (nice -n 19 cliphist decode "$id" 2>/dev/null | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                 fi
+            else
+                icon_val="$preview_file"
             fi
-
-            icon_val="$preview_file"
-            [ ! -f "$preview_file" ] && icon_val="image-x-generic"
             echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
 
         else
@@ -247,28 +265,28 @@ case $exit_code in
             notify_pilot "Multi-Buffer Ready" "Merged ${item_count} items & pasted into active window."
         else
             first_id=$(echo "$clip_ids" | head -n 1)
-            raw_head=$(cliphist decode "$first_id" 2>/dev/null | head -n 1)
-            clean_head="${raw_head%$'\r'}"
+            raw_meta=$(cliphist list | awk -F'\t' -v id="$first_id" '$1 == id { print $2; exit }')
 
             target_path=""
-            if [[ "$clean_head" == file://* ]]; then
-                raw_path="${clean_head#file://}"
-                target_path=$(echo -e "${raw_path//%/\\x}")
-            elif [[ "$clean_head" == /* ]] && [ -e "$clean_head" ]; then
-                target_path="$clean_head"
+            if [[ "$raw_meta" =~ file://(.*) ]]; then
+                file_path=$(echo -e "${BASH_REMATCH[1]//%/\\x}")
+                target_path="${file_path%$'\r'}"
+            elif [[ "$raw_meta" == /* ]] && [ -e "${raw_meta%$'\r'}" ]; then
+                target_path="${raw_meta%$'\r'}"
             fi
 
             if [ -n "$target_path" ] && [ -e "$target_path" ]; then
                 encoded_path="${target_path// /%20}"
                 file_uri="file://${encoded_path}"
                 echo -n "$file_uri" | wl-copy --type text/uri-list
+            elif [[ "$raw_meta" =~ binary.*data ]]; then
+                mime_type="image/png"
+                [[ "$raw_meta" =~ (jpeg|jpg) ]] && mime_type="image/jpeg"
+                [[ "$raw_meta" =~ gif ]] && mime_type="image/gif"
+                [[ "$raw_meta" =~ webp ]] && mime_type="image/webp"
+                cliphist decode "$first_id" | wl-copy --type "$mime_type"
             else
-                mime_type=$(cliphist decode "$first_id" 2>/dev/null | file -b --mime-type -)
-                if [[ "$mime_type" == image/* ]]; then
-                    cliphist decode "$first_id" | wl-copy --type "$mime_type"
-                else
-                    cliphist decode "$first_id" | wl-copy
-                fi
+                cliphist decode "$first_id" | wl-copy
             fi
 
             paste_to_active_window

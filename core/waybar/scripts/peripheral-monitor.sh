@@ -17,6 +17,7 @@ parse_upower() {
     DEV_MODEL=""
     DEV_PERCENT=""
     DEV_STATE=""
+    DEV_IGNORED=false
     while IFS= read -r line; do
         line="${line#"${line%%[![:space:]]*}"}"
         if [[ "$line" == model:* ]]; then
@@ -25,9 +26,13 @@ parse_upower() {
             DEV_MODEL="${DEV_MODEL%"${DEV_MODEL##*[![:space:]]}"}"
             DEV_MODEL="${DEV_MODEL//&/&amp;}"
         elif [[ "$line" == percentage:* ]]; then
+            if [[ "$line" == *"should be ignored"* ]]; then
+                DEV_IGNORED=true
+            fi
             DEV_PERCENT="${line#percentage:}"
-            DEV_PERCENT="${DEV_PERCENT//[ %[:space:]]/}"
-            DEV_PERCENT="${DEV_PERCENT%.*}"
+            # Extract strictly numeric digits
+            DEV_PERCENT="${DEV_PERCENT#"${DEV_PERCENT%%[0-9]*}"}"
+            DEV_PERCENT="${DEV_PERCENT%%[!0-9]*}"
         elif [[ "$line" == state:* ]]; then
             DEV_STATE="${line#state:}"
             DEV_STATE="${DEV_STATE#"${DEV_STATE%%[![:space:]]*}"}"
@@ -53,15 +58,16 @@ if [ -n "$BAT_DEVICE" ]; then
     BAT_LEVEL="$DEV_PERCENT"
     BAT_STATE="$DEV_STATE"
 
-    ICON="BAT"
-    [[ "$BAT_STATE" == "charging" ]] && ICON="⚡"
-    LAPTOP_BAT="${ICON}${SEPARATOR}${BAT_LEVEL}%"
+    if [[ -n "$BAT_LEVEL" ]] && [[ "$BAT_LEVEL" =~ ^[0-9]+$ ]]; then
+        ICON="BAT"
+        [[ "$BAT_STATE" == "charging" ]] && ICON="⚡"
+        LAPTOP_BAT="${ICON}${SEPARATOR}${BAT_LEVEL}%"
 
-    if [[ "$BAT_STATE" == "charging" ]]; then IS_CHARGING=true; fi
-    # Only flag critical if BAT_LEVEL is actually a number
-    if [[ -n "$BAT_LEVEL" ]] && [[ "$BAT_LEVEL" -le 20 ]]; then HAS_CRITICAL=true; fi
+        if [[ "$BAT_STATE" == "charging" ]]; then IS_CHARGING=true; fi
+        if [[ "$BAT_LEVEL" -le 20 ]]; then HAS_CRITICAL=true; fi
 
-    TOOLTIP_MSG+="Laptop Battery: ${BAT_LEVEL}% (${BAT_STATE})"'\n'
+        TOOLTIP_MSG+="Laptop Battery: ${BAT_LEVEL}% (${BAT_STATE})"'\n'
+    fi
 fi
 
 # --- 2. PERIPHERALS ONLY ---
@@ -77,11 +83,12 @@ for DEV_PATH in "${ALL_DEVICES[@]}"; do
     PERCENT="$DEV_PERCENT"
     STATE="$DEV_STATE"
 
-    if [ -z "$PERCENT" ]; then continue; fi
-    if [ -z "$STATE" ]; then STATE="active"; fi
+    # Strict filtering: skip invalid, placeholder, or ignored telemetry
+    if [[ "$DEV_IGNORED" == true ]]; then continue; fi
+    if [[ -z "$PERCENT" ]] || ! [[ "$PERCENT" =~ ^[0-9]+$ ]]; then continue; fi
+    if [[ "$PERCENT" -le 0 ]] || [[ "$PERCENT" -gt 100 ]]; then continue; fi
 
-    # Phantom 0% fix for peripherals
-    if [[ "$PERCENT" == "0" ]]; then continue; fi
+    if [ -z "$STATE" ]; then STATE="active"; fi
 
     TOOLTIP_MSG+="${MODEL}: ${PERCENT}% (${STATE})"'\n'
 

@@ -25,18 +25,19 @@ CITIES=(
 )
 
 MENU_ITEMS=""
+now=$(date +%s)
 
 for item in "${CITIES[@]}"; do
     tz="${item%%|*}"
     name="${item#*|}"
-    time_str=$(TZ="$tz" date +"%H:%M  (%Z / UTC%z)")
+    TZ="$tz" printf -v time_str '%(%H:%M  (%Z / UTC%z))T' "$now"
     MENU_ITEMS+="${name}\t->  ${time_str}\n"
 done
 
 SELECTION=$(echo -e -n "$MENU_ITEMS" | rofi -dmenu -i -p "󰥔 World Clock" -theme "$THEME")
 
 if [ -n "$SELECTION" ]; then
-    CITY_NAME=$(echo "$SELECTION" | awk -F '\t->  ' '{print $1}')
-    TIME_DETAILS=$(echo "$SELECTION" | awk -F '\t->  ' '{print $2}')
+    CITY_NAME="${SELECTION%%$'\t->'*}"
+    TIME_DETAILS="${SELECTION#*$'\t->  '}"
     notify-send -u normal -a "World Clock" -i "clock" "󰥔 ${CITY_NAME}" "Current Time: ${TIME_DETAILS}"
 fi
