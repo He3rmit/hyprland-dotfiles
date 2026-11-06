@@ -107,26 +107,30 @@ generate_list() {
                 mp4|mkv|webm|avi|mov|flv|wmv)
                     label="󰕧 Video • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        icon_val="video-x-generic"
-                        if [ $img_count -lt 25 ]; then
+                        if [ $sync_count -lt 3 ]; then
+                            sync_count=$((sync_count + 1))
+                            ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1
+                        elif [ $img_count -lt 25 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 ffmpegthumbnailer -i "$file_path" -o "$preview_file" -s 160 >/dev/null 2>&1) &
                         fi
-                    else
-                        icon_val="$preview_file"
                     fi
+                    icon_val="$preview_file"
+                    [ ! -f "$preview_file" ] && icon_val="video-x-generic"
                     ;;
                 png|jpg|jpeg|gif|webp|svg)
                     label="󰈟 Image • ${filename}"
                     if [ ! -f "$preview_file" ]; then
-                        icon_val="image-x-generic"
-                        if [ $img_count -lt 25 ]; then
+                        if [ $sync_count -lt 3 ]; then
+                            sync_count=$((sync_count + 1))
+                            magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                        elif [ $img_count -lt 25 ]; then
                             img_count=$((img_count + 1))
                             (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                         fi
-                    else
-                        icon_val="$preview_file"
                     fi
+                    icon_val="$preview_file"
+                    [ ! -f "$preview_file" ] && icon_val="image-x-generic"
                     ;;
                 mp3|flac|wav|ogg|m4a)
                     label="󰎈 Audio • ${filename}"
@@ -175,14 +179,17 @@ generate_list() {
             fi
 
             if [ ! -f "$preview_file" ]; then
-                icon_val="image-x-generic"
-                if [ $img_count -lt 25 ]; then
+                if [ $sync_count -lt 3 ]; then
+                    sync_count=$((sync_count + 1))
+                    cliphist decode "$id" 2>/dev/null | magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                elif [ $img_count -lt 25 ]; then
                     img_count=$((img_count + 1))
                     (nice -n 19 cliphist decode "$id" 2>/dev/null | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                 fi
-            else
-                icon_val="$preview_file"
             fi
+
+            icon_val="$preview_file"
+            [ ! -f "$preview_file" ] && icon_val="image-x-generic"
             echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
 
         else
@@ -197,9 +204,11 @@ generate_list() {
                 label="󰏘 Hex Color • ${trimmed}"
                 swatch_file="$CACHE_DIR/color_${trimmed#\#}.png"
                 if [ ! -f "$swatch_file" ]; then
-                    (nice -n 19 magick -size 80x80 xc:"$trimmed" -bordercolor '#ffffff33' -border 2 "$swatch_file" >/dev/null 2>&1) &
+                    magick -size 80x80 xc:"$trimmed" -bordercolor '#ffffff33' -border 2 "$swatch_file" >/dev/null 2>&1
                 fi
-                echo -en "${id}\t${label}\0icon\x1f${swatch_file}\n"
+                icon_val="$swatch_file"
+                [ ! -f "$swatch_file" ] && icon_val="preferences-color"
+                echo -en "${id}\t${label}\0icon\x1f${icon_val}\n"
 
             # URL / Web link detection
             elif [[ "$trimmed" =~ ^https?:// ]]; then
