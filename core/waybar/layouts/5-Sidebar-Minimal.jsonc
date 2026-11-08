@@ -5,11 +5,17 @@
   "width": "auto",
   "height": 45,
   "modules-left": ["hyprland/workspaces"],
-  "modules-center": [],
-  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "tray",
+    "hyprland/language",
+    "custom/notification",
+    "custom/peripheral",
+    "custom/power"
+  ],
 
   "clock": { "format": "\n{:%H\n%M}" },
   "custom/peripheral": {
-      "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh"
+    "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh"
   }
 }

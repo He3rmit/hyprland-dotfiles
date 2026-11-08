@@ -21,7 +21,7 @@ window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
 window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
 window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
 
-#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #quicklinks, #window {
     background: alpha(@background, 0.65);
     border: 1px solid alpha(@color4, 0.3);
     border-radius: 20px;
@@ -34,6 +34,23 @@ window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
 #workspaces { padding: 6px 0px; }
 #workspaces button { padding: 6px 0px; color: @color7; }
 
+#language {
+    font-size: 11px;
+}
+
+#window { padding: 0px 14px; font-size: 11px; }
+#window image { margin-right: 6px; }
+window#waybar.empty #window,
+#window.empty {
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    box-shadow: none;
+}
+
+#hardware, #comms, #quicklinks { padding: 0px 6px; }
+
 window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu,
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
 window#waybar.horizontal #network, window#waybar.top #network, window#waybar.bottom #network,
@@ -43,7 +60,11 @@ window#waybar.horizontal #custom-peripheral, window#waybar.top #custom-periphera
 window#waybar.horizontal #custom-power, window#waybar.top #custom-power, window#waybar.bottom #custom-power,
 window#waybar.horizontal #custom-notification, window#waybar.top #custom-notification, window#waybar.bottom #custom-notification,
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
-window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray {
+window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray,
+window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
+window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
+window#waybar.horizontal #quicklinks, window#waybar.top #quicklinks, window#waybar.bottom #quicklinks,
+window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
     padding: 6px 18px;
     margin: 8px 6px;
     min-width: 0px;
@@ -51,6 +72,34 @@ window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #t
 
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 4px 6px; }
 window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button { padding: 2px 14px; color: @color7; }
+
+/* Seamless internal telemetry stitching inside groups */
+window#waybar #hardware #cpu,
+window#waybar #hardware #memory,
+window#waybar #comms #network,
+window#waybar #comms #custom-peripheral,
+window#waybar #quicklinks #custom-notification,
+window#waybar #quicklinks #custom-power {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0px 6px;
+    margin: 0px;
+    min-width: 0px;
+    min-height: 0px;
+}
+
+window#waybar.horizontal #hardware #memory,
+window#waybar.top #hardware #memory,
+window#waybar.bottom #hardware #memory,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #comms #custom-peripheral,
+window#waybar.horizontal #quicklinks #custom-power,
+window#waybar.top #quicklinks #custom-power,
+window#waybar.bottom #quicklinks #custom-power {
+    border-left: 1px solid alpha(@color4, 0.25);
+}
 
 #workspaces button.active {
     color: @background;

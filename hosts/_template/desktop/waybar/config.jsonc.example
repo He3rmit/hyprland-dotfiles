@@ -4,17 +4,23 @@
   "position": "top",
   "width": "auto",
   "margin": "0 10 0 10",
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["cpu", "memory", "network", "tray", "custom/notification", "custom/power"],
+  "modules-right": [
+    "group/hardware",
+    "network",
+    "tray",
+    "custom/notification",
+    "custom/power"
+  ],
 
-  "cpu": { "format": "  CPU: {usage}%" },
-  "memory": { "format": "  RAM: {used:0.1f}G / {total:0.1f}G" },
+  "cpu": { "format": " {usage}%" },
+  "memory": { "format": " {used:0.1f}G" },
   "network": {
-      "format-wifi": "  WLAN: {signalStrength}%",
-      "format-ethernet": "󰈀  LAN: Connected",
-      "format-disconnected": "⚠  Network: Offline",
-      "format-disabled": "󰖪  WiFi: Off"
+    "format-wifi": "󰤨 {signalStrength}%",
+    "format-ethernet": "󰈀 ON",
+    "format-disconnected": "󰤭 OFF",
+    "format-disabled": "󰖪 OFF"
   },
-  "clock": { "format": "  {:%A, %b %d - %H:%M}" }
+  "clock": { "format": " {:%A, %b %d  %H:%M}" }
 }
