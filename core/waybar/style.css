@@ -1,190 +1,92 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   TITANFALL PILOT HUD - WAYBAR STYLE (MARK 4 - FINAL POLISH)
+   TITANFALL PILOT HUD - WAYBAR STYLE (Pywal Integrated)
    ────────────────────────────────────────────────────────────────────────── */
+@import "../../.cache/wal/colors-waybar.css";
 
 * {
-    font-family: "Orbitron", "JetBrainsMono Nerd Font", "JetBrainsMono NF", "ShureTechMono Nerd Font Mono", monospace;
-    font-size: 12px;
-    color: #00e0ff;
+    font-family: "Orbitron", "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    color: @color6;
     background: transparent;
 }
 
 window#waybar {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.65);
     transition: background 0.3s ease-in-out;
 }
 
-/* Dynamic position margins for sidebar-minimal layout */
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+/* Layout-Specific Container Adjustments */
+window#waybar.sidebar-compact {
+    background: transparent;
+}
+window#waybar.sidebar-compact.vertical {
+    border-right: none;
+}
+
+window#waybar.sidebar-minimal {
+    border: 1px solid alpha(@color2, 0.5);
+    border-radius: 10px;
+    padding: 6px 2px;
+}
+
+window#waybar.topbar-minimal {
+    border: 1px solid alpha(@color2, 0.5);
+    border-radius: 10px;
+    padding: 2px 6px;
+}
+
+window#waybar.bottom-dock {
+    border: 1px solid alpha(@color2, 0.5);
+    border-radius: 12px;
+    padding: 2px 8px;
+}
 
 window#waybar.left {
-    border-right: 2px solid rgba(0, 174, 239, 0.4);
+    border-right: 2px solid @color2;
     border-radius: 0px 10px 10px 0px;
-    padding: 12px 4px;
+    padding: 10px 2px;
 }
 window#waybar.right {
-    border-left: 2px solid rgba(0, 174, 239, 0.4);
+    border-left: 2px solid @color2;
     border-radius: 10px 0px 0px 10px;
-    padding: 12px 4px;
+    padding: 10px 2px;
 }
 window#waybar.top {
-    border-bottom: 2px solid rgba(0, 174, 239, 0.4);
+    border-bottom: 2px solid @color2;
     border-radius: 0px 0px 10px 10px;
-    padding: 4px 10px;
+    padding: 2px 8px;
 }
 window#waybar.bottom {
-    border-top: 2px solid rgba(0, 174, 239, 0.4);
+    border-top: 2px solid @color2;
     border-radius: 10px 10px 0px 0px;
-    padding: 4px 10px;
+    padding: 2px 8px;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   UNIFIED MODULE STYLING
-   All modules share this glass-panel look and heartbeat animation.
-   ────────────────────────────────────────────────────────────────────────── */
-#cpu,
-#memory,
-#network,
-#clock,
-#language,
-#custom-peripheral,
-#custom-power,
-#custom-notification,
-#tray,
-#workspaces,
-#hardware,
-#comms,
-#quicklinks,
-#window {
-    background: rgba(10, 15, 20, 0.8);
-    border: 1px solid rgba(0, 255, 255, 0.25);
-    border-radius: 8px;
-    padding: 10px 0px;
-    /* Let min-width and horizontal margin padding handle the width */
-    margin: 3px 0px;
-    /* Centers the box horizontally in the vertical bar */
-    min-width: 48px;
-    /* Consistent width for all square modules */
-    box-shadow: 0 0 8px rgba(0, 224, 255, 0.2);
-    animation: hudPulse 6s infinite ease-in-out;
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #tray, #workspaces, #hardware, #comms, #window {
+    background: alpha(@color0, 0.8);
+    border: 1px solid alpha(@color6, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 0 6px alpha(@color6, 0.2);
+    padding: 6px 2px;
+    margin: 3px 4px;
+    min-width: 40px;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   WORKSPACES (The Pilot Interface)
-   ────────────────────────────────────────────────────────────────────────── */
-#workspaces {
-    background: rgba(10, 15, 20, 0.8);
-    border: 1px solid rgba(0, 255, 255, 0.25);
-    border-radius: 8px;
-    margin: 3px 0px;
-    padding: 5px 0px;
-    min-width: 48px;
-    box-shadow: 0 0 8px rgba(0, 224, 255, 0.2);
-}
-
-#workspaces button {
-    padding: 6px 0;
-    color: #455a64;
-    /* Dimmed Grey for inactive slots */
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-#workspaces button.empty {
-    color: #37474f;
-}
-
-#workspaces button.default,
-#workspaces button.persistent {
-    color: #90a4ae;
-}
-
-/* THE ACTIVE WORKSPACE (Pilot Blue Glow) */
-#workspaces button.active {
-    color: #00e0ff;
-    background: rgba(0, 224, 255, 0.15);
-    box-shadow: 0 0 10px rgba(0, 224, 255, 0.3);
-}
-
-window#waybar.vertical #workspaces button.active,
-window#waybar.left #workspaces button.active,
-window#waybar.right #workspaces button.active {
-    border-left: 2px solid #00e0ff;
-    border-bottom: none;
-}
-
-window#waybar.horizontal #workspaces button.active,
-window#waybar.top #workspaces button.active,
-window#waybar.bottom #workspaces button.active {
-    border-bottom: 2px solid #00e0ff;
-    border-left: none;
-}
-
-/* SPECIAL SCRATCHPAD (Amber Accent) */
-#workspaces button.special {
-    color: #ffb86c;
-    background: rgba(255, 184, 108, 0.15);
-    box-shadow: 0 0 8px rgba(255, 184, 108, 0.25);
-}
-
-window#waybar.vertical #workspaces button.special,
-window#waybar.left #workspaces button.special,
-window#waybar.right #workspaces button.special {
-    border-left: 2px solid #ffb86c;
-    border-bottom: none;
-}
-
-window#waybar.horizontal #workspaces button.special,
-window#waybar.top #workspaces button.special,
-window#waybar.bottom #workspaces button.special {
-    border-bottom: 2px solid #ffb86c;
-    border-left: none;
-}
-
-#workspaces button:hover {
-    background: rgba(0, 224, 255, 0.2);
-    color: #ffffff;
-    box-shadow: 0 0 5px rgba(0, 224, 255, 0.2);
-}
-
-#workspaces button.urgent {
-    color: #ff3b3b;
-    border-left: 2px solid #ff3b3b;
-    animation: hudPulse 1s infinite;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   TRAY
-   ────────────────────────────────────────────────────────────────────────── */
-#tray {
-    margin: 3px 0px;
-    padding: 5px 0px;
-    min-width: 48px;
-    border-radius: 8px;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   WINDOW / CHASSIS TELEMETRY (The Pilot HUD Bridge)
-   ────────────────────────────────────────────────────────────────────────── */
 #language {
     font-size: 11px;
 }
 
-#window {
-    color: #00e0ff;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    padding: 0px 14px;
-}
+#workspaces { padding: 2px 0px; }
+#workspaces button { padding: 4px 0px; border-radius: 4px; color: @color7; }
 
+#window {
+    color: @color6;
+    font-size: 11px;
+    padding: 0px 12px;
+}
 #window image {
     margin-right: 6px;
 }
-
 window#waybar.empty #window,
 #window.empty {
     background: transparent;
@@ -194,25 +96,15 @@ window#waybar.empty #window,
     box-shadow: none;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   MODULAR HUD GROUPS & CAPSULES
-   ────────────────────────────────────────────────────────────────────────── */
-#hardware,
-#comms,
-#quicklinks {
+#hardware, #comms {
     padding: 0px 4px;
-    margin: 0px 3px;
 }
 window#waybar.vertical #hardware,
-window#waybar.vertical #comms,
-window#waybar.vertical #quicklinks {
-    padding: 4px 0px;
+window#waybar.vertical #comms {
+    padding: 2px 0px;
     margin: 3px 0px;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   ORIENTATION-AWARE OVERRIDES (Horizontal Top & Bottom Bars)
-   ────────────────────────────────────────────────────────────────────────── */
 window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu,
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
 window#waybar.horizontal #network, window#waybar.top #network, window#waybar.bottom #network,
@@ -225,40 +117,28 @@ window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #t
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
 window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
 window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
-window#waybar.horizontal #quicklinks, window#waybar.top #quicklinks, window#waybar.bottom #quicklinks,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
-    padding: 0px 10px;
-    margin: 0px 3px;
+    padding: 3px 12px;
+    margin: 3px 3px;
     min-width: 0px;
-    min-height: 28px;
-}
-
-window#waybar.horizontal #workspaces,
-window#waybar.top #workspaces,
-window#waybar.bottom #workspaces {
-    padding: 0px 4px;
-}
-
-window#waybar.horizontal #workspaces button,
-window#waybar.top #workspaces button,
-window#waybar.bottom #workspaces button {
-    padding: 0px 8px;
-    margin: 2px 2px;
-    min-width: 24px;
     min-height: 0px;
+}
+
+window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces {
+    padding: 2px 4px;
+}
+window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button {
+    padding: 2px 10px;
 }
 
 /* Seamless internal telemetry stitching inside groups */
 window#waybar #hardware #cpu,
 window#waybar #hardware #memory,
 window#waybar #comms #network,
-window#waybar #comms #custom-peripheral,
-window#waybar #quicklinks #custom-notification,
-window#waybar #quicklinks #custom-power {
+window#waybar #comms #custom-peripheral {
     background: transparent;
     border: none;
     box-shadow: none;
-    animation: none;
     padding: 0px 8px;
     margin: 0px;
     min-width: 0px;
@@ -270,146 +150,78 @@ window#waybar.top #hardware #memory,
 window#waybar.bottom #hardware #memory,
 window#waybar.horizontal #comms #custom-peripheral,
 window#waybar.top #comms #custom-peripheral,
-window#waybar.bottom #comms #custom-peripheral,
-window#waybar.horizontal #quicklinks #custom-power,
-window#waybar.top #quicklinks #custom-power,
-window#waybar.bottom #quicklinks #custom-power {
-    border-left: 1px solid rgba(0, 224, 255, 0.25);
+window#waybar.bottom #comms #custom-peripheral {
+    border-left: 1px solid alpha(@color6, 0.25);
 }
 
 window#waybar.vertical #hardware #memory,
-window#waybar.vertical #comms #custom-peripheral,
-window#waybar.vertical #quicklinks #custom-power {
-    border-top: 1px solid rgba(0, 224, 255, 0.25);
+window#waybar.vertical #comms #custom-peripheral {
+    border-top: 1px solid alpha(@color6, 0.25);
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   SYSTEM MONITOR HOVER EFFECTS
-   ────────────────────────────────────────────────────────────────────────── */
-#hardware:hover,
-#comms:hover,
-#quicklinks:hover,
-#window:hover,
-#cpu:hover,
-#memory:hover,
-#network:hover,
-#clock:hover,
-#custom-peripheral:hover {
-    border-color: #00aaff;
-    box-shadow: 0 0 12px rgba(0, 174, 239, 0.4);
-    background: rgba(10, 15, 20, 0.95);
+#workspaces button.active {
+    color: @foreground;
+    background: alpha(@color2, 0.25);
+    border: 1px solid @color2;
+    box-shadow: 0 0 8px alpha(@color2, 0.4);
+}
+
+#workspaces button:hover {
+    background: alpha(@color6, 0.2);
+    color: @foreground;
+}
+
+#workspaces button.urgent {
+    color: @color1;
+    border: 1px solid @color1;
+    box-shadow: 0 0 8px alpha(@color1, 0.6);
+}
+
+#hardware:hover, #comms:hover, #window:hover, #cpu:hover, #memory:hover, #network:hover, #clock:hover, #custom-peripheral:hover {
+    border-color: @color2;
+    box-shadow: 0 0 10px alpha(@color2, 0.4);
+    background: alpha(@color0, 0.95);
     transition: all 0.2s ease-in-out;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   BATTERY / PERIPHERAL COLOR LOGIC
-   ────────────────────────────────────────────────────────────────────────── */
-#custom-peripheral {
-    color: #00e0ff;
-}
+#custom-peripheral { color: @color6; }
+#custom-peripheral.charging { color: @color2; border-color: alpha(@color2, 0.4); }
+#custom-peripheral.critical { color: @color1; border-color: @color1; }
 
-#custom-peripheral.charging {
-    color: #00ffcc;
-    border-color: rgba(0, 255, 204, 0.4);
-}
-
-#custom-peripheral.critical {
-    color: #ff8242;
-    border-color: #ff8242;
-    animation: hudPulse 1s infinite ease-in-out;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   POWER BUTTON (The "Eject" Handle)
-   ────────────────────────────────────────────────────────────────────────── */
 #custom-power {
-    font-size: 15px;
+    color: @color1;
     font-weight: bold;
-    padding: 10px 0px;
 }
-
-/* RED "DOOM STATE" HOVER */
 #custom-power:hover {
-    background: rgba(255, 59, 59, 0.2);
-    border-color: #ff3b3b;
-    color: #ff3b3b;
-    box-shadow: 0 0 15px rgba(255, 59, 59, 0.6);
-    transition: all 0.2s ease-in-out;
+    background: alpha(@color1, 0.25);
+    border-color: @color1;
+    color: @color1;
+    box-shadow: 0 0 10px alpha(@color1, 0.5);
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   NOTIFICATIONS
-   ────────────────────────────────────────────────────────────────────────── */
 #custom-notification {
-    color: #00f0ff;
-    font-size: 14px;
-    padding: 10px 0px;
+    color: @color5;
 }
-
 #custom-notification.notification {
-    color: #00f0ff;
-    box-shadow: 0 0 8px #00f0ff;
-    border-color: #00f0ff;
-    animation: none;
-}
-
-/* Horizontal overrides so power & notification never overflow the bar */
-window#waybar.horizontal #custom-power,
-window#waybar.top #custom-power,
-window#waybar.bottom #custom-power,
-window#waybar.horizontal #custom-notification,
-window#waybar.top #custom-notification,
-window#waybar.bottom #custom-notification {
-    padding: 0px 10px;
-    margin: 0px 3px;
-    min-height: 28px;
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   ANIMATIONS & MENUS
-   ────────────────────────────────────────────────────────────────────────── */
-@keyframes hudPulse {
-    0% {
-        box-shadow: 0 0 4px rgba(0, 224, 255, 0.1);
-    }
-
-    50% {
-        box-shadow: 0 0 10px rgba(0, 224, 255, 0.4);
-    }
-
-    100% {
-        box-shadow: 0 0 4px rgba(0, 224, 255, 0.1);
-    }
+    color: @color5;
+    border-color: @color5;
+    box-shadow: 0 0 8px @color5;
 }
 
 tooltip {
-    background: rgba(10, 15, 20, 0.95);
-    border: 2px solid #00e0ff;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0, 224, 255, 0.4);
-    padding: 12px;
+    background: alpha(@color0, 0.95);
+    border: 1px solid @color2;
+    border-radius: 8px;
+    padding: 10px;
 }
 
 tooltip label {
-    color: #00e0ff;
-    font-family: "Orbitron", "ShureTechMono Nerd Font", "JetBrainsMono Nerd Font", monospace;
-    font-size: 16px;
+    color: @color6;
+    font-size: 15px;
     padding: 8px 12px;
-    text-shadow: 0 0 5px rgba(0, 224, 255, 0.3);
 }
 
-menu {
-    background: rgba(10, 15, 20, 0.98);
-    border: 1px solid rgba(0, 224, 255, 0.5);
-    border-radius: 10px;
-}
-
-menuitem {
-    color: #00e0ff;
-    padding: 5px 10px;
-}
-
-menuitem:hover {
-    background: rgba(0, 224, 255, 0.1);
-    color: #ffffff;
-}
+/* TRAY MENU STYLING */
+menu { background: @background; border: 1px solid @color6; border-radius: 8px; padding: 4px; }
+menuitem { color: @foreground; padding: 6px 12px; border-radius: 4px; }
+menuitem:hover { background: alpha(@color6, 0.3); color: @foreground; }

@@ -4,8 +4,8 @@
 @import "../../.cache/wal/colors-waybar.css";
 
 * {
-    font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 14px;
+    font-family: "Orbitron", "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
     font-weight: 600;
     color: @foreground;
     background: transparent;
@@ -13,6 +13,7 @@
 
 window#waybar {
     background: transparent;
+    padding: 0px;
 }
 
 /* Layout-Specific Container Adjustments */
@@ -20,24 +21,25 @@ window#waybar.bottom-dock {
     padding: 2px 10px;
 }
 window#waybar.sidebar-minimal {
-    padding: 8px 2px;
+    padding: 6px 2px;
 }
 window#waybar.topbar-minimal {
     padding: 2px 8px;
 }
 
 #cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
-    background: alpha(@background, 0.65);
-    border: 1px solid alpha(@color4, 0.3);
-    border-radius: 20px;
+    background: alpha(@background, 0.75);
+    border: 1px solid alpha(@color4, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     color: @foreground;
-    padding: 8px 4px;
-    margin: 6px 8px;
-    min-width: 44px;
+    padding: 6px 4px;
+    margin: 3px 4px;
+    min-width: 42px;
 }
 
-#workspaces { padding: 6px 0px; }
-#workspaces button { padding: 6px 0px; color: @color7; }
+#workspaces { padding: 4px 0px; }
+#workspaces button { padding: 4px 0px; border-radius: 12px; color: @color7; }
 
 #language {
     font-size: 11px;
@@ -69,13 +71,14 @@ window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #t
 window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
 window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
-    padding: 4px 14px;
-    margin: 4px 4px;
+    padding: 3px 12px;
+    margin: 3px 3px;
     min-width: 0px;
+    min-height: 0px;
 }
 
-window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 4px 6px; }
-window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button { padding: 2px 14px; color: @color7; }
+window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 2px 4px; }
+window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button { padding: 2px 10px; border-radius: 12px; }
 
 window#waybar #hardware #cpu,
 window#waybar #hardware #memory,
@@ -84,7 +87,7 @@ window#waybar #comms #custom-peripheral {
     background: transparent;
     border: none;
     box-shadow: none;
-    padding: 0px 6px;
+    padding: 0px 8px;
     margin: 0px;
     min-width: 0px;
     min-height: 0px;
@@ -99,21 +102,27 @@ window#waybar.bottom #comms #custom-peripheral {
     border-left: 1px solid alpha(@color4, 0.25);
 }
 
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral {
+    border-top: 1px solid alpha(@color4, 0.25);
+}
+
 #workspaces button.active {
     color: @background;
     background: @color4;
     border-radius: 12px;
+    box-shadow: 0 0 8px alpha(@color4, 0.4);
 }
 
 #workspaces button:hover {
     color: @foreground;
-    background: alpha(@color4, 0.4);
+    background: alpha(@color4, 0.3);
     border-radius: 12px;
 }
 
 #workspaces button.urgent {
-    color: @color1;
-    background: alpha(@color1, 0.2);
+    color: @color0;
+    background: @color1;
     border-radius: 12px;
 }
 
@@ -122,12 +131,12 @@ window#waybar.bottom #comms #custom-peripheral {
 }
 
 #custom-power:hover {
-    background: @color1;
-    color: @background;
+    background: alpha(@color1, 0.3);
+    color: @color1;
 }
 
 #custom-notification.notification {
-    color: @color5;
+    color: @color3;
 }
 
 tooltip {
