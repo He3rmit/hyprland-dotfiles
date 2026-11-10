@@ -2,7 +2,7 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "topbar-detailed",
   "position": "top",
-  "height": 42,
+  "height": 50,
   "margin": "0 10 0 10",
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],

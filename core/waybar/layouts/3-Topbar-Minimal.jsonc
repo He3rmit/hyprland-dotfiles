@@ -2,8 +2,9 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "topbar-minimal",
   "position": "top",
-  "height": 42,
-  "margin": "10 80 10 80",
+  "height": 50,
+  "margin": "10 80 5 80",
+  "width": "auto",
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
   "modules-right": [

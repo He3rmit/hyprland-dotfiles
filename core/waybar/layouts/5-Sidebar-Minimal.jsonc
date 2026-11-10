@@ -3,7 +3,8 @@
   "name": "sidebar-minimal",
   "position": "left",
   "height": 40,
-  "margin": "10 10 10 10",
+  "margin": "10 5 10 10",
+  "width": "auto",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
   "modules-right": [

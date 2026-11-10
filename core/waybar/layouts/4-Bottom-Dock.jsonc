@@ -2,7 +2,7 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "bottom-dock",
   "position": "bottom",
-  "height": 70,
+  "height": 65,
   "margin": "10 40 0 40",
   "modules-left": ["group/hardware", "hyprland/window"],
   "modules-center": ["hyprland/workspaces"],
