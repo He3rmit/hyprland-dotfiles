@@ -14,13 +14,13 @@
     "custom/power"
   ],
 
-  "cpu": { "format": " {usage}%" },
-  "memory": { "format": " {used:0.1f}G" },
+  "cpu": { "format": "  {usage}%" },
+  "memory": { "format": "  {used:0.1f}G" },
   "network": {
-    "format-wifi": "󰤨 {signalStrength}%",
-    "format-ethernet": "󰈀 ON",
-    "format-disconnected": "󰤭 OFF",
-    "format-disabled": "󰖪 OFF"
+    "format-wifi": "󰤨  {signalStrength}%",
+    "format-ethernet": "󰈀  ON",
+    "format-disconnected": "󰤭  OFF",
+    "format-disabled": "󰖪  OFF"
   },
-  "clock": { "format": " {:%A, %b %d  %H:%M}" }
+  "clock": { "format": "  {:%A, %b %d  %H:%M}" }
 }

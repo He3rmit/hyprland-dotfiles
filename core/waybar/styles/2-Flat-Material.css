@@ -41,7 +41,7 @@ window#waybar.topbar-minimal {
 }
 
 #language {
-    font-size: 11px;
+    font-size: 12px;
 }
 
 #workspaces { padding: 2px 0px; }
@@ -64,7 +64,7 @@ window#waybar #hardware #memory,
 window#waybar #comms #network,
 window#waybar #comms #custom-peripheral {
     background: transparent;
-    padding: 0px 6px;
+    padding: 0px 10px;
     margin: 0px;
     min-width: 0px;
     min-height: 0px;
