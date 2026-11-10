@@ -67,8 +67,6 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
-        fi
-
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
 

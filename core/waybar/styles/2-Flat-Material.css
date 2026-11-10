@@ -15,21 +15,22 @@ window#waybar {
     border-radius: 0px;
     padding: 0px;
 }
-window#waybar.sidebar-expanded {
+/* Layout-Specific Container Adjustments */
+window#waybar.sidebar-compact {
     background: alpha(@background, 0.4);
 }
 window#waybar.bottom-dock {
     border-radius: 12px;
+    padding: 2px 8px;
 }
 window#waybar.sidebar-minimal {
     border-radius: 10px;
+    padding: 6px 2px;
 }
-
-/* Dynamic position margins for sidebar-minimal layout */
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+window#waybar.topbar-minimal {
+    border-radius: 8px;
+    padding: 2px 6px;
+}
 
 #cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
     background: @color0;
@@ -83,9 +84,9 @@ window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.b
 window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
     padding: 4px 12px;
-    margin: 5px 4px;
+    margin: 3px 3px;
     min-width: 0px;
-    min-height: 24px;
+    min-height: 0px;
 }
 
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 2px 5px; }

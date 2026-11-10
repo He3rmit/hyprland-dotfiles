@@ -15,11 +15,16 @@ window#waybar {
     background: transparent;
 }
 
-/* Dynamic position margins for sidebar-minimal layout */
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+/* Layout-Specific Container Adjustments */
+window#waybar.bottom-dock {
+    padding: 2px 10px;
+}
+window#waybar.sidebar-minimal {
+    padding: 8px 2px;
+}
+window#waybar.topbar-minimal {
+    padding: 2px 8px;
+}
 
 #cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
     background: alpha(@background, 0.65);
@@ -64,8 +69,8 @@ window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #t
 window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
 window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
-    padding: 6px 18px;
-    margin: 8px 6px;
+    padding: 4px 14px;
+    margin: 4px 4px;
     min-width: 0px;
 }
 

@@ -14,13 +14,27 @@ window#waybar {
     background: rgba(0, 0, 0, 0.6);
     transition: background 0.3s ease-in-out;
 }
-window#waybar.sidebar-expanded { background: transparent; }
-window#waybar.sidebar-expanded.vertical { border-right: none; }
+/* Layout-Specific Container Adjustments */
+window#waybar.sidebar-compact { background: transparent; }
+window#waybar.sidebar-compact.vertical { border-right: none; }
 
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+window#waybar.sidebar-minimal {
+    border: 1px solid alpha(@color6, 0.25);
+    border-radius: 10px;
+    padding: 8px 4px;
+}
+
+window#waybar.topbar-minimal {
+    border: 1px solid alpha(@color6, 0.25);
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+
+window#waybar.bottom-dock {
+    border: 1px solid alpha(@color6, 0.25);
+    border-radius: 12px;
+    padding: 2px 10px;
+}
 
 window#waybar.left {
     border-right: 2px solid @color2;
@@ -104,7 +118,7 @@ window#waybar.horizontal #window, window#waybar.top #window, window#waybar.botto
     padding: 0px 10px;
     margin: 0px 3px;
     min-width: 0px;
-    min-height: 28px;
+    min-height: 0px;
 }
 
 window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button {
