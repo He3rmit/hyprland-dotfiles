@@ -1,7 +1,6 @@
 {
     "layer": "top",
     "position": "left",
-    "width": 51,
     "margin": 0,
     "spacing": 4,
     // -------------------------------------------------------------------------
@@ -93,7 +92,7 @@
         "tooltip": false
     },
     "clock": {
-        "format": " {:%H:%M}",
+        "format": "  {:%H:%M}",
         "tooltip": true,
         "tooltip-format": "<tt><big><b>{:%B %Y}</b></big>\n\n{calendar}</tt>",
         "calendar": {

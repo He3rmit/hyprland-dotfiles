@@ -5,8 +5,7 @@
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
   "modules-right": [
-    "cpu",
-    "memory",
+    "group/hardware",
     "network",
     "tray",
     "hyprland/language",

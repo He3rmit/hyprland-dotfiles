@@ -17,6 +17,12 @@ window#waybar {
 }
 
 /* Layout-Specific Container Adjustments */
+window#waybar.topbar-detailed {
+    padding: 2px 8px;
+}
+window#waybar.sidebar-compact {
+    padding: 8px 2px;
+}
 window#waybar.bottom-dock {
     padding: 2px 10px;
 }
@@ -57,6 +63,11 @@ window#waybar.empty #window,
 }
 
 #hardware, #comms { padding: 0px 4px; }
+window#waybar.vertical #hardware,
+window#waybar.vertical #comms {
+    padding: 2px 0px;
+    margin: 3px 0px;
+}
 
 window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu,
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
@@ -87,10 +98,39 @@ window#waybar #comms #custom-peripheral {
     background: transparent;
     border: none;
     box-shadow: none;
-    padding: 0px 10px;
     margin: 0px;
     min-width: 0px;
     min-height: 0px;
+}
+
+window#waybar.horizontal #hardware #cpu,
+window#waybar.horizontal #hardware #memory,
+window#waybar.horizontal #comms #network,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #hardware #cpu,
+window#waybar.top #hardware #memory,
+window#waybar.top #comms #network,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #hardware #cpu,
+window#waybar.bottom #hardware #memory,
+window#waybar.bottom #comms #network,
+window#waybar.bottom #comms #custom-peripheral {
+    padding: 0px 10px;
+}
+
+window#waybar.vertical #hardware #cpu,
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #network,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #hardware #cpu,
+window#waybar.left #hardware #memory,
+window#waybar.left #comms #network,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #hardware #cpu,
+window#waybar.right #hardware #memory,
+window#waybar.right #comms #network,
+window#waybar.right #comms #custom-peripheral {
+    padding: 4px 2px;
 }
 
 window#waybar.horizontal #hardware #memory,
@@ -103,7 +143,11 @@ window#waybar.bottom #comms #custom-peripheral {
 }
 
 window#waybar.vertical #hardware #memory,
-window#waybar.vertical #comms #custom-peripheral {
+window#waybar.left #hardware #memory,
+window#waybar.right #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #comms #custom-peripheral {
     border-top: 1px solid alpha(@color4, 0.25);
 }
 

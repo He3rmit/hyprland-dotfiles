@@ -2,21 +2,20 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "topbar-minimal",
   "position": "top",
-  "width": "auto",
-  "height": 40,
-  "margin": "0 10 0 10",
+  "height": 42,
+  "margin": "10 80 10 80",
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
   "modules-right": [
     "tray",
-    "custom/peripheral",
     "hyprland/language",
     "custom/notification",
+    "custom/peripheral",
     "custom/power"
   ],
 
-  "clock": { "format": " {:%H:%M}" },
-  "hyprland/language": { "format": "󰌌 {short}" },
+  "clock": { "format": "  {:%H:%M}" },
+  "hyprland/language": { "format": "󰌌  {short}" },
   "custom/peripheral": {
     "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
   }

@@ -2,8 +2,8 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "sidebar-minimal",
   "position": "left",
-  "width": "auto",
-  "height": 45,
+  "height": 40,
+  "margin": "10 10 10 10",
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
   "modules-right": [

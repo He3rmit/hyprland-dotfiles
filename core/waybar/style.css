@@ -16,13 +16,40 @@ window#waybar {
 }
 
 /* Layout-Specific Container Adjustments */
-window#waybar.sidebar-compact {
-    background: transparent;
-}
-window#waybar.sidebar-compact.vertical {
-    border-right: none;
+/* Edge-Docked Bars: Border only on the inner facing side */
+window#waybar.topbar-detailed {
+    border-bottom: 2px solid @color2;
+    border-radius: 0px 0px 10px 10px;
+    padding: 2px 8px;
 }
 
+window#waybar.sidebar-compact.left,
+window#waybar.left {
+    border-right: 2px solid @color2;
+    border-radius: 0px 10px 10px 0px;
+    padding: 10px 2px;
+}
+
+window#waybar.sidebar-compact.right,
+window#waybar.right {
+    border-left: 2px solid @color2;
+    border-radius: 10px 0px 0px 10px;
+    padding: 10px 2px;
+}
+
+window#waybar.top {
+    border-bottom: 2px solid @color2;
+    border-radius: 0px 0px 10px 10px;
+    padding: 2px 8px;
+}
+
+window#waybar.bottom {
+    border-top: 2px solid @color2;
+    border-radius: 10px 10px 0px 0px;
+    padding: 2px 8px;
+}
+
+/* Floating Island Bars: Full 4-sided borders and corner radii */
 window#waybar.sidebar-minimal {
     border: 1px solid alpha(@color2, 0.5);
     border-radius: 10px;
@@ -38,27 +65,6 @@ window#waybar.topbar-minimal {
 window#waybar.bottom-dock {
     border: 1px solid alpha(@color2, 0.5);
     border-radius: 12px;
-    padding: 2px 8px;
-}
-
-window#waybar.left {
-    border-right: 2px solid @color2;
-    border-radius: 0px 10px 10px 0px;
-    padding: 10px 2px;
-}
-window#waybar.right {
-    border-left: 2px solid @color2;
-    border-radius: 10px 0px 0px 10px;
-    padding: 10px 2px;
-}
-window#waybar.top {
-    border-bottom: 2px solid @color2;
-    border-radius: 0px 0px 10px 10px;
-    padding: 2px 8px;
-}
-window#waybar.bottom {
-    border-top: 2px solid @color2;
-    border-radius: 10px 10px 0px 0px;
     padding: 2px 8px;
 }
 
@@ -139,10 +145,39 @@ window#waybar #comms #custom-peripheral {
     background: transparent;
     border: none;
     box-shadow: none;
-    padding: 0px 10px;
     margin: 0px;
     min-width: 0px;
     min-height: 0px;
+}
+
+window#waybar.horizontal #hardware #cpu,
+window#waybar.horizontal #hardware #memory,
+window#waybar.horizontal #comms #network,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #hardware #cpu,
+window#waybar.top #hardware #memory,
+window#waybar.top #comms #network,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #hardware #cpu,
+window#waybar.bottom #hardware #memory,
+window#waybar.bottom #comms #network,
+window#waybar.bottom #comms #custom-peripheral {
+    padding: 0px 10px;
+}
+
+window#waybar.vertical #hardware #cpu,
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #network,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #hardware #cpu,
+window#waybar.left #hardware #memory,
+window#waybar.left #comms #network,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #hardware #cpu,
+window#waybar.right #hardware #memory,
+window#waybar.right #comms #network,
+window#waybar.right #comms #custom-peripheral {
+    padding: 4px 2px;
 }
 
 window#waybar.horizontal #hardware #memory,
@@ -155,7 +190,11 @@ window#waybar.bottom #comms #custom-peripheral {
 }
 
 window#waybar.vertical #hardware #memory,
-window#waybar.vertical #comms #custom-peripheral {
+window#waybar.left #hardware #memory,
+window#waybar.right #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #comms #custom-peripheral {
     border-top: 1px solid alpha(@color6, 0.25);
 }
 
