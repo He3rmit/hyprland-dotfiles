@@ -43,7 +43,7 @@ window#waybar.bottom {
     padding: 4px 10px;
 }
 
-#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #tray, #workspaces, #hardware, #window {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #tray, #workspaces, #hardware, #comms, #window {
     background: alpha(@color0, 0.8);
     border: 1px solid alpha(@color6, 0.25);
     border-radius: 8px;
@@ -78,11 +78,12 @@ window#waybar.empty #window,
     box-shadow: none;
 }
 
-#hardware {
+#hardware, #comms {
     padding: 0px 4px;
     margin: 0px 3px;
 }
-window#waybar.vertical #hardware {
+window#waybar.vertical #hardware,
+window#waybar.vertical #comms {
     padding: 4px 0px;
     margin: 3px 0px;
 }
@@ -98,6 +99,7 @@ window#waybar.horizontal #custom-notification, window#waybar.top #custom-notific
 window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray,
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
 window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
+window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
     padding: 0px 10px;
     margin: 0px 3px;
@@ -113,7 +115,9 @@ window#waybar.horizontal #workspaces button, window#waybar.top #workspaces butto
 
 /* Seamless internal telemetry stitching inside groups */
 window#waybar #hardware #cpu,
-window#waybar #hardware #memory {
+window#waybar #hardware #memory,
+window#waybar #comms #network,
+window#waybar #comms #custom-peripheral {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -126,11 +130,15 @@ window#waybar #hardware #memory {
 
 window#waybar.horizontal #hardware #memory,
 window#waybar.top #hardware #memory,
-window#waybar.bottom #hardware #memory {
+window#waybar.bottom #hardware #memory,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #comms #custom-peripheral {
     border-left: 1px solid alpha(@color6, 0.25);
 }
 
-window#waybar.vertical #hardware #memory {
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral {
     border-top: 1px solid alpha(@color6, 0.25);
 }
 
@@ -155,7 +163,7 @@ window#waybar.horizontal #workspaces button.active { border-bottom: 2px solid @c
 window#waybar.vertical #workspaces button.urgent { border-left: 2px solid @color1; }
 window#waybar.horizontal #workspaces button.urgent { border-bottom: 2px solid @color1; }
 
-#hardware:hover, #window:hover, #cpu:hover, #memory:hover, #network:hover, #clock:hover, #custom-peripheral:hover {
+#hardware:hover, #comms:hover, #window:hover, #cpu:hover, #memory:hover, #network:hover, #clock:hover, #custom-peripheral:hover {
     border-color: @color4;
     box-shadow: 0 0 12px alpha(@color4, 0.4);
     background: alpha(@color0, 0.95);

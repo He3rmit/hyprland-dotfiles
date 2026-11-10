@@ -58,6 +58,13 @@
             "memory"
         ]
     },
+    "group/comms": {
+        "orientation": "inherit",
+        "modules": [
+            "network",
+            "custom/peripheral"
+        ]
+    },
     // -------------------------------------------------------------------------
     // KEYBOARD & LANGUAGE
     // -------------------------------------------------------------------------
@@ -108,24 +115,6 @@
             "on-scroll-up": "shift_up",
             "on-scroll-down": "shift_down"
         }
-    },
-        "format": "BAT\n{capacity}%",
-        "format-charging": "CHG\n{capacity}%",
-        "format-plugged": "PWR\n{capacity}%",
-        "format-alt": "{icon} {time}",
-        "format-icons": [
-            "󰂎",
-            "󰁺",
-            "󰁻",
-            "󰁼",
-            "󰁽",
-            "󰁾",
-            "󰁿",
-            "󰁀",
-            "󰁁",
-            "󰁂",
-            "󰁃"
-        ]
     },
     "tray": {
         "icon-size": 21,

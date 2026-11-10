@@ -31,7 +31,7 @@ window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
 window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
 window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
 
-#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #window {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
     background: @color0;
     border-radius: 6px;
     padding: 4px 0px;
@@ -57,10 +57,11 @@ window#waybar.empty #window,
     box-shadow: none;
 }
 
-#hardware { padding: 0px 4px; }
+#hardware, #comms { padding: 0px 4px; }
 window#waybar #hardware #cpu,
 window#waybar #hardware #memory,
-
+window#waybar #comms #network,
+window#waybar #comms #custom-peripheral {
     background: transparent;
     padding: 0px 6px;
     margin: 0px;
@@ -79,6 +80,7 @@ window#waybar.horizontal #custom-notification, window#waybar.top #custom-notific
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
 window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray,
 window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
+window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
 window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
     padding: 4px 12px;
     margin: 5px 4px;
