@@ -114,13 +114,13 @@ reload_waybar() {
 }
 
 # 1. Ask what to change
-MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
+MODE=$(echo -e "Change Layout\nChange Style" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
 
 if [[ -z "$MODE" ]]; then
     exit 0
 fi
 
-if [[ "$MODE" == "Change Layout (Modules)" ]]; then
+if [[ "$MODE" == "Change Layout" ]]; then
     # 2a. List layouts (pure bash globbing, zero child processes)
     cd "$LAYOUTS_DIR" || exit 1
     options_arr=()
@@ -168,7 +168,7 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         reload_waybar
     fi
 
-elif [[ "$MODE" == "Change Style (CSS)" ]]; then
+elif [[ "$MODE" == "Change Style" ]]; then
     # 2b. List styles (pure bash globbing, zero child processes)
     cd "$STYLES_DIR" || exit 1
     options_arr=()
