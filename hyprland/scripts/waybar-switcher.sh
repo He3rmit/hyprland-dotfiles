@@ -6,8 +6,6 @@
 WAYBAR_DIR="$HOME/.config/waybar"
 CONFIG_FILE="$WAYBAR_DIR/config.jsonc"
 STYLE_FILE="$WAYBAR_DIR/style.css"
-TYPE_FILE="$WAYBAR_DIR/.current_layout_type"
-SIDEBAR_POS_FILE="$WAYBAR_DIR/.sidebar_direction"
 
 # Look inside the dotfiles source to avoid Stow symlink issues
 LAYOUTS_DIR="$HOME/.config/waybar/layouts"
@@ -116,7 +114,7 @@ reload_waybar() {
 }
 
 # 1. Ask what to change
-MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)\nChange Sidebar Direction (Left/Right)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
+MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
 
 if [[ -z "$MODE" ]]; then
     exit 0
@@ -146,6 +144,13 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
             notify-send "Waybar Engine" "ERROR: Source layout not found!" &
             exit 1
         fi
+
+        # Context prompt: If user selected a Sidebar, immediately ask for screen edge
+        SIDE=""
+        if [[ "$selected_name" == *"Sidebar"* ]]; then
+            SIDE=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Screen Edge" -theme "$ROFI_THEME")
+            [[ -z "$SIDE" ]] && exit 0
+        fi
         
         # Copy template to active config instead of symlinking to protect the repo source
         # BREAK THE LINK: Ensure the active config is a real file, not a symlink to the repo
@@ -153,15 +158,8 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
-        if [[ "$selected_name" == *"Sidebar"* ]]; then
-            echo "Sidebar" > "$TYPE_FILE"
-            # Read saved sidebar position preference (default to left if unset)
-            sidebar_pref="left"
-            [[ -f "$SIDEBAR_POS_FILE" ]] && sidebar_pref=$(< "$SIDEBAR_POS_FILE")
-            [[ "$sidebar_pref" != "right" ]] && sidebar_pref="left"
-            apply_sidebar_position "$sidebar_pref" "$CONFIG_FILE"
-        else
-            echo "Topbar" > "$TYPE_FILE"
+        if [[ -n "$SIDE" ]]; then
+            apply_sidebar_position "$SIDE" "$CONFIG_FILE"
         fi
 
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name" &
@@ -204,28 +202,5 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         
         # ENGINE RESTART
         reload_waybar
-    fi
-
-elif [[ "$MODE" == "Change Sidebar Direction (Left/Right)" ]]; then
-    current_dir="left"
-    [[ -f "$SIDEBAR_POS_FILE" ]] && current_dir=$(< "$SIDEBAR_POS_FILE")
-    [[ "$current_dir" != "right" ]] && current_dir="left"
-
-    DIRECTION=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Sidebar Position (Current: $current_dir)" -theme "$ROFI_THEME")
-    
-    if [[ -n "$DIRECTION" ]]; then
-        echo "$DIRECTION" > "$SIDEBAR_POS_FILE"
-        
-        layout_type=""
-        [[ -f "$TYPE_FILE" ]] && layout_type=$(< "$TYPE_FILE")
-        active_name=$(grep -Eo '"name": *"[a-zA-Z-]+"' "$CONFIG_FILE" 2>/dev/null | cut -d'"' -f4 | head -n 1)
-
-        if [[ "$layout_type" == "Sidebar" || "$active_name" == *"sidebar"* ]]; then
-            apply_sidebar_position "$DIRECTION" "$CONFIG_FILE"
-            notify-send -t 2000 "Waybar Engine" "Sidebar position updated: $DIRECTION" &
-            reload_waybar
-        else
-            notify-send -t 2000 "Waybar Engine" "Sidebar preference saved: $DIRECTION (applies on next sidebar switch)" &
-        fi
     fi
 fi
