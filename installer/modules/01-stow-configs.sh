@@ -221,6 +221,21 @@ if [[ -n "$WAYBAR_POSITION" && -f "$HOME/.config/waybar/config.jsonc" ]]; then
         chmod 644 "$HOME/.config/waybar/config.jsonc"
     fi
     sed -i -E "s/\"position\": *\"[a-zA-Z]+\"/\"position\": \"$WAYBAR_POSITION\"/" "$HOME/.config/waybar/config.jsonc"
+
+    # State-driven sidebar position initialization and margin swap
+    if [[ "$WAYBAR_POSITION" == "left" || "$WAYBAR_POSITION" == "right" ]]; then
+        echo "$WAYBAR_POSITION" > "$HOME/.config/waybar/.sidebar_direction"
+        echo "Sidebar" > "$HOME/.config/waybar/.current_layout_type"
+        if [[ "$WAYBAR_POSITION" == "right" ]]; then
+            current_margin=$(grep -Eo '"margin": *"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+"' "$HOME/.config/waybar/config.jsonc" | head -n 1)
+            if [[ -n "$current_margin" ]]; then
+                m_vals=$(echo "$current_margin" | sed -E 's/.*"margin": *"([0-9]+ +[0-9]+ +[0-9]+ +[0-9]+)".*/\1/')
+                read -r top right bottom left <<< "$m_vals"
+                swapped_margin="\"margin\": \"$top $left $bottom $right\""
+                sed -i -E "s/\"margin\": *\"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+\"/$swapped_margin/" "$HOME/.config/waybar/config.jsonc"
+            fi
+        fi
+    fi
 fi
 
 if [[ -n "$WAYBAR_STYLE" && -f "$DOTFILES_DIR/core/waybar/styles/${WAYBAR_STYLE}.css" ]]; then
