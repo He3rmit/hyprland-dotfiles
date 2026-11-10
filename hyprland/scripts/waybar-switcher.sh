@@ -6,7 +6,6 @@
 WAYBAR_DIR="$HOME/.config/waybar"
 CONFIG_FILE="$WAYBAR_DIR/config.jsonc"
 STYLE_FILE="$WAYBAR_DIR/style.css"
-TYPE_FILE="$WAYBAR_DIR/.current_layout_type"
 
 # Look inside the dotfiles source to avoid Stow symlink issues
 LAYOUTS_DIR="$HOME/.config/waybar/layouts"
@@ -24,7 +23,7 @@ reload_waybar() {
 }
 
 # 1. Ask what to change
-MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)\nChange Direction (Top/Bottom/Left/Right)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
+MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
 
 if [[ -z "$MODE" ]]; then
     exit 0
@@ -60,13 +59,6 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
             CURRENT_POS=$(grep -Eo '"position": *"[a-zA-Z]+"' "$CONFIG_FILE" | cut -d'"' -f4 | head -n 1)
             CURRENT_NAME=$(readlink -f "$CONFIG_FILE")
             
-            IS_CURRENT_SIDEBAR=0; IS_TARGET_SIDEBAR=0
-            [[ "$CURRENT_NAME" == *"Sidebar"* ]] && IS_CURRENT_SIDEBAR=1
-            [[ "$target_file" == *"Sidebar"* ]] && IS_TARGET_SIDEBAR=1
-            
-            IS_CURRENT_TOPBAR=0; IS_TARGET_TOPBAR=0
-            [[ "$CURRENT_NAME" == *"Topbar"* || "$CURRENT_NAME" == *"Bottom"* ]] && IS_CURRENT_TOPBAR=1
-            [[ "$target_file" == *"Topbar"* || "$target_file" == *"Bottom"* ]] && IS_TARGET_TOPBAR=1
         fi
         
         # Copy template to active config instead of symlinking to protect the repo source
@@ -75,25 +67,10 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
-        # Apply remembered position ONLY if the Axis matches (Sidebar to Sidebar or Topbar to Topbar)
-        if [[ -n "$CURRENT_POS" ]]; then
-            SHOULD_SYNC=0
-            [[ $IS_CURRENT_SIDEBAR -eq 1 && $IS_TARGET_SIDEBAR -eq 1 ]] && SHOULD_SYNC=1
-            [[ $IS_CURRENT_TOPBAR -eq 1 && $IS_TARGET_TOPBAR -eq 1 ]] && SHOULD_SYNC=1
-
-            if [[ $SHOULD_SYNC -eq 1 ]]; then
-                sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$CONFIG_FILE"
-            fi
         fi
 
         notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
         
-        # Save Identity for Axis-Locked Direction menus
-        if [[ "$selected_name" == *"Sidebar"* ]]; then
-            echo "Sidebar" > "$TYPE_FILE"
-        else
-            echo "Topbar" > "$TYPE_FILE"
-        fi
 
         # ENGINE RESTART
         reload_waybar
@@ -133,31 +110,6 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         
         # ENGINE RESTART
         reload_waybar
-    fi
-elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
-    # 2c. Ask for direction based on layout type (from Identity Memory)
-    LAYOUT_TYPE=""
-    [[ -f "$TYPE_FILE" ]] && LAYOUT_TYPE=$(< "$TYPE_FILE")
-    
-    if [[ "$LAYOUT_TYPE" == "Sidebar" ]]; then
-        DIRECTION=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Direction (Sidebar Mode)" -theme "$ROFI_THEME")
-    elif [[ "$LAYOUT_TYPE" == "Topbar" ]]; then
-        DIRECTION=$(echo -e "top\nbottom" | rofi -dmenu -i -p "󰸉 Direction (Topbar Mode)" -theme "$ROFI_THEME")
-    else
-        # Fallback if no identity found
-        DIRECTION=$(echo -e "top\nbottom\nleft\nright" | rofi -dmenu -i -p "󰸉 Direction" -theme "$ROFI_THEME")
-    fi
-    
-    if [[ -n "$DIRECTION" ]]; then
-        if [[ -f "$CONFIG_FILE" ]]; then
-            # Override whatever position the JSONC holds with the new one
-            # Targeted at the local active config only
-            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$DIRECTION"'"/' "$CONFIG_FILE"
-            notify-send -t 2000 "Waybar Engine" "Direction updated: $DIRECTION"
-            
-            # ENGINE RESTART
-            reload_waybar
-        fi
     fi
 fi
 

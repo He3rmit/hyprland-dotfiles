@@ -58,20 +58,6 @@
             "memory"
         ]
     },
-    "group/comms": {
-        "orientation": "inherit",
-        "modules": [
-            "network",
-            "custom/peripheral"
-        ]
-    },
-    "group/quicklinks": {
-        "orientation": "inherit",
-        "modules": [
-            "custom/notification",
-            "custom/power"
-        ]
-    },
     // -------------------------------------------------------------------------
     // KEYBOARD & LANGUAGE
     // -------------------------------------------------------------------------
@@ -123,25 +109,6 @@
             "on-scroll-down": "shift_down"
         }
     },
-    "backlight": {
-        "format": "LIT\n{percent}%",
-        "format-icons": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-    },
-    "battery": {
-        "states": {
-            "warning": 30,
-            "critical": 15
-        },
         "format": "BAT\n{capacity}%",
         "format-charging": "CHG\n{capacity}%",
         "format-plugged": "PWR\n{capacity}%",
@@ -199,10 +166,5 @@
         "format": "⏻",
         "tooltip": false,
         "on-click": "wlogout"
-    },
-    "custom/hint": {
-        "format": "",
-        "tooltip": false,
-        "on-click": "~/.config/hypr/scripts/keybinds-hint.sh"
     }
 }
