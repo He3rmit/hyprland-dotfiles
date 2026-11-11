@@ -17,10 +17,11 @@ mkdir -p "$LAYOUTS_DIR" "$STYLES_DIR"
 
 # Helper to adjust sidebar margin for right-hand side
 apply_sidebar_position() {
-    local target_pos="$1"
+    local target_pos="${1,,}"
     local cfg="$2"
     local current_pos
     current_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$cfg" | cut -d'"' -f4 | head -n 1)
+    current_pos="${current_pos,,}"
     [[ -z "$current_pos" ]] && current_pos="left"
 
     if [[ "$current_pos" != "$target_pos" ]]; then
@@ -148,7 +149,7 @@ if [[ "$MODE" == "Change Layout" ]]; then
         # Context prompt: If user selected a Sidebar, immediately ask for screen edge
         SIDE=""
         if [[ "$selected_name" == *"Sidebar"* ]]; then
-            SIDE=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Screen Edge" -theme "$ROFI_THEME")
+            SIDE=$(echo -e "Left\nRight" | rofi -dmenu -i -p "󰸉 Screen Edge" -theme "$ROFI_THEME")
             [[ -z "$SIDE" ]] && exit 0
         fi
         
