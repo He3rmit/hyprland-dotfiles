@@ -1,0 +1,38 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   CYBERPUNK GLITCH - SWAYNC THEME (Pywal Integrated)
+   ────────────────────────────────────────────────────────────────────────── */
+@define-color hud-accent @color1;
+@define-color hud-accent-alt @color3;
+@define-color hud-text @color3;
+@define-color hud-text-muted alpha(@color3, 0.70);
+@define-color hud-panel-bg alpha(@background, 0.97);
+@define-color hud-card-bg alpha(@color0, 0.90);
+@define-color hud-noti-bg alpha(@color0, 0.98);
+@define-color hud-btn-bg alpha(@color0, 0.75);
+@define-color hud-btn-hover alpha(@color3, 0.20);
+@define-color hud-btn-checked-bg @color1;
+@define-color hud-btn-checked-fg @color0;
+@define-color hud-border @color1;
+@define-color hud-card-border @color1;
+@define-color hud-alert @color1;
+
+:root {
+    --cc-bg: @hud-panel-bg;
+    --noti-bg-hover: @hud-btn-hover;
+    --noti-bg-darker: @hud-card-bg;
+    --text-color: @hud-text;
+    --text-color-disabled: @hud-text-muted;
+    --bg-selected: @hud-accent;
+    --border-radius: 0px;
+    --hud-radius: 0px;
+    --hud-card-radius: 0px;
+    --hud-btn-radius: 0px;
+    --hud-pill-radius: 0px;
+    --hud-border-width: 2px;
+    --hud-panel-shadow: 3px 3px 0px @color1;
+    --hud-card-shadow: 2px 2px 0px @color1;
+    --hud-glow-shadow: 2px 2px 0px @color3;
+    --mpris-album-art-icon-size: 64px;
+    --mpris-album-art-overlay: alpha(@background, 0.76);
+    --widget-volume-row-icon-size: 20px;
+}

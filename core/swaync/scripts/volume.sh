@@ -5,10 +5,22 @@ NOTIFY="/usr/bin/notify-send"
 STEP="5%"
 
 case "$1" in
-  up)    $WPCTL set-volume @DEFAULT_AUDIO_SINK@ "$STEP"+ ;;
-  down)  $WPCTL set-volume @DEFAULT_AUDIO_SINK@ "$STEP"- ;;
-  toggle) $WPCTL set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
-  *) echo "Usage: $0 {up|down|toggle}" >&2; exit 1 ;;
+  up)     $WPCTL set-volume @DEFAULT_AUDIO_SINK@ "$STEP"+ ;;
+  down)   $WPCTL set-volume @DEFAULT_AUDIO_SINK@ "$STEP"- ;;
+  toggle)
+    if [[ "${SWAYNC_TOGGLE_STATE:-}" == "true" ]]; then
+        $WPCTL set-mute @DEFAULT_AUDIO_SINK@ 0
+    elif [[ "${SWAYNC_TOGGLE_STATE:-}" == "false" ]]; then
+        $WPCTL set-mute @DEFAULT_AUDIO_SINK@ 1
+    else
+        $WPCTL set-mute @DEFAULT_AUDIO_SINK@ toggle
+    fi
+    ;;
+  status)
+    [[ "$($WPCTL get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)" == *"MUTED"* ]] && echo false || echo true
+    exit 0
+    ;;
+  *) echo "Usage: $0 {up|down|toggle|status}" >&2; exit 1 ;;
 esac
 
 OUT=$($WPCTL get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)

@@ -2,9 +2,13 @@
   "$schema": "/etc/xdg/swaync/configSchema.json",
   "positionX": "right",
   "positionY": "top",
-  "control-center-width": 600,
-  "control-center-height": 980,
-  "notification-window-width": 500,
+  "control-center-width": 460,
+  "control-center-height": -1,
+  "control-center-margin-top": 10,
+  "control-center-margin-bottom": 10,
+  "control-center-margin-left": 10,
+  "control-center-margin-right": 10,
+  "notification-window-width": 420,
   "notification-grouping": true,
   "fit-to-screen": false,
   "layer": "overlay",
@@ -38,53 +42,52 @@
       "actions": [
         {
           "label": "󰖩",
+          "type": "toggle",
           "command": "~/.config/swaync/scripts/pilot-control.sh wifi",
-          "active": false
+          "update-command": "~/.config/swaync/scripts/pilot-control.sh wifi-status"
         },
         {
           "label": "󰂯",
+          "type": "toggle",
           "command": "~/.config/swaync/scripts/pilot-control.sh bluetooth",
-          "active": false
+          "update-command": "~/.config/swaync/scripts/pilot-control.sh bt-status"
         },
         {
           "label": "󱛄",
-          "command": "wihotspot-gui",
-          "active": false
+          "command": "wihotspot-gui"
         },
         {
           "label": "󰓅",
-          "command": "~/.config/waybar/scripts/power_cycle.sh",
-          "active": false
+          "command": "~/.config/waybar/scripts/power_cycle.sh"
         },
         {
           "label": "󰕾",
+          "type": "toggle",
           "command": "~/.config/swaync/scripts/volume.sh toggle",
-          "active": false
+          "update-command": "~/.config/swaync/scripts/volume.sh status"
         },
         {
           "label": "󰄄",
-          "command": "~/.config/hypr/scripts/screenshot-swappy.sh",
-          "active": false
+          "command": "~/.config/hypr/scripts/screenshot-swappy.sh"
         },
         {
           "label": "󰍺",
-          "command": "~/.config/hypr/scripts/mirror-hotplug.sh",
-          "active": false
+          "command": "~/.config/hypr/scripts/mirror-hotplug.sh"
         },
         {
           "label": "󰉋",
-          "command": "thunar",
-          "active": false
+          "command": "thunar"
         },
         {
           "label": "󰅇",
-          "command": "~/.config/hypr/scripts/cliphist-rofi.sh",
-          "active": false
+          "command": "~/.config/hypr/scripts/cliphist-rofi.sh"
         }
       ]
     },
     "volume": {
       "label": "󰕾",
+      "expand-button-label": "󰅀",
+      "collapse-button-label": "󰅃",
       "show-per-app": true,
       "show-per-app-icon": true,
       "show-per-app-label": true
@@ -94,8 +97,12 @@
       "device": ""
     },
     "mpris": {
-      "image-size": 68
+      "autohide": true,
+      "show-album-art": "always",
+      "loop-carousel": true
     },
-    "notifications": {}
+    "notifications": {
+      "vexpand": false
+    }
   }
 }

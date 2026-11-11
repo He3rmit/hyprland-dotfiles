@@ -129,9 +129,42 @@ EOF
 
     fi
 
+    sync_swaync_theme
+
     if pgrep -u "$UID" -x swaync >/dev/null 2>&1; then
         swaync-client -R >/dev/null 2>&1 || true
         swaync-client -rs >/dev/null 2>&1 || true
+    fi
+}
+
+sync_swaync_theme() {
+    local swaync_dir="$HOME/.config/swaync"
+    local swaync_theme="$swaync_dir/theme.css"
+    local themes_dir="$swaync_dir/themes"
+    local header=""
+    local theme_name="1-Titan-Glass"
+
+    if [[ ! -d "$themes_dir" ]] && [[ -L "$swaync_dir/style.css" ]]; then
+        themes_dir="$(dirname "$(readlink -f "$swaync_dir/style.css")")/themes"
+    fi
+
+    [[ -f "$STYLE_FILE" ]] && header="$(head -n 5 "$STYLE_FILE" 2>/dev/null)"
+    case "$header" in
+        *"FLAT DYNAMIC"*)        theme_name="2-Flat-Material" ;;
+        *"NEON BORDER DYNAMIC"*) theme_name="3-Neon-Border" ;;
+        *"CYBERPUNK GLITCH"*)    theme_name="4-Cyberpunk-Glitch" ;;
+        *"GLASS PILL"*)          theme_name="5-Glass-Pill" ;;
+        *"TITANFALL PILOT HUD"*) theme_name="1-Titan-Glass" ;;
+    esac
+
+    local src_theme="$themes_dir/${theme_name}.css"
+    if [[ -f "$src_theme" ]]; then
+        # BREAK THE LINK: Keep live theme.css independent of repo core/swaync/theme.css
+        if [[ -L "$swaync_theme" ]] || [[ ! -f "$swaync_theme" ]] || ! cmp -s "$src_theme" "$swaync_theme"; then
+            rm -f "$swaync_theme"
+            cp "$src_theme" "$swaync_theme"
+            chmod 644 "$swaync_theme"
+        fi
     fi
 }
 

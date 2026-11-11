@@ -42,7 +42,7 @@ find "$HOME/.config" -type l 2>/dev/null | while read -r link; do
         rm -f "$link"
     fi
 done
-rm -f "$HOME/.config/swaync/config.json"
+rm -f "$HOME/.config/swaync/config.json" "$HOME/.config/swaync/theme.css"
 rm -f "$HOME/.config/waybar/config.jsonc"
 # Preserve active wallpaper state across installer sweeps
 SAVED_WALL=""

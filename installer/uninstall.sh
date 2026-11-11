@@ -124,6 +124,7 @@ if [[ "$MODULES" == *"Unstow Configs"* ]] || [ "$FULL_EJECT" = true ]; then
     rm -f "$HOME/.config/hypr/host.lua"
     rm -f "$HOME/.config/kitty/host.conf"
     rm -f "$HOME/.config/swaync/config.json"
+    rm -f "$HOME/.config/swaync/theme.css"
     rm -f "$HOME/.config/waybar/config.jsonc"
     rm -f "$HOME/.config/waybar/style.css"
     rm -f "$HOME/.config/hypr/modules/monitor.lua"
