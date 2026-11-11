@@ -44,7 +44,7 @@ apply_sidebar_position() {
 sync_swaync_position() {
     local wbb_config="$HOME/.config/waybar/config.jsonc"
     local swaync_config="$HOME/.config/swaync/config.json"
-    
+
     if [[ -f "$wbb_config" && -f "$swaync_config" ]]; then
         # BREAK THE LINK: Ensure the active swaync config is a real file, not a symlink to the repo
         if [[ -L "$swaync_config" ]]; then
@@ -56,55 +56,89 @@ sync_swaync_position() {
         fi
 
         local wb_pos="top"
+        local anchor_block="none"
         if [[ -r "$wbb_config" ]]; then
-            local wb_content
-            wb_content=$(< "$wbb_config")
-            if [[ "$wb_content" =~ \"position\":[[:space:]]*\"([a-zA-Z]+)\" ]]; then
-                wb_pos="${BASH_REMATCH[1]}"
-            fi
+            local parsed
+            parsed=$(python3 - "$wbb_config" <<'EOF'
+import json, re, sys
+try:
+    with open(sys.argv[1], "r", encoding="utf-8") as f:
+        raw = f.read()
+    # Strip JSONC // and /* */ comments outside strings, then trailing commas
+    clean = re.sub(r'("(?:\\.|[^"\\])*")|//[^\n]*|/\*.*?\*/', lambda m: m.group(1) or "", raw, flags=re.S)
+    clean = re.sub(r",(\s*[}\]])", r"\1", clean)
+    data = json.loads(clean)
+except Exception:
+    print("top none")
+    sys.exit(0)
+
+pos = str(data.get("position", "top")).lower()
+if pos not in ("left", "right", "top", "bottom"):
+    pos = "top"
+
+def contains_module(mods, target):
+    if not isinstance(mods, list):
+        return False
+    if target in mods:
+        return True
+    return any(
+        isinstance(m, str) and m.startswith("group/") and isinstance(data.get(m), dict)
+        and target in data[m].get("modules", [])
+        for m in mods
+    )
+
+anchor = "none"
+for target in ("custom/notification", "tray"):
+    for side in ("left", "center", "right"):
+        if contains_module(data.get(f"modules-{side}", []), target):
+            anchor = side
+            break
+    if anchor != "none":
+        break
+
+print(f"{pos} {anchor}")
+EOF
+)
+            read -r wb_pos anchor_block <<< "$parsed"
         fi
-        
-        # Determine the module block containing the notification/tray icon
-        local has_left
-        has_left=$(grep -E '"modules-left":.*("custom/notification"|"tray")' "$wbb_config")
-        local has_center
-        has_center=$(grep -E '"modules-center":.*("custom/notification"|"tray")' "$wbb_config")
-        local has_right
-        has_right=$(grep -E '"modules-right":.*("custom/notification"|"tray")' "$wbb_config")
-        
+
         local target_x="right"
         local target_y="top"
-        
+
         if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
-            # Sidebar Mode (Vertical Flow)
-            # Panel X-Axis locked to Waybar position
+            # Sidebar Mode (Vertical Flow): X locked to Waybar edge, Y follows notification block
             target_x="$wb_pos"
-            
-            # Panel Y-Axis defined by internal structural modules (Left=Top, Center=Center, Right=Bottom)
-            if [[ -n "$has_left" ]]; then target_y="top"
-            elif [[ -n "$has_right" ]]; then target_y="bottom"
-            elif [[ -n "$has_center" ]]; then target_y="center"
-            fi
+            case "$anchor_block" in
+                left)   target_y="top" ;;
+                right)  target_y="bottom" ;;
+                center) target_y="center" ;;
+            esac
         else
-            # Topbar/Bottombar Mode (Horizontal Flow)
-            # Panel Y-Axis locked to Waybar position
+            # Topbar/Bottombar Mode (Horizontal Flow): Y locked to Waybar edge, X follows notification block
             target_y="top"
             [[ "$wb_pos" == "bottom" ]] && target_y="bottom"
-            
-            # Panel X-Axis defined by internal structural modules (Left=Left, Center=Center, Right=Right)
-            if [[ -n "$has_left" ]]; then target_x="left"
-            elif [[ -n "$has_right" ]]; then target_x="right"
-            elif [[ -n "$has_center" ]]; then target_x="center"
-            fi
+            case "$anchor_block" in
+                left)   target_x="left" ;;
+                right)  target_x="right" ;;
+                center) target_x="center" ;;
+            esac
         fi
-        
+
         sed -i --follow-symlinks -E 's/"positionX": *"[a-zA-Z]+"/"positionX": "'"$target_x"'"/' "$swaync_config"
         sed -i --follow-symlinks -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "'"$target_y"'"/' "$swaync_config"
-        
-        swaync-client -R >/dev/null 2>&1
-        swaync-client -rs >/dev/null 2>&1
+
+    fi
+
+    if pgrep -u "$UID" -x swaync >/dev/null 2>&1; then
+        swaync-client -R >/dev/null 2>&1 || true
+        swaync-client -rs >/dev/null 2>&1 || true
     fi
 }
+
+if [[ "${1:-}" == "--sync-swaync" ]]; then
+    sync_swaync_position
+    exit 0
+fi
 
 # 0. ENGINE RESTART PROTOCOL
 reload_waybar() {
@@ -163,10 +197,9 @@ if [[ "$MODE" == "Change Layout" ]]; then
             apply_sidebar_position "$SIDE" "$CONFIG_FILE"
         fi
 
-        notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name" &
-        
-        # ENGINE RESTART
+        # ENGINE RESTART (syncs SwayNC orientation before confirmation toast fires)
         reload_waybar
+        notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name" &
     fi
 
 elif [[ "$MODE" == "Change Style" ]]; then
@@ -199,9 +232,8 @@ elif [[ "$MODE" == "Change Style" ]]; then
         rm -f "$STYLE_FILE"
         cp "$target_file" "$STYLE_FILE"
         chmod 644 "$STYLE_FILE"
-        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name" &
-        
         # ENGINE RESTART
         reload_waybar
+        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name" &
     fi
 fi

@@ -241,21 +241,8 @@ else
 fi
 
 # Align SwayNC drawer position with Waybar orientation
-if [[ -f "$HOME/.config/waybar/config.jsonc" && -f "$HOME/.config/swaync/config.json" ]]; then
-    if [[ -L "$HOME/.config/swaync/config.json" ]]; then
-        real_swaync=$(readlink -f "$HOME/.config/swaync/config.json")
-        rm -f "$HOME/.config/swaync/config.json"
-        cp "$real_swaync" "$HOME/.config/swaync/config.json"
-        chmod 644 "$HOME/.config/swaync/config.json"
-    fi
-    wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$HOME/.config/waybar/config.jsonc" | cut -d'"' -f4 | head -n 1)
-    if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
-        sed -i -E "s/\"positionX\": *\"[a-zA-Z]+\"/\"positionX\": \"$wb_pos\"/" "$HOME/.config/swaync/config.json"
-    elif [[ "$wb_pos" == "bottom" ]]; then
-        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "bottom"/' "$HOME/.config/swaync/config.json"
-    else
-        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "top"/' "$HOME/.config/swaync/config.json"
-    fi
+if [[ -f "$DOTFILES_DIR/hyprland/scripts/waybar-switcher.sh" ]]; then
+    bash "$DOTFILES_DIR/hyprland/scripts/waybar-switcher.sh" --sync-swaync
 fi
 
 # Fix script permissions
