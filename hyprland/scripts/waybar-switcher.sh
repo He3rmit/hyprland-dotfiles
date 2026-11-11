@@ -6,7 +6,6 @@
 WAYBAR_DIR="$HOME/.config/waybar"
 CONFIG_FILE="$WAYBAR_DIR/config.jsonc"
 STYLE_FILE="$WAYBAR_DIR/style.css"
-TYPE_FILE="$WAYBAR_DIR/.current_layout_type"
 
 # Look inside the dotfiles source to avoid Stow symlink issues
 LAYOUTS_DIR="$HOME/.config/waybar/layouts"
@@ -16,27 +15,191 @@ ROFI_THEME="$HOME/.config/rofi/themes/selector.rasi"
 # Ensure origin directories exist just in case
 mkdir -p "$LAYOUTS_DIR" "$STYLES_DIR"
 
+# Helper to adjust sidebar margin for right-hand side
+apply_sidebar_position() {
+    local target_pos="${1,,}"
+    local cfg="$2"
+    local current_pos
+    current_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$cfg" | cut -d'"' -f4 | head -n 1)
+    current_pos="${current_pos,,}"
+    [[ -z "$current_pos" ]] && current_pos="left"
+
+    if [[ "$current_pos" != "$target_pos" ]]; then
+        sed -i -E "s/\"position\": *\"[a-zA-Z]+\"/\"position\": \"$target_pos\"/" "$cfg"
+        local current_margin
+        current_margin=$(grep -Eo '"margin": *"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+"' "$cfg" | head -n 1)
+        if [[ -n "$current_margin" ]]; then
+            local m_vals
+            m_vals=$(echo "$current_margin" | sed -E 's/.*"margin": *"([0-9]+ +[0-9]+ +[0-9]+ +[0-9]+)".*/\1/')
+            read -r top right bottom left <<< "$m_vals"
+            local swapped_margin="\"margin\": \"$top $left $bottom $right\""
+            sed -i -E "s/\"margin\": *\"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+\"/$swapped_margin/" "$cfg"
+        fi
+    fi
+}
+
+# ==============================================================================
+# SWAYNC DYNAMIC ALIGNMENT
+# ==============================================================================
+sync_swaync_position() {
+    local wbb_config="$HOME/.config/waybar/config.jsonc"
+    local swaync_config="$HOME/.config/swaync/config.json"
+
+    if [[ -f "$wbb_config" && -f "$swaync_config" ]]; then
+        # BREAK THE LINK: Ensure the active swaync config is a real file, not a symlink to the repo
+        if [[ -L "$swaync_config" ]]; then
+            local real_path
+            real_path=$(readlink -f "$swaync_config")
+            rm -f "$swaync_config"
+            cp "$real_path" "$swaync_config"
+            chmod 644 "$swaync_config"
+        fi
+
+        local wb_pos="top"
+        local anchor_block="none"
+        if [[ -r "$wbb_config" ]]; then
+            local parsed
+            parsed=$(python3 - "$wbb_config" <<'EOF'
+import json, re, sys
+try:
+    with open(sys.argv[1], "r", encoding="utf-8") as f:
+        raw = f.read()
+    # Strip JSONC // and /* */ comments outside strings, then trailing commas
+    clean = re.sub(r'("(?:\\.|[^"\\])*")|//[^\n]*|/\*.*?\*/', lambda m: m.group(1) or "", raw, flags=re.S)
+    clean = re.sub(r",(\s*[}\]])", r"\1", clean)
+    data = json.loads(clean)
+except Exception:
+    print("top none")
+    sys.exit(0)
+
+pos = str(data.get("position", "top")).lower()
+if pos not in ("left", "right", "top", "bottom"):
+    pos = "top"
+
+def contains_module(mods, target):
+    if not isinstance(mods, list):
+        return False
+    if target in mods:
+        return True
+    return any(
+        isinstance(m, str) and m.startswith("group/") and isinstance(data.get(m), dict)
+        and target in data[m].get("modules", [])
+        for m in mods
+    )
+
+anchor = "none"
+for target in ("custom/notification", "tray"):
+    for side in ("left", "center", "right"):
+        if contains_module(data.get(f"modules-{side}", []), target):
+            anchor = side
+            break
+    if anchor != "none":
+        break
+
+print(f"{pos} {anchor}")
+EOF
+)
+            read -r wb_pos anchor_block <<< "$parsed"
+        fi
+
+        local target_x="right"
+        local target_y="top"
+
+        if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
+            # Sidebar Mode (Vertical Flow): X locked to Waybar edge, Y follows notification block
+            target_x="$wb_pos"
+            case "$anchor_block" in
+                left)   target_y="top" ;;
+                right)  target_y="bottom" ;;
+                center) target_y="center" ;;
+            esac
+        else
+            # Topbar/Bottombar Mode (Horizontal Flow): Y locked to Waybar edge, X follows notification block
+            target_y="top"
+            [[ "$wb_pos" == "bottom" ]] && target_y="bottom"
+            case "$anchor_block" in
+                left)   target_x="left" ;;
+                right)  target_x="right" ;;
+                center) target_x="center" ;;
+            esac
+        fi
+
+        sed -i --follow-symlinks -E 's/"positionX": *"[a-zA-Z]+"/"positionX": "'"$target_x"'"/' "$swaync_config"
+        sed -i --follow-symlinks -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "'"$target_y"'"/' "$swaync_config"
+
+    fi
+
+    sync_swaync_theme
+
+    if pgrep -u "$UID" -x swaync >/dev/null 2>&1; then
+        swaync-client -R >/dev/null 2>&1 || true
+        swaync-client -rs >/dev/null 2>&1 || true
+    fi
+}
+
+sync_swaync_theme() {
+    local swaync_dir="$HOME/.config/swaync"
+    local swaync_theme="$swaync_dir/theme.css"
+    local themes_dir="$swaync_dir/themes"
+    local header=""
+    local theme_name="1-Titan-Glass"
+
+    if [[ ! -d "$themes_dir" ]] && [[ -L "$swaync_dir/style.css" ]]; then
+        themes_dir="$(dirname "$(readlink -f "$swaync_dir/style.css")")/themes"
+    fi
+
+    [[ -f "$STYLE_FILE" ]] && header="$(head -n 5 "$STYLE_FILE" 2>/dev/null)"
+    case "$header" in
+        *"FLAT DYNAMIC"*)        theme_name="2-Flat-Material" ;;
+        *"NEON BORDER DYNAMIC"*) theme_name="3-Neon-Border" ;;
+        *"CYBERPUNK GLITCH"*)    theme_name="4-Cyberpunk-Glitch" ;;
+        *"GLASS PILL"*)          theme_name="5-Glass-Pill" ;;
+        *"TITANFALL PILOT HUD"*) theme_name="1-Titan-Glass" ;;
+    esac
+
+    local src_theme="$themes_dir/${theme_name}.css"
+    if [[ -f "$src_theme" ]]; then
+        # BREAK THE LINK: Keep live theme.css independent of repo core/swaync/theme.css
+        if [[ -L "$swaync_theme" ]] || [[ ! -f "$swaync_theme" ]] || ! cmp -s "$src_theme" "$swaync_theme"; then
+            rm -f "$swaync_theme"
+            cp "$src_theme" "$swaync_theme"
+            chmod 644 "$swaync_theme"
+        fi
+    fi
+}
+
+if [[ "${1:-}" == "--sync-swaync" ]]; then
+    sync_swaync_position
+    exit 0
+fi
+
 # 0. ENGINE RESTART PROTOCOL
 reload_waybar() {
     pkill -x waybar 2>/dev/null
     while pgrep -u "$UID" -x waybar >/dev/null; do sleep 0.05; done
+    sync_swaync_position
     waybar -c "$CONFIG_FILE" -s "$STYLE_FILE" & disown
 }
 
 # 1. Ask what to change
-MODE=$(echo -e "Change Layout (Modules)\nChange Style (CSS)\nChange Direction (Top/Bottom/Left/Right)" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
+MODE=$(echo -e "Change Layout\nChange Style" | rofi -dmenu -i -p "󰸉 Waybar" -theme "$ROFI_THEME")
 
 if [[ -z "$MODE" ]]; then
     exit 0
 fi
 
-if [[ "$MODE" == "Change Layout (Modules)" ]]; then
-    # 2a. List layouts
+if [[ "$MODE" == "Change Layout" ]]; then
+    # 2a. List layouts (pure bash globbing, zero child processes)
     cd "$LAYOUTS_DIR" || exit 1
-    options=$(ls -1 *.jsonc 2>/dev/null | sed 's/\.jsonc$//')
+    options_arr=()
+    for f in *.jsonc; do
+        [[ -e "$f" ]] || continue
+        options_arr+=("${f%.jsonc}")
+    done
+    options=$(printf "%s\n" "${options_arr[@]}")
     
     if [[ -z "$options" ]]; then
-        notify-send "Waybar Switcher" "No layouts found!"
+        notify-send "Waybar Switcher" "No layouts found!" &
         exit 1
     fi
     
@@ -46,22 +209,15 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         target_file="$LAYOUTS_DIR/${selected_name}.jsonc"
         
         if [[ ! -f "$target_file" ]]; then
-            notify-send "Waybar Engine" "ERROR: Source layout not found!"
+            notify-send "Waybar Engine" "ERROR: Source layout not found!" &
             exit 1
         fi
-        
-        # If preserving the same Axis, sync the position memory!
-        if [[ -f "$CONFIG_FILE" ]]; then
-            CURRENT_POS=$(grep -Eo '"position": *"[a-zA-Z]+"' "$CONFIG_FILE" | cut -d'"' -f4 | head -n 1)
-            CURRENT_NAME=$(readlink -f "$CONFIG_FILE")
-            
-            IS_CURRENT_SIDEBAR=0; IS_TARGET_SIDEBAR=0
-            [[ "$CURRENT_NAME" == *"Sidebar"* ]] && IS_CURRENT_SIDEBAR=1
-            [[ "$target_file" == *"Sidebar"* ]] && IS_TARGET_SIDEBAR=1
-            
-            IS_CURRENT_TOPBAR=0; IS_TARGET_TOPBAR=0
-            [[ "$CURRENT_NAME" == *"Topbar"* || "$CURRENT_NAME" == *"Bottom"* ]] && IS_CURRENT_TOPBAR=1
-            [[ "$target_file" == *"Topbar"* || "$target_file" == *"Bottom"* ]] && IS_TARGET_TOPBAR=1
+
+        # Context prompt: If user selected a Sidebar, immediately ask for screen edge
+        SIDE=""
+        if [[ "$selected_name" == *"Sidebar"* ]]; then
+            SIDE=$(echo -e "Left\nRight" | rofi -dmenu -i -p "󰸉 Screen Edge" -theme "$ROFI_THEME")
+            [[ -z "$SIDE" ]] && exit 0
         fi
         
         # Copy template to active config instead of symlinking to protect the repo source
@@ -70,37 +226,27 @@ if [[ "$MODE" == "Change Layout (Modules)" ]]; then
         cp "$target_file" "$CONFIG_FILE"
         chmod 644 "$CONFIG_FILE"
 
-        # Apply remembered position ONLY if the Axis matches (Sidebar to Sidebar or Topbar to Topbar)
-        if [[ -n "$CURRENT_POS" ]]; then
-            SHOULD_SYNC=0
-            [[ $IS_CURRENT_SIDEBAR -eq 1 && $IS_TARGET_SIDEBAR -eq 1 ]] && SHOULD_SYNC=1
-            [[ $IS_CURRENT_TOPBAR -eq 1 && $IS_TARGET_TOPBAR -eq 1 ]] && SHOULD_SYNC=1
-
-            if [[ $SHOULD_SYNC -eq 1 ]]; then
-                sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$CURRENT_POS"'"/' "$CONFIG_FILE"
-            fi
+        if [[ -n "$SIDE" ]]; then
+            apply_sidebar_position "$SIDE" "$CONFIG_FILE"
         fi
 
-        notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name"
-        
-        # Save Identity for Axis-Locked Direction menus
-        if [[ "$selected_name" == *"Sidebar"* ]]; then
-            echo "Sidebar" > "$TYPE_FILE"
-        else
-            echo "Topbar" > "$TYPE_FILE"
-        fi
-
-        # ENGINE RESTART
+        # ENGINE RESTART (syncs SwayNC orientation before confirmation toast fires)
         reload_waybar
+        notify-send -t 2000 "Waybar Engine" "Layout updated: $selected_name" &
     fi
 
-elif [[ "$MODE" == "Change Style (CSS)" ]]; then
-    # 2b. List styles
+elif [[ "$MODE" == "Change Style" ]]; then
+    # 2b. List styles (pure bash globbing, zero child processes)
     cd "$STYLES_DIR" || exit 1
-    options=$(ls -1 *.css 2>/dev/null | sed 's/\.css$//')
+    options_arr=()
+    for f in *.css; do
+        [[ -e "$f" ]] || continue
+        options_arr+=("${f%.css}")
+    done
+    options=$(printf "%s\n" "${options_arr[@]}")
     
     if [[ -z "$options" ]]; then
-        notify-send "Waybar Switcher" "No styles found!"
+        notify-send "Waybar Switcher" "No styles found!" &
         exit 1
     fi
     
@@ -110,7 +256,7 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         target_file="$STYLES_DIR/${selected_name}.css"
         
         if [[ ! -f "$target_file" ]]; then
-            notify-send "Waybar Engine" "ERROR: Source style not found!"
+            notify-send "Waybar Engine" "ERROR: Source style not found!" &
             exit 1
         fi
         
@@ -119,92 +265,8 @@ elif [[ "$MODE" == "Change Style (CSS)" ]]; then
         rm -f "$STYLE_FILE"
         cp "$target_file" "$STYLE_FILE"
         chmod 644 "$STYLE_FILE"
-        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name"
-        
         # ENGINE RESTART
         reload_waybar
-    fi
-elif [[ "$MODE" == "Change Direction (Top/Bottom/Left/Right)" ]]; then
-    # 2c. Ask for direction based on layout type (from Identity Memory)
-    LAYOUT_TYPE=$(cat "$TYPE_FILE" 2>/dev/null)
-    
-    if [[ "$LAYOUT_TYPE" == "Sidebar" ]]; then
-        DIRECTION=$(echo -e "left\nright" | rofi -dmenu -i -p "󰸉 Direction (Sidebar Mode)" -theme "$ROFI_THEME")
-    elif [[ "$LAYOUT_TYPE" == "Topbar" ]]; then
-        DIRECTION=$(echo -e "top\nbottom" | rofi -dmenu -i -p "󰸉 Direction (Topbar Mode)" -theme "$ROFI_THEME")
-    else
-        # Fallback if no identity found
-        DIRECTION=$(echo -e "top\nbottom\nleft\nright" | rofi -dmenu -i -p "󰸉 Direction" -theme "$ROFI_THEME")
-    fi
-    
-    if [[ -n "$DIRECTION" ]]; then
-        if [[ -f "$CONFIG_FILE" ]]; then
-            # Override whatever position the JSONC holds with the new one
-            # Targeted at the local active config only
-            sed -i -E 's/"position": *"[a-zA-Z]+"/"position": "'"$DIRECTION"'"/' "$CONFIG_FILE"
-            notify-send -t 2000 "Waybar Engine" "Direction updated: $DIRECTION"
-            
-            # ENGINE RESTART
-            reload_waybar
-        fi
+        notify-send -t 2000 "Waybar Engine" "Style updated: $selected_name" &
     fi
 fi
-
-# ==============================================================================
-# SWAYNC DYNAMIC ALIGNMENT
-# ==============================================================================
-sync_swaync_position() {
-    local wbb_config="$HOME/.config/waybar/config.jsonc"
-    local swaync_config="$HOME/.config/swaync/config.json"
-    
-    if [[ -f "$wbb_config" && -f "$swaync_config" ]]; then
-        # BREAK THE LINK: Ensure the active swaync config is a real file, not a symlink to the repo
-        if [[ -L "$swaync_config" ]]; then
-            local real_path=$(readlink -f "$swaync_config")
-            rm -f "$swaync_config"
-            cp "$real_path" "$swaync_config"
-            chmod 644 "$swaync_config"
-        fi
-
-        local wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$wbb_config" | cut -d'"' -f4 | head -n 1)
-        
-        # Determine the module block containing the notification/tray icon
-        local has_left=$(grep -E '"modules-left":.*("custom/notification"|"tray")' "$wbb_config")
-        local has_center=$(grep -E '"modules-center":.*("custom/notification"|"tray")' "$wbb_config")
-        local has_right=$(grep -E '"modules-right":.*("custom/notification"|"tray")' "$wbb_config")
-        
-        local target_x="right"
-        local target_y="top"
-        
-        if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
-            # Sidebar Mode (Vertical Flow)
-            # Panel X-Axis locked to Waybar position
-            target_x="$wb_pos"
-            
-            # Panel Y-Axis defined by internal structural modules (Left=Top, Center=Center, Right=Bottom)
-            if [[ -n "$has_left" ]]; then target_y="top"
-            elif [[ -n "$has_right" ]]; then target_y="bottom"
-            elif [[ -n "$has_center" ]]; then target_y="center"
-            fi
-        else
-            # Topbar/Bottombar Mode (Horizontal Flow)
-            # Panel Y-Axis locked to Waybar position
-            target_y="top"
-            [[ "$wb_pos" == "bottom" ]] && target_y="bottom"
-            
-            # Panel X-Axis defined by internal structural modules (Left=Left, Center=Center, Right=Right)
-            if [[ -n "$has_left" ]]; then target_x="left"
-            elif [[ -n "$has_right" ]]; then target_x="right"
-            elif [[ -n "$has_center" ]]; then target_x="center"
-            fi
-        fi
-        
-        sed -i --follow-symlinks -E 's/"positionX": *"[a-zA-Z]+"/"positionX": "'"$target_x"'"/' "$swaync_config"
-        sed -i --follow-symlinks -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "'"$target_y"'"/' "$swaync_config"
-        
-        swaync-client -R >/dev/null 2>&1
-        swaync-client -rs >/dev/null 2>&1
-    fi
-}
-
-sync_swaync_position

@@ -30,16 +30,17 @@ raw_list=$(
     print_bind_list
 )
 
-# Dynamically calculate maximum column widths to ensure razor-sharp alignment
-read -r max_cat max_key < <(echo "$raw_list" | awk -F '\t' 'BEGIN {c_max=10; k_max=16} {
-    if (length($1) > c_max) c_max=length($1);
-    if (length($2) > k_max) k_max=length($2);
-} END {print c_max, k_max}')
-
-# Format and pipe to Rofi
-echo "$raw_list" | awk -F '\t' -v c_w="$max_cat" -v k_w="$max_key" '{
-    fmt = sprintf("[%%-%ds] %%-%ds 󰁔  %%s\n", c_w, k_w)
-    printf fmt, $1, $2, $3
+# Format and pipe to Rofi in a single high-performance awk pass
+echo "$raw_list" | awk -F '\t' 'BEGIN {c_max=10; k_max=16; count=0} {
+    c[count] = $1; k[count] = $2; d[count] = $3
+    if (length($1) > c_max) c_max = length($1)
+    if (length($2) > k_max) k_max = length($2)
+    count++
+} END {
+    fmt = sprintf("[%%-%ds] %%-%ds 󰁔  %%s\n", c_max, k_max)
+    for (i = 0; i < count; i++) {
+        printf fmt, c[i], k[i], d[i]
+    }
 }' | rofi -dmenu -i -p "Tactical Briefing" \
     -theme-str 'window {width: 1000px; height: 600px;} 
                 listview {columns: 1; lines: 15; spacing: 8px; scrollbar: true;} 

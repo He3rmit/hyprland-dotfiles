@@ -1,6 +1,23 @@
 {
   "include": ["~/.config/waybar/common.jsonc"],
+  "name": "sidebar-compact",
   "position": "left",
-  "modules-left": ["cpu", "memory", "network", "hyprland/workspaces"],
-  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"]
+  "margin": "10 5 10 0",
+  "width": "auto",
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "group/hardware",
+    "network",
+    "tray",
+    "hyprland/language",
+    "custom/notification",
+    "custom/peripheral",
+    "custom/power"
+  ],
+
+  "clock": { "format": "\n{:%H\n%M}" },
+  "custom/peripheral": {
+    "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh"
+  }
 }

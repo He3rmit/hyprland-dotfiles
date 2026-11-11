@@ -1,15 +1,23 @@
 {
   "include": ["~/.config/waybar/common.jsonc"],
+  "name": "topbar-minimal",
   "position": "top",
+  "height": 50,
+  "margin": "10 80 5 80",
   "width": "auto",
-  "height": 40,
-  "margin": "0 10 0 10",
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "hyprland/language", "custom/peripheral", "custom/notification", "custom/power"],
+  "modules-right": [
+    "tray",
+    "hyprland/language",
+    "custom/notification",
+    "custom/peripheral",
+    "custom/power"
+  ],
 
-  "hyprland/language": { "format": "󰌌 {}" },
+  "clock": { "format": "  {:%H:%M}" },
+  "hyprland/language": { "format": "󰌌  {short}" },
   "custom/peripheral": {
-      "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
+    "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh --horizontal"
   }
 }

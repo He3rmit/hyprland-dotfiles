@@ -12,7 +12,9 @@ if [ -f "$CONFIG_FILE" ]; then
     BACKLIGHT_DEV="${devs[0]##*/}"
     [[ "$BACKLIGHT_DEV" == "*" ]] && BACKLIGHT_DEV=""
     if [ -n "$BACKLIGHT_DEV" ]; then
-        if grep -q '"device":' "$CONFIG_FILE"; then
+        if grep -q "\"device\": *\"$BACKLIGHT_DEV\"" "$CONFIG_FILE"; then
+            : # already configured with current device, skip disk write
+        elif grep -q '"device":' "$CONFIG_FILE"; then
             sed -i --follow-symlinks -E "s/\"device\": *\"[^\"]*\"/\"device\": \"$BACKLIGHT_DEV\"/" "$CONFIG_FILE"
         fi
     fi

@@ -435,14 +435,14 @@ def main():
                 except Exception:
                     pass
 
-                # Notify user
-                subprocess.run([
+                # Notify user (non-blocking)
+                subprocess.Popen([
                     "notify-send",
                     "-a", "Command Palette",
                     "-i", "accessories-calculator",
                     "Calculator Result",
                     f"{choice} = {res_str}\n(Copied to clipboard)",
-                ], check=False)
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return
         except Exception:
             pass  # Fall through to app match or web search
@@ -462,13 +462,13 @@ def main():
     # Query did not match any installed app, bang, or calculation -> search Google
     fallback_url = "https://www.google.com/search?q=" + urllib.parse.quote_plus(choice)
     subprocess.Popen(["xdg-open", fallback_url], start_new_session=True)
-    subprocess.run([
+    subprocess.Popen([
         "notify-send",
         "-a", "Command Palette",
         "-i", "preferences-system-search",
         "Web Search",
         f"Searching Google for '{choice}'...",
-    ], check=False)
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 {
     "layer": "top",
     "position": "left",
-    "width": 51,
     "margin": 0,
     "spacing": 4,
     // -------------------------------------------------------------------------
@@ -12,15 +11,15 @@
         "all-outputs": true,
         "active-only": false,
         "on-click": "activate",
-        "show-special": true, // CRITICAL: Shows Niche/Work/Hobby/Gaming
+        "show-special": true,
+        "special-visible-only": true,
         "format": "{icon}",
-        // Force 1-10 to always show (Titan Standard)
+        // Persistent 1-5; 6-10 appear dynamically when active
         "persistent-workspaces": {
-            "*": 10
+            "*": 5
         },
-        // The Icon Mapping
+        // Universal Agnostic Icon Mapping (JaKooLit / Hyprdots Standard)
         "format-icons": {
-            // Standard 1-10
             "1": "1",
             "2": "2",
             "3": "3",
@@ -31,42 +30,45 @@
             "8": "8",
             "9": "9",
             "10": "0",
-            // Special Buckets (The "Titan" Cluster)
-            "standard": "󱂬", // Super+S (System/VPN)
-            "work": "", // Super+W (Coding)
-            "hobby": "", // Super+D (Discord/Music)
-            "gaming": "󰊖", // Super+G (Steam)
-            "tools": "󱁤", // Super+T (Utilities)
-            // F-Key Expansion (11-22)
-            "11": "F1",
-            "12": "F2",
-            "13": "F3",
-            "14": "F4",
-            "15": "F5",
-            "16": "F6",
-            "17": "F7",
-            "18": "F8",
-            "19": "F9",
-            "20": "F10",
-            "21": "F11",
-            "22": "F12",
+            "special": "󱂬", // Universal handler for any special/scratchpad workspace
             "urgent": "",
             "default": ""
         }
     },
     // -------------------------------------------------------------------------
+    // CHASSIS & WINDOW TELEMETRY (The Pilot HUD Bridge)
+    // -------------------------------------------------------------------------
+    "hyprland/window": {
+        "format": "{}",
+        "max-length": 42,
+        "separate-outputs": true,
+        "icon": true,
+        "icon-size": 16,
+        "tooltip": true,
+        "tooltip-format": "{class}: {title}"
+    },
+    // -------------------------------------------------------------------------
+    // HUD TELEMETRY GROUPS (Modular Capsules)
+    // -------------------------------------------------------------------------
+    "group/hardware": {
+        "orientation": "inherit",
+        "modules": [
+            "cpu",
+            "memory"
+        ]
+    },
+    "group/comms": {
+        "orientation": "inherit",
+        "modules": [
+            "network",
+            "custom/peripheral"
+        ]
+    },
+    // -------------------------------------------------------------------------
     // KEYBOARD & LANGUAGE
     // -------------------------------------------------------------------------
     "hyprland/language": {
-        "format": "󰌌\n{}",
-        "format-en": "US",
-        "format-us": "US",
-        "format-de": "DE",
-        "format-fr": "FR",
-        "format-es": "ES",
-        "format-ru": "RU",
-        "format-ja": "JP",
-        "format-jp": "JP",
+        "format": "{short}",
         "on-click": "hyprctl switchxkblayout current next",
         "tooltip": true,
         "tooltip-format": "Keyboard Layout: {long}"
@@ -90,7 +92,7 @@
         "tooltip": false
     },
     "clock": {
-        "format": " {:%H:%M}",
+        "format": "  {:%H:%M}",
         "tooltip": true,
         "tooltip-format": "<tt><big><b>{:%B %Y}</b></big>\n\n{calendar}</tt>",
         "calendar": {
@@ -112,43 +114,6 @@
             "on-scroll-up": "shift_up",
             "on-scroll-down": "shift_down"
         }
-    },
-    "backlight": {
-        "format": "LIT\n{percent}%",
-        "format-icons": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
-    },
-    "battery": {
-        "states": {
-            "warning": 30,
-            "critical": 15
-        },
-        "format": "BAT\n{capacity}%",
-        "format-charging": "CHG\n{capacity}%",
-        "format-plugged": "PWR\n{capacity}%",
-        "format-alt": "{icon} {time}",
-        "format-icons": [
-            "󰂎",
-            "󰁺",
-            "󰁻",
-            "󰁼",
-            "󰁽",
-            "󰁾",
-            "󰁿",
-            "󰁀",
-            "󰁁",
-            "󰁂",
-            "󰁃"
-        ]
     },
     "tray": {
         "icon-size": 21,
@@ -189,10 +154,5 @@
         "format": "⏻",
         "tooltip": false,
         "on-click": "wlogout"
-    },
-    "custom/hint": {
-        "format": "",
-        "tooltip": false,
-        "on-click": "~/.config/hypr/scripts/keybinds-hint.sh"
     }
 }

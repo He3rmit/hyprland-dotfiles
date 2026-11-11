@@ -42,7 +42,7 @@ find "$HOME/.config" -type l 2>/dev/null | while read -r link; do
         rm -f "$link"
     fi
 done
-rm -f "$HOME/.config/swaync/config.json"
+rm -f "$HOME/.config/swaync/config.json" "$HOME/.config/swaync/theme.css"
 rm -f "$HOME/.config/waybar/config.jsonc"
 # Preserve active wallpaper state across installer sweeps
 SAVED_WALL=""
@@ -221,6 +221,17 @@ if [[ -n "$WAYBAR_POSITION" && -f "$HOME/.config/waybar/config.jsonc" ]]; then
         chmod 644 "$HOME/.config/waybar/config.jsonc"
     fi
     sed -i -E "s/\"position\": *\"[a-zA-Z]+\"/\"position\": \"$WAYBAR_POSITION\"/" "$HOME/.config/waybar/config.jsonc"
+
+    # Invert horizontal margins if positioned on the right
+    if [[ "$WAYBAR_POSITION" == "right" ]]; then
+        current_margin=$(grep -Eo '"margin": *"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+"' "$HOME/.config/waybar/config.jsonc" | head -n 1)
+        if [[ -n "$current_margin" ]]; then
+            m_vals=$(echo "$current_margin" | sed -E 's/.*"margin": *"([0-9]+ +[0-9]+ +[0-9]+ +[0-9]+)".*/\1/')
+            read -r top right bottom left <<< "$m_vals"
+            swapped_margin="\"margin\": \"$top $left $bottom $right\""
+            sed -i -E "s/\"margin\": *\"[0-9]+ +[0-9]+ +[0-9]+ +[0-9]+\"/$swapped_margin/" "$HOME/.config/waybar/config.jsonc"
+        fi
+    fi
 fi
 
 if [[ -n "$WAYBAR_STYLE" && -f "$DOTFILES_DIR/core/waybar/styles/${WAYBAR_STYLE}.css" ]]; then
@@ -230,21 +241,8 @@ else
 fi
 
 # Align SwayNC drawer position with Waybar orientation
-if [[ -f "$HOME/.config/waybar/config.jsonc" && -f "$HOME/.config/swaync/config.json" ]]; then
-    if [[ -L "$HOME/.config/swaync/config.json" ]]; then
-        real_swaync=$(readlink -f "$HOME/.config/swaync/config.json")
-        rm -f "$HOME/.config/swaync/config.json"
-        cp "$real_swaync" "$HOME/.config/swaync/config.json"
-        chmod 644 "$HOME/.config/swaync/config.json"
-    fi
-    wb_pos=$(grep -Eo '"position": *"[a-zA-Z]+"' "$HOME/.config/waybar/config.jsonc" | cut -d'"' -f4 | head -n 1)
-    if [[ "$wb_pos" == "left" || "$wb_pos" == "right" ]]; then
-        sed -i -E "s/\"positionX\": *\"[a-zA-Z]+\"/\"positionX\": \"$wb_pos\"/" "$HOME/.config/swaync/config.json"
-    elif [[ "$wb_pos" == "bottom" ]]; then
-        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "bottom"/' "$HOME/.config/swaync/config.json"
-    else
-        sed -i -E 's/"positionY": *"[a-zA-Z]+"/"positionY": "top"/' "$HOME/.config/swaync/config.json"
-    fi
+if [[ -f "$DOTFILES_DIR/hyprland/scripts/waybar-switcher.sh" ]]; then
+    bash "$DOTFILES_DIR/hyprland/scripts/waybar-switcher.sh" --sync-swaync
 fi
 
 # Fix script permissions

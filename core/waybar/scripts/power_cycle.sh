@@ -30,5 +30,5 @@ esac
 # Apply the new profile
 powerprofilesctl set "$next"
 
-# Send HUD Notification
-notify-send -u low -i "$icon" "POWER PROTOCOL" "$msg"
+# Send HUD Notification (asynchronous & tagged replacement)
+notify-send -u low -i "$icon" -h string:x-canonical-private-synchronous:sys-power "POWER PROTOCOL" "$msg" 2>/dev/null &

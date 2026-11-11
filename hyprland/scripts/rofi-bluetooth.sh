@@ -74,41 +74,47 @@ build_menu() {
         return
     fi
 
-    # Read paired devices
-    local paired_devices
+    # Read paired & connected devices in 2 fast queries
+    local paired_devices connected_devices
     paired_devices=$(bluetoothctl devices Paired 2>/dev/null)
+    connected_devices=$(bluetoothctl devices Connected 2>/dev/null)
 
     if [[ -n "$paired_devices" ]]; then
+        declare -A is_connected
+        while read -r _ cmac _; do
+            [[ -n "$cmac" ]] && is_connected["$cmac"]=1
+        done <<< "$connected_devices"
+
         while read -r _ mac name; do
             [[ -z "$mac" ]] && continue
-            local info
-            info=$(bluetoothctl info "$mac" 2>/dev/null)
-            local connected="no" icon_type="" bat=""
-            while IFS= read -r line; do
-                if [[ "$line" =~ Connected:[[:space:]]+([a-zA-Z]+) ]]; then
-                    connected="${BASH_REMATCH[1]}"
-                elif [[ "$line" =~ Icon:[[:space:]]+([^[:space:]]+) ]]; then
-                    icon_type="${BASH_REMATCH[1]}"
-                elif [[ "$line" =~ Battery[[:space:]]+Percentage: ]]; then
-                    if [[ "$line" =~ \(([0-9]+)\) ]]; then
-                        bat="${BASH_REMATCH[1]}"
-                    elif [[ "$line" =~ ([0-9]+)%? ]]; then
-                        bat="${BASH_REMATCH[1]}"
+
+            # Only query deep hardware telemetry for actively connected devices
+            if [[ "${is_connected[$mac]}" == "1" ]]; then
+                local info
+                info=$(bluetoothctl info "$mac" 2>/dev/null)
+                local icon_type="" bat=""
+                while IFS= read -r line; do
+                    if [[ "$line" =~ Icon:[[:space:]]+([^[:space:]]+) ]]; then
+                        icon_type="${BASH_REMATCH[1]}"
+                    elif [[ "$line" =~ Battery[[:space:]]+Percentage: ]]; then
+                        if [[ "$line" =~ \(([0-9]+)\) ]]; then
+                            bat="${BASH_REMATCH[1]}"
+                        elif [[ "$line" =~ ([0-9]+)%? ]]; then
+                            bat="${BASH_REMATCH[1]}"
+                        fi
                     fi
-                fi
-            done <<< "$info"
+                done <<< "$info"
 
-            local icon
-            icon=$(get_device_icon "$icon_type")
+                local icon
+                icon=$(get_device_icon "$icon_type")
 
-            if [[ "$connected" == "yes" ]]; then
-                if [[ -n "$bat" ]]; then
+                if [[ -n "$bat" && "$bat" != "0" ]]; then
                     entries+=("● ${icon} ${name} [Connected • ${bat}% 󰥉] | ${mac}")
                 else
                     entries+=("● ${icon} ${name} [Connected] | ${mac}")
                 fi
             else
-                entries+=("  ${icon} ${name} [Disconnected] | ${mac}")
+                entries+=("  󰂯 ${name} [Disconnected] | ${mac}")
             fi
         done <<< "$paired_devices"
     fi

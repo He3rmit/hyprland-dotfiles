@@ -15,26 +15,116 @@ window#waybar {
     border-radius: 0px;
     padding: 0px;
 }
-window#waybar.sidebar-expanded {
-    background: alpha(@background, 0.4);
+/* Layout-Specific Container Adjustments */
+window#waybar.topbar-detailed {
+    padding: 2px 8px;
+}
+window#waybar.sidebar-compact {
+    padding: 8px 2px;
+}
+window#waybar.bottom-dock {
+    border-radius: 12px;
+    padding: 2px 8px;
+}
+window#waybar.sidebar-minimal {
+    border-radius: 10px;
+    padding: 6px 2px;
+}
+window#waybar.topbar-minimal {
+    border-radius: 8px;
+    padding: 2px 6px;
 }
 
-/* Dynamic position margins for sidebar-minimal layout */
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
-
-#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
     background: @color0;
     border-radius: 6px;
     padding: 4px 0px;
-    margin: 4px 5px;
-    min-width: 44px;
+    margin: 3px 4px;
+    min-width: 40px;
+}
+
+#language {
+    font-size: 12px;
 }
 
 #workspaces { padding: 2px 0px; }
 #workspaces button { padding: 4px 0px; border-radius: 4px; color: @color7; }
+
+#window { padding: 0px 12px; font-size: 11px; }
+#window image { margin-right: 6px; }
+window#waybar.empty #window,
+#window.empty {
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    box-shadow: none;
+}
+
+#hardware, #comms { padding: 0px 4px; }
+window#waybar.vertical #hardware,
+window#waybar.vertical #comms {
+    padding: 2px 0px;
+    margin: 3px 0px;
+}
+
+window#waybar #hardware #cpu,
+window#waybar #hardware #memory,
+window#waybar #comms #network,
+window#waybar #comms #custom-peripheral {
+    background: transparent;
+    margin: 0px;
+    min-width: 0px;
+    min-height: 0px;
+}
+
+window#waybar.horizontal #hardware #cpu,
+window#waybar.horizontal #hardware #memory,
+window#waybar.horizontal #comms #network,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #hardware #cpu,
+window#waybar.top #hardware #memory,
+window#waybar.top #comms #network,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #hardware #cpu,
+window#waybar.bottom #hardware #memory,
+window#waybar.bottom #comms #network,
+window#waybar.bottom #comms #custom-peripheral {
+    padding: 0px 10px;
+}
+
+window#waybar.vertical #hardware #cpu,
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #network,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #hardware #cpu,
+window#waybar.left #hardware #memory,
+window#waybar.left #comms #network,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #hardware #cpu,
+window#waybar.right #hardware #memory,
+window#waybar.right #comms #network,
+window#waybar.right #comms #custom-peripheral {
+    padding: 4px 2px;
+}
+
+window#waybar.horizontal #hardware #memory,
+window#waybar.top #hardware #memory,
+window#waybar.bottom #hardware #memory,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #comms #custom-peripheral {
+    border-left: 1px solid alpha(@color8, 0.3);
+}
+
+window#waybar.vertical #hardware #memory,
+window#waybar.left #hardware #memory,
+window#waybar.right #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #comms #custom-peripheral {
+    border-top: 1px solid alpha(@color8, 0.3);
+}
 
 window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu,
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
@@ -45,11 +135,14 @@ window#waybar.horizontal #custom-peripheral, window#waybar.top #custom-periphera
 window#waybar.horizontal #custom-power, window#waybar.top #custom-power, window#waybar.bottom #custom-power,
 window#waybar.horizontal #custom-notification, window#waybar.top #custom-notification, window#waybar.bottom #custom-notification,
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
-window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray {
+window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray,
+window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
+window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
+window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
     padding: 4px 12px;
-    margin: 5px 4px;
+    margin: 3px 3px;
     min-width: 0px;
-    min-height: 24px;
+    min-height: 0px;
 }
 
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 2px 5px; }

@@ -6,11 +6,11 @@ if [[ ! -f "$CURRENT_WALLPAPER_FILE" ]]; then
     exit 1
 fi
 
-selected_path=$(cat "$CURRENT_WALLPAPER_FILE")
+selected_path=$(< "$CURRENT_WALLPAPER_FILE")
 
 # If it's a video, ignore (or show notification)
 if [[ "$selected_path" =~ \.(mp4|webm|mkv)$ ]]; then
-    notify-send -u normal "Wallpaper Effects" "Effects are not supported on video wallpapers."
+    notify-send -u normal "Wallpaper Effects" "Effects are not supported on video wallpapers." 2>/dev/null &
     exit 0
 fi
 
@@ -30,9 +30,9 @@ if [[ "$selected_effect" == "Original" ]]; then
     exit 0
 fi
 
-notify-send -t 3000 -h string:x-canonical-private-synchronous:sys-notify -u normal "Wall-E" "Syncing Vision Mode: $selected_effect..."
+notify-send -t 3000 -h string:x-canonical-private-synchronous:sys-notify -u normal "Wall-E" "Syncing Vision Mode: $selected_effect..." 2>/dev/null &
 
-TIMESTAMP=$(date +%s)
+printf -v TIMESTAMP '%(%s)T' -1
 EFFECT_FILE="$CACHE_DIR/current_wallpaper_effect_${TIMESTAMP}.jpg"
 GRID_TILE="$CACHE_DIR/grid_tile.png"
 

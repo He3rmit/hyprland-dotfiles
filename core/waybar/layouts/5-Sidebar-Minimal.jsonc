@@ -2,14 +2,21 @@
   "include": ["~/.config/waybar/common.jsonc"],
   "name": "sidebar-minimal",
   "position": "left",
+  "height": 40,
+  "margin": "10 5 10 10",
   "width": "auto",
-  "height": 45,
   "modules-left": ["hyprland/workspaces"],
-  "modules-center": [],
-  "modules-right": ["tray", "clock", "hyprland/language", "custom/notification", "custom/peripheral", "custom/power"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "tray",
+    "hyprland/language",
+    "custom/notification",
+    "custom/peripheral",
+    "custom/power"
+  ],
 
   "clock": { "format": "\n{:%H\n%M}" },
   "custom/peripheral": {
-      "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh"
+    "exec": "$HOME/.config/waybar/scripts/peripheral-monitor.sh"
   }
 }

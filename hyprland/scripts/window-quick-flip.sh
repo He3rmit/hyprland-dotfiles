@@ -4,5 +4,5 @@
 # Purpose: Instant cross-workspace A/B window toggle for Hyprland
 # ==============================================================================
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="${BASH_SOURCE[0]%/*}"
 exec python3 "$SCRIPT_DIR/window-quick-flip.py" "$@"

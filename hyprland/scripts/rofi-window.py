@@ -179,13 +179,13 @@ def main():
         target = resolve_target(proc.stdout)
         if target:
             close_window(target["address"])
-            subprocess.run([
+            subprocess.Popen([
                 "notify-send",
                 "-a", "Window Switcher",
                 "-i", "window-close",
                 "Window Terminated",
                 f"Closed {target.get('title', 'window')}",
-            ])
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         sys.exit(0)
 
     if proc.returncode != 0:

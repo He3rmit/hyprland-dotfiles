@@ -27,6 +27,6 @@ case "$choice" in
         ;;
     *"Check HUD Integrity"*)
         status=$($PILOT_CONTROL sddm --status)
-        notify-send -t 5000 "Pilot Control" "$status"
+        notify-send -t 5000 "Pilot Control" "$status" 2>/dev/null &
         ;;
 esac

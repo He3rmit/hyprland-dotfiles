@@ -541,20 +541,28 @@ class HydraHub(Gtk.Window):
 
 
     def _on_click_local(self, btn, path):
-        # Using File URI protocol for widest compatibility with chat apps
-        file_uri = f"file://{os.path.abspath(path)}"
-        subprocess.run(
-            ["wl-copy", "--type", "text/uri-list"],
-            input=file_uri.encode()
-        )
-        self._notify("Captured", "Vault item ready — Ctrl+V to upload.")
+        def _worker():
+            # Using File URI protocol for widest compatibility with chat apps
+            file_uri = f"file://{os.path.abspath(path)}"
+            subprocess.run(
+                ["wl-copy", "--type", "text/uri-list"],
+                input=file_uri.encode()
+            )
+            self._notify("Captured", "Vault item ready — Ctrl+V to upload.")
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _copy_text(self, text):
-        subprocess.run(["wl-copy"], input=text.encode())
-        self._notify("Captured", f"Emoji {text} copied.")
+        def _worker():
+            subprocess.run(["wl-copy"], input=text.encode())
+            self._notify("Captured", f"Emoji {text} copied.")
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _notify(self, title, body):
-        subprocess.run(["notify-send", "-t", "2000", "-a", "Hydra Hub", title, body])
+        subprocess.Popen(
+            ["notify-send", "-t", "2000", "-a", "Hydra Hub", title, body],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
 
 
 # ─── LAUNCH ──────────────────────────────────────────────────────────────────

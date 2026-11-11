@@ -4,8 +4,8 @@
 @import "../../.cache/wal/colors-waybar.css";
 
 * {
-    font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 14px;
+    font-family: "Orbitron", "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
     font-weight: 600;
     color: @foreground;
     background: transparent;
@@ -13,26 +13,61 @@
 
 window#waybar {
     background: transparent;
+    padding: 0px;
 }
 
-/* Dynamic position margins for sidebar-minimal layout */
-window#waybar.sidebar-minimal.left { margin: 10px 0px 10px 10px; }
-window#waybar.sidebar-minimal.right { margin: 10px 10px 10px 0px; }
-window#waybar.sidebar-minimal.top { margin: 0px 10px 10px 10px; }
-window#waybar.sidebar-minimal.bottom { margin: 10px 10px 0px 10px; }
+/* Layout-Specific Container Adjustments */
+window#waybar.topbar-detailed {
+    padding: 2px 8px;
+}
+window#waybar.sidebar-compact {
+    padding: 8px 2px;
+}
+window#waybar.bottom-dock {
+    padding: 2px 10px;
+}
+window#waybar.sidebar-minimal {
+    padding: 6px 2px;
+}
+window#waybar.topbar-minimal {
+    padding: 2px 8px;
+}
 
-#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray {
-    background: alpha(@background, 0.65);
-    border: 1px solid alpha(@color4, 0.3);
-    border-radius: 20px;
+#cpu, #memory, #network, #clock, #language, #custom-peripheral, #custom-power, #custom-notification, #workspaces, #tray, #hardware, #comms, #window {
+    background: alpha(@background, 0.75);
+    border: 1px solid alpha(@color4, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     color: @foreground;
-    padding: 8px 4px;
-    margin: 6px 8px;
-    min-width: 44px;
+    padding: 6px 4px;
+    margin: 3px 4px;
+    min-width: 42px;
 }
 
-#workspaces { padding: 6px 0px; }
-#workspaces button { padding: 6px 0px; color: @color7; }
+#workspaces { padding: 4px 0px; }
+#workspaces button { padding: 4px 0px; border-radius: 12px; color: @color7; }
+
+#language {
+    font-size: 12px;
+}
+
+#window { padding: 0px 14px; font-size: 11px; }
+#window image { margin-right: 6px; }
+window#waybar.empty #window,
+#window.empty {
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    box-shadow: none;
+}
+
+#hardware, #comms { padding: 0px 4px; }
+window#waybar.vertical #hardware,
+window#waybar.vertical #comms {
+    padding: 2px 0px;
+    margin: 3px 0px;
+}
 
 window#waybar.horizontal #cpu, window#waybar.top #cpu, window#waybar.bottom #cpu,
 window#waybar.horizontal #memory, window#waybar.top #memory, window#waybar.bottom #memory,
@@ -43,30 +78,95 @@ window#waybar.horizontal #custom-peripheral, window#waybar.top #custom-periphera
 window#waybar.horizontal #custom-power, window#waybar.top #custom-power, window#waybar.bottom #custom-power,
 window#waybar.horizontal #custom-notification, window#waybar.top #custom-notification, window#waybar.bottom #custom-notification,
 window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces,
-window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray {
-    padding: 6px 18px;
-    margin: 8px 6px;
+window#waybar.horizontal #tray, window#waybar.top #tray, window#waybar.bottom #tray,
+window#waybar.horizontal #hardware, window#waybar.top #hardware, window#waybar.bottom #hardware,
+window#waybar.horizontal #comms, window#waybar.top #comms, window#waybar.bottom #comms,
+window#waybar.horizontal #window, window#waybar.top #window, window#waybar.bottom #window {
+    padding: 3px 12px;
+    margin: 3px 3px;
     min-width: 0px;
+    min-height: 0px;
 }
 
-window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 4px 6px; }
-window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button { padding: 2px 14px; color: @color7; }
+window#waybar.horizontal #workspaces, window#waybar.top #workspaces, window#waybar.bottom #workspaces { padding: 2px 4px; }
+window#waybar.horizontal #workspaces button, window#waybar.top #workspaces button, window#waybar.bottom #workspaces button { padding: 2px 10px; border-radius: 12px; }
+
+window#waybar #hardware #cpu,
+window#waybar #hardware #memory,
+window#waybar #comms #network,
+window#waybar #comms #custom-peripheral {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0px;
+    min-width: 0px;
+    min-height: 0px;
+}
+
+window#waybar.horizontal #hardware #cpu,
+window#waybar.horizontal #hardware #memory,
+window#waybar.horizontal #comms #network,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #hardware #cpu,
+window#waybar.top #hardware #memory,
+window#waybar.top #comms #network,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #hardware #cpu,
+window#waybar.bottom #hardware #memory,
+window#waybar.bottom #comms #network,
+window#waybar.bottom #comms #custom-peripheral {
+    padding: 0px 10px;
+}
+
+window#waybar.vertical #hardware #cpu,
+window#waybar.vertical #hardware #memory,
+window#waybar.vertical #comms #network,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #hardware #cpu,
+window#waybar.left #hardware #memory,
+window#waybar.left #comms #network,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #hardware #cpu,
+window#waybar.right #hardware #memory,
+window#waybar.right #comms #network,
+window#waybar.right #comms #custom-peripheral {
+    padding: 4px 2px;
+}
+
+window#waybar.horizontal #hardware #memory,
+window#waybar.top #hardware #memory,
+window#waybar.bottom #hardware #memory,
+window#waybar.horizontal #comms #custom-peripheral,
+window#waybar.top #comms #custom-peripheral,
+window#waybar.bottom #comms #custom-peripheral {
+    border-left: 1px solid alpha(@color4, 0.25);
+}
+
+window#waybar.vertical #hardware #memory,
+window#waybar.left #hardware #memory,
+window#waybar.right #hardware #memory,
+window#waybar.vertical #comms #custom-peripheral,
+window#waybar.left #comms #custom-peripheral,
+window#waybar.right #comms #custom-peripheral {
+    border-top: 1px solid alpha(@color4, 0.25);
+}
 
 #workspaces button.active {
     color: @background;
     background: @color4;
     border-radius: 12px;
+    box-shadow: 0 0 8px alpha(@color4, 0.4);
 }
 
 #workspaces button:hover {
     color: @foreground;
-    background: alpha(@color4, 0.4);
+    background: alpha(@color4, 0.3);
     border-radius: 12px;
 }
 
 #workspaces button.urgent {
-    color: @color1;
-    background: alpha(@color1, 0.2);
+    color: @color0;
+    background: @color1;
     border-radius: 12px;
 }
 
@@ -75,12 +175,12 @@ window#waybar.horizontal #workspaces button, window#waybar.top #workspaces butto
 }
 
 #custom-power:hover {
-    background: @color1;
-    color: @background;
+    background: alpha(@color1, 0.3);
+    color: @color1;
 }
 
 #custom-notification.notification {
-    color: @color5;
+    color: @color3;
 }
 
 tooltip {

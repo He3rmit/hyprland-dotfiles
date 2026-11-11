@@ -78,7 +78,14 @@ dotfiles/
 
 ---
 
-### [v4.3.0] — Hyprland 0.57 Modernization, Legacy .conf Purge & HUD Hardening (Current)
+### [v4.4.0] — Waybar Overhaul, Dual-Themed SwayNC HUD & Switcher Alignment (Current)
+- **Dual-Themed SwayNC Pilot HUD**: Redesigned `core/swaync/style.css` and introduced 5 Waybar-matched theme sheets (`core/swaync/themes/*.css`) that inherit Pywal dynamic colors (`colors-waybar.css`) alongside active Waybar style syncing via `sync_swaync_theme` in `waybar-switcher.sh`.
+- **Auto-Expanding Sizing & Live Quick Toggles**: Switched SwayNC `control-center-height` to auto-expanding (`-1`) with `10px` outer margins, refined sliders/MPRIS/per-app volume/notification cards, and wired live hardware state queries (`wifi-status`, `bt-status`, `volume.sh status`) into Wi-Fi, Bluetooth, and Audio quick toggles.
+- **SwayNC Orientation Alignment**: Upgraded `waybar-switcher.sh` (`--sync-swaync`) with a JSONC parser covering multi-line `modules-*` and `group/*` nesting so SwayNC dynamically tracks Waybar's edge and notification block placement; delegated `01-stow-configs.sh` alignment to `--sync-swaync` and updated stow/uninstall handling for `theme.css`.
+- **Waybar Layouts, Capsules & Contextual Sidebar Positioning**: Modernized all 5 Waybar layouts and themes (`1-Titan-Glass` through `5-Glass-Pill`) with `hyprland/window` telemetry, stitched `#hardware` and `#comms` capsules, calibrated baselines, and contextual `"Left\nRight"` sidebar edge selection with normalized case handling and margin flipping.
+- **Runtime Performance & Cliphist Thumbnails**: Eliminated blocking subprocesses, synchronous notifications, and redundant subshell forks across control scripts while generating top-item thumbnails synchronously in `cliphist-rofi.sh` for immediate preview.
+
+### [v4.3.0] — Hyprland 0.57 Modernization, Legacy .conf Purge & HUD Hardening
 - **Hyprland 0.57+ Upstream Alignment**: Hardened configuration and runtime scripts against Hyprland 0.57 changes—purged deprecated `hyprctl keyword` calls across `gamemode.sh` and `mirror-hotplug.sh` in favor of native `hyprctl eval ("hl.config({...})")` and `hl.monitor({...})`.
 - **Legacy `.conf` Purge**: Removed the obsolete `hyprland/hyprland.conf` transition stub, pruned dual-exported `colors.conf`, and sanitized `.gitignore` and `.stow-local-ignore` for pure Lua runtime operation.
 - **Hyprlock HUD Layout Redesign**: Relocated the lockscreen keyboard layout indicator (`$LAYOUT`) to the bottom-right corner (`-30, 30`) with a dedicated keyboard glyph (`󰌌  $LAYOUT`), resolving visual overlap across the password input field.

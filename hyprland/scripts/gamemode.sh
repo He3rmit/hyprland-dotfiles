@@ -15,7 +15,7 @@ notify_game() {
     local msg="$2"
     local urgency="${3:-low}"
     local icon="${4:-input-gaming}"
-    notify-send -a "Game Mode" -u "$urgency" -i "$icon" "$title" "$msg" 2>/dev/null || true
+    notify-send -a "Game Mode" -u "$urgency" -i "$icon" -h string:x-canonical-private-synchronous:sys-gamemode "$title" "$msg" 2>/dev/null &
 }
 
 is_active() {
@@ -77,7 +77,7 @@ disable_gamemode() {
         local prev_profile="balanced"
         if [[ -f "$PROFILE_FILE" ]]; then
             local saved_profile
-            saved_profile=$(cat "$PROFILE_FILE" 2>/dev/null)
+            saved_profile=$(< "$PROFILE_FILE")
             [[ -n "$saved_profile" ]] && prev_profile="$saved_profile"
             rm -f "$PROFILE_FILE"
         fi
