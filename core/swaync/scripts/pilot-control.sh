@@ -30,4 +30,16 @@ case "$1" in
         bt_state=$(rfkill list bluetooth 2>/dev/null)
         [[ -n "$bt_state" && "$bt_state" != *"Soft blocked: yes"* ]] && echo true || echo false
         ;;
+    gamemode)
+        if [[ "${SWAYNC_TOGGLE_STATE:-}" == "true" ]]; then
+            (nohup ~/.config/hypr/scripts/gamemode.sh --enable </dev/null >/dev/null 2>&1 &)
+        elif [[ "${SWAYNC_TOGGLE_STATE:-}" == "false" ]]; then
+            (nohup ~/.config/hypr/scripts/gamemode.sh --disable </dev/null >/dev/null 2>&1 &)
+        else
+            (nohup ~/.config/hypr/scripts/gamemode.sh --toggle </dev/null >/dev/null 2>&1 &)
+        fi
+        ;;
+    gamemode-status)
+        [[ -f "/tmp/hypr-gamemode.active" ]] && echo true || echo false
+        ;;
 esac

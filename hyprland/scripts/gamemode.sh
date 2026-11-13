@@ -100,6 +100,14 @@ case "$1" in
         fi
         exit 0
         ;;
+    --check|--is-active)
+        if is_active; then
+            echo true
+        else
+            echo false
+        fi
+        exit 0
+        ;;
     --enable|-e)
         enable_gamemode
         ;;
