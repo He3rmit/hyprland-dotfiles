@@ -7,6 +7,16 @@ THEME="$HOME/.config/rofi/themes/clipboard.rasi"
 CACHE_DIR="$HOME/.cache/cliphist-thumbnails"
 mkdir -p "$CACHE_DIR"
 
+# Source Pywal colors for wallpaper-first palette
+WAL_COLORS="$HOME/.cache/wal/colors.sh"
+BG_COLOR="#0a0f14"
+if [ -f "$WAL_COLORS" ]; then
+    # shellcheck source=/dev/null
+    . "$WAL_COLORS"
+    [ -n "$background" ] && BG_COLOR="$background"
+fi
+IMV_BG="${BG_COLOR#\#}"
+
 # Capture originating window address & class before Rofi takes focus
 TARGET_WINDOW_ADDR=$(hyprctl activewindow -j 2>/dev/null | jq -r '.address // empty' 2>/dev/null)
 TARGET_WINDOW_CLASS=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' 2>/dev/null)
@@ -123,10 +133,10 @@ generate_list() {
                     if [ ! -f "$preview_file" ]; then
                         if [ $sync_count -lt 3 ]; then
                             sync_count=$((sync_count + 1))
-                            magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                            magick "$file_path"[0] -thumbnail '160x90>' -background "$BG_COLOR" -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
                         elif [ $img_count -lt 25 ]; then
                             img_count=$((img_count + 1))
-                            (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                            (nice -n 19 magick "$file_path"[0] -thumbnail '160x90>' -background "$BG_COLOR" -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                         fi
                     fi
                     icon_val="$preview_file"
@@ -181,10 +191,10 @@ generate_list() {
             if [ ! -f "$preview_file" ]; then
                 if [ $sync_count -lt 3 ]; then
                     sync_count=$((sync_count + 1))
-                    cliphist decode "$id" 2>/dev/null | magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
+                    cliphist decode "$id" 2>/dev/null | magick - -thumbnail '160x90>' -background "$BG_COLOR" -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1
                 elif [ $img_count -lt 25 ]; then
                     img_count=$((img_count + 1))
-                    (nice -n 19 cliphist decode "$id" 2>/dev/null | nice -n 19 magick - -thumbnail '160x90>' -background '#0a0f14' -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
+                    (nice -n 19 cliphist decode "$id" 2>/dev/null | nice -n 19 magick - -thumbnail '160x90>' -background "$BG_COLOR" -gravity center -extent 160x90 "$preview_file" >/dev/null 2>&1) &
                 fi
             fi
 
@@ -322,7 +332,7 @@ case $exit_code in
             case "$ext_lc" in
                 png|jpg|jpeg|gif|webp|svg)
                     if which imv >/dev/null 2>&1; then
-                        imv -b 0a0f14 "$target_path" &
+                        imv -b "$IMV_BG" "$target_path" &
                     else
                         xdg-open "$target_path" &
                     fi
@@ -350,7 +360,7 @@ case $exit_code in
                 tmp_img="$CACHE_DIR/preview_${first_id}.png"
                 cliphist decode "$first_id" > "$tmp_img"
                 if which imv >/dev/null 2>&1; then
-                    imv -b 0a0f14 "$tmp_img" &
+                    imv -b "$IMV_BG" "$tmp_img" &
                 else
                     xdg-open "$tmp_img" &
                 fi

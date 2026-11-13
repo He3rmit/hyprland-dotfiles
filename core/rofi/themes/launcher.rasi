@@ -19,12 +19,12 @@ configuration {
     background-color: transparent;
     text-color: @foreground;
     
-    bg-base: rgba(10, 15, 20, 0.85); /* Glassmorphism look */
-    bg-selected: @selected-normal-background;
-    bg-alt: rgba(255, 255, 255, 0.05);
+    bg-base: var(bg-base, rgba(10, 15, 20, 0.85));
+    bg-selected: var(bg-selected, @selected-normal-background);
+    bg-alt: var(bg-alt, rgba(255, 255, 255, 0.05));
     
-    border-color: @selected-active-background;
-    accent-color: @selected-active-background;
+    border-color: var(border-accent, @selected-active-background);
+    accent-color: var(accent-color, @selected-active-background);
     
     margin: 0px;
     padding: 0px;
@@ -36,7 +36,7 @@ window {
     width: 950px;
     border-radius: 15px;
     border: 2px;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(border-accent, @accent-color);
     background-color: @bg-base;
     padding: 20px;
 }
@@ -62,8 +62,8 @@ prompt {
 
 entry {
     placeholder: "Search apps, math, web (? / !w / !yt), or > command...";
-    placeholder-color: @foreground;
-    text-color: #ffffff;
+    placeholder-color: var(accent-alt, @foreground);
+    text-color: @foreground;
     expand: true;
 }
 

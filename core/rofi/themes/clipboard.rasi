@@ -10,10 +10,10 @@
     background-color: transparent;
     text-color: @foreground;
 
-    bg-base:     rgba(10, 15, 20, 0.92);
-    bg-selected: @selected-normal-background;
-    bg-alt:      rgba(255, 255, 255, 0.05);
-    accent-color: @selected-active-background;
+    bg-base:     var(bg-base, rgba(10, 15, 20, 0.92));
+    bg-selected: var(bg-selected, @selected-normal-background);
+    bg-alt:      var(bg-alt, rgba(255, 255, 255, 0.05));
+    accent-color: var(accent-color, @selected-active-background);
 
     margin: 0px;
     padding: 0px;
@@ -25,7 +25,7 @@ window {
     width: 920px;
     border-radius: 15px;
     border: 2px;
-    border-color: @selected-active-background;
+    border-color: var(border-accent, @accent-color);
     background-color: @bg-base;
     padding: 20px;
 }
@@ -45,12 +45,12 @@ inputbar {
 }
 
 prompt {
-    text-color: @selected-active-background;
+    text-color: @accent-color;
 }
 
 entry {
     placeholder: "Search Clipboard...";
-    placeholder-color: @foreground;
+    placeholder-color: var(accent-alt, @foreground);
     text-color: @foreground;
     expand: true;
 }

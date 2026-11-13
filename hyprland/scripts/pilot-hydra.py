@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import json
 import time
 import hashlib
 import threading
@@ -23,59 +24,121 @@ CACHE_DIR    = "/tmp/pilot-hydra"
 os.makedirs(CACHE_DIR, exist_ok=True)
 EMOJI_CACHE = os.path.join(os.path.expanduser("~/.cache/pilot-hydra"), "emojis.cache")
 
-# ─── THEME ───────────────────────────────────────────────────────────────────
+# ─── THEME ENGINE (Pywal Integrated) ──────────────────────────────────────────
 
-CSS_THEME = b"""
-window {
-    background-color: #11111b;
-    border: 2px solid #94e2d5;
+def load_theme():
+    """Load wallpaper-first Pywal color tokens with Catppuccin Mocha fallback."""
+    theme = {
+        "bg": "#11111b",
+        "surface": "#1e1e2e",
+        "hover": "#313244",
+        "border": "#45475a",
+        "accent": "#94e2d5",
+        "accent_alt": "#89b4fa",
+        "fg": "#cdd6f4",
+        "fg_muted": "#a6adc8",
+    }
+    wal_json = os.path.expanduser("~/.cache/wal/colors.json")
+    if os.path.exists(wal_json):
+        try:
+            with open(wal_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            special = data.get("special", {})
+            colors = data.get("colors", {})
+
+            bg = special.get("background", theme["bg"])
+            fg = special.get("foreground", theme["fg"])
+            accent = colors.get("color2", colors.get("color4", theme["accent"]))
+            accent_alt = colors.get("color6", theme["accent_alt"])
+
+            def hex_to_rgb(h):
+                h = h.lstrip("#")
+                return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+            def blend(c1, c2, factor):
+                r1, g1, b1 = hex_to_rgb(c1)
+                r2, g2, b2 = hex_to_rgb(c2)
+                r = int(r1 + (r2 - r1) * factor)
+                g = int(g1 + (g2 - g1) * factor)
+                b = int(b1 + (b2 - b1) * factor)
+                return f"#{r:02x}{g:02x}{b:02x}"
+
+            surface = blend(bg, fg, 0.08)
+            hover = blend(bg, accent, 0.22)
+            border = blend(bg, fg, 0.20)
+            fg_muted = blend(fg, bg, 0.40)
+
+            theme.update({
+                "bg": bg,
+                "surface": surface,
+                "hover": hover,
+                "border": border,
+                "accent": accent,
+                "accent_alt": accent_alt,
+                "fg": fg,
+                "fg_muted": fg_muted,
+            })
+        except Exception as e:
+            print(f"[Hydra/Theme] Palette read error: {e}")
+
+    css = f"""
+window {{
+    background-color: {theme['bg']};
+    border: 2px solid {theme['accent']};
     border-radius: 12px;
-}
-entry {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
+}}
+entry {{
+    background-color: {theme['surface']};
+    color: {theme['fg']};
+    border: 1px solid {theme['border']};
     border-radius: 8px;
     padding: 10px;
     margin: 8px 10px;
     font-size: 14px;
-}
-button {
-    background-color: #1e1e2e;
+}}
+entry:focus {{
+    border-color: {theme['accent']};
+}}
+button {{
+    background-color: {theme['surface']};
     border-radius: 6px;
-    border: 1px solid #313244;
+    border: 1px solid {theme['border']};
     padding: 2px;
-}
-button:hover {
-    background-color: #313244;
-    border-color: #94e2d5;
-}
-.emoji-btn {
+}}
+button:hover {{
+    background-color: {theme['hover']};
+    border-color: {theme['accent']};
+}}
+.emoji-btn {{
     font-size: 28px;
     padding: 4px;
     background: none;
     border: none;
-}
-.emoji-btn:hover {
-    background-color: #313244;
+}}
+.emoji-btn:hover {{
+    background-color: {theme['hover']};
     border-radius: 6px;
-}
-notebook tab {
-    background-color: #11111b;
-    color: #a6adc8;
+}}
+notebook tab {{
+    background-color: {theme['bg']};
+    color: {theme['fg_muted']};
     padding: 8px 14px;
     font-size: 13px;
-}
-notebook tab:checked {
-    background-color: #1e1e2e;
-    color: #94e2d5;
-    border-bottom: 2px solid #94e2d5;
-}
-flowbox {
-    background-color: #181825;
+}}
+notebook tab:checked {{
+    background-color: {theme['surface']};
+    color: {theme['accent']};
+    border-bottom: 2px solid {theme['accent']};
+}}
+flowbox {{
+    background-color: {theme['bg']};
     padding: 6px;
-}
-"""
+}}
+scrolledwindow {{
+    background-color: {theme['bg']};
+}}
+""".encode("utf-8")
+    return css, theme
 
 # ─── HYDRA HUB ───────────────────────────────────────────────────────────────
 
@@ -85,6 +148,7 @@ class HydraHub(Gtk.Window):
         self.set_default_size(600, 640)
         self.set_keep_above(True)
         self.set_position(Gtk.WindowPosition.CENTER)
+        self.css_data, self.theme = load_theme()
         self.api_keys     = self._load_api_keys()
         self.debounce_id  = None
         self.current_query = None
@@ -113,7 +177,7 @@ class HydraHub(Gtk.Window):
 
         # CSS
         provider = Gtk.CssProvider()
-        provider.load_from_data(CSS_THEME)
+        provider.load_from_data(self.css_data)
         Gtk.StyleContext.add_provider_for_screen(
             Gdk.Screen.get_default(), provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
@@ -246,7 +310,8 @@ class HydraHub(Gtk.Window):
         self._clear(grid)
         lbl = Gtk.Label()
         msg = f"No items found for '<b>{query}</b>'" if query else "No items available."
-        lbl.set_markup(f"<span color='#a6adc8'>{msg}</span>")
+        fg_col = self.theme.get("fg_muted", "#a6adc8")
+        lbl.set_markup(f"<span color='{fg_col}'>{msg}</span>")
         lbl.set_padding(20, 20)
         grid.add(lbl)
         grid.show_all()
@@ -339,7 +404,9 @@ class HydraHub(Gtk.Window):
         files = [f for f in os.listdir(STICKER_DIR)
                  if f.lower().endswith((".png", ".gif", ".jpg", ".jpeg", ".webp"))]
         if not files:
-            lbl = Gtk.Label(label="Vault is empty.\nDrop images into ~/Pictures/Stickers/")
+            lbl = Gtk.Label()
+            fg_col = self.theme.get("fg_muted", "#a6adc8")
+            lbl.set_markup(f"<span color='{fg_col}'>Vault is empty.\nDrop images into ~/Pictures/Stickers/</span>")
             lbl.set_justify(Gtk.Justification.CENTER)
             self.vault_grid.add(lbl)
             self.vault_grid.show_all()
