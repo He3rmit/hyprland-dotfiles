@@ -36,7 +36,7 @@ else
     echo "  ⚠️ luac not found, skipping Lua parse check."
 fi
 
-# --- 3. PYTHON SYNTAX ---
+# --- 3. PYTHON SYNTAX & LINT ---
 echo "▶ Checking Python Syntax (py_compile)..."
 py_count=0
 while IFS= read -r -d '' f; do
@@ -44,6 +44,18 @@ while IFS= read -r -d '' f; do
     py_count=$((py_count + 1))
 done < <(find . -name "*.py" -not -path "./.git/*" -not -path "./main/*" -print0)
 echo "  ✅ Passed: $py_count Python scripts compiled."
+
+RUFF_BIN="$(command -v ruff 2>/dev/null || true)"
+if [[ -z "$RUFF_BIN" && -x "/tmp/ruff-x86_64-unknown-linux-gnu/ruff" ]]; then
+    RUFF_BIN="/tmp/ruff-x86_64-unknown-linux-gnu/ruff"
+fi
+if [[ -n "$RUFF_BIN" ]]; then
+    echo "▶ Checking Python Linting (ruff check)..."
+    "$RUFF_BIN" check hyprland/scripts/ || { echo "❌ Ruff linting failed"; exit 1; }
+    echo "  ✅ Passed: Ruff linting clean."
+else
+    echo "  ⚠️ ruff not found, skipping Python lint check."
+fi
 
 # --- 4. JSON VALIDATION ---
 if command -v jq >/dev/null 2>&1; then

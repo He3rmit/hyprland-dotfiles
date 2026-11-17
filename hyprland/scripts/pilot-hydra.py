@@ -12,7 +12,7 @@ import concurrent.futures
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GdkPixbuf', '2.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, Pango
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 
 # 🚀 Pilot HUD — Hydra-Omega Hub (v1.5.0)
 # Animated GIFs • Klipy Stickers • Local Vault • Dynamic Emojis
@@ -218,11 +218,11 @@ class HydraHub(Gtk.Window):
         fb.set_selection_mode(Gtk.SelectionMode.NONE)
         scrolled.add(fb)
         self.notebook.append_page(scrolled, Gtk.Label(label=title))
-        
+
         # Setup Emoji Filter if it's the emoji grid
         if title == "Emojis":
             fb.set_filter_func(self._emoji_filter_func)
-            
+
         return fb
 
     # ─── SEARCH DISPATCH ─────────────────────────────────────────────────────
@@ -362,7 +362,7 @@ class HydraHub(Gtk.Window):
 
                     if thumb and full:
                         download_targets.append((thumb, full))
-                except Exception as e:
+                except Exception:
                     pass
 
             def worker(pair):
@@ -377,14 +377,16 @@ class HydraHub(Gtk.Window):
                     try:
                         with open(cache_file, "rb") as f:
                             img_bytes = f.read()
-                    except: pass
+                    except Exception:
+                        pass
 
                 if not img_bytes:
                     try:
                         img_bytes = requests.get(thumb_url, timeout=5).content
                         with open(cache_file, "wb") as f:
                             f.write(img_bytes)
-                    except: return
+                    except Exception:
+                        return
 
                 if self.search_gen == gen and img_bytes:
                     GLib.idle_add(self._add_animated, grid, img_bytes, full_url)
@@ -435,7 +437,7 @@ class HydraHub(Gtk.Window):
         for e in core:
             GLib.idle_add(self._add_emoji, e)
         GLib.idle_add(self.emoji_grid.show_all)
-        
+
         # 1. Check for cached emojis (refresh once every 30 days)
         cached_data = None
         try:
@@ -450,7 +452,8 @@ class HydraHub(Gtk.Window):
                         if (time.time() - mtime) < (86400 * 30):
                             f.seek(0)
                             cached_data = f.read()
-        except: pass
+        except Exception:
+            pass
 
         if cached_data:
             lines = cached_data.strip().split("\n")
@@ -482,14 +485,15 @@ class HydraHub(Gtk.Window):
                                 # Refresh UI periodically during initial download
                                 if len(cache_lines) % 100 == 0:
                                     GLib.idle_add(self.emoji_grid.show_all)
-                        except: pass
+                        except Exception:
+                            pass
                 # Save results to cache
                 os.makedirs(os.path.dirname(EMOJI_CACHE), exist_ok=True)
                 with open(EMOJI_CACHE, "w") as f:
                     f.write("\n".join(cache_lines))
             except Exception as e:
                 print(f"[Hydra/EMJ] {e}")
-        
+
         GLib.idle_add(self.emoji_grid.show_all)
 
     def _emoji_filter_func(self, child):
@@ -587,7 +591,7 @@ class HydraHub(Gtk.Window):
 
             self._notify(
                 "Payload Ready",
-                f"Media cached → Ctrl+V to Upload"
+                "Media cached → Ctrl+V to Upload"
             )
         except Exception as e:
             print(f"[Hydra] capture error: {e}")
