@@ -22,10 +22,10 @@
   "widgets": [
     "title",
     "dnd",
+    "mpris",
     "buttons-grid",
     "backlight",
     "volume",
-    "mpris",
     "notifications"
   ],
   "widget-config": {
@@ -61,10 +61,8 @@
           "command": "~/.config/swaync/scripts/pilot-control.sh gamemode"
         },
         {
-          "label": "󰕾",
-          "type": "toggle",
-          "command": "~/.config/swaync/scripts/volume.sh toggle",
-          "update-command": "~/.config/swaync/scripts/volume.sh status"
+          "label": "󰌵",
+          "command": "~/.config/swaync/scripts/pilot-control.sh sunset"
         },
         {
           "label": "󰄄",
@@ -88,7 +86,7 @@
       "label": "󰕾",
       "expand-button-label": "󰅀",
       "collapse-button-label": "󰅃",
-      "show-per-app": true,
+      "show-per-app": false,
       "show-per-app-icon": true,
       "show-per-app-label": true
     },
@@ -98,7 +96,7 @@
     },
     "mpris": {
       "autohide": true,
-      "show-album-art": "always",
+      "show-album-art": "when-available",
       "loop-carousel": true
     },
     "notifications": {

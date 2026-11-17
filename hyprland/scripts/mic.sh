@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ~/.config/swaync/scripts/mic.sh
+# ~/.config/hypr/scripts/mic.sh
 WPCTL=$(command -v wpctl)
 NOTIFY=$(command -v notify-send)
 STEP="5%"
