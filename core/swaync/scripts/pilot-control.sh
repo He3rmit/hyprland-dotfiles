@@ -17,13 +17,19 @@ case "$1" in
         ;;
     bluetooth)
         if [[ "${SWAYNC_TOGGLE_STATE:-}" == "true" ]]; then
-            rfkill unblock bluetooth
+            rfkill unblock bluetooth 2>/dev/null || true
+            sleep 0.2
+            bluetoothctl power on >/dev/null 2>&1 || true
         elif [[ "${SWAYNC_TOGGLE_STATE:-}" == "false" ]]; then
-            rfkill block bluetooth
-        elif [[ "$(rfkill list bluetooth)" == *"Soft blocked: yes"* ]]; then
-            rfkill unblock bluetooth
+            bluetoothctl power off >/dev/null 2>&1 || true
+            rfkill block bluetooth 2>/dev/null || true
+        elif [[ "$(rfkill list bluetooth)" == *"Soft blocked: yes"* ]] || ! (bluetoothctl show 2>/dev/null | grep -q "Powered: yes"); then
+            rfkill unblock bluetooth 2>/dev/null || true
+            sleep 0.2
+            bluetoothctl power on >/dev/null 2>&1 || true
         else
-            rfkill block bluetooth
+            bluetoothctl power off >/dev/null 2>&1 || true
+            rfkill block bluetooth 2>/dev/null || true
         fi
         ;;
     bt-status)
