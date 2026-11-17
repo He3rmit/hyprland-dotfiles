@@ -1,0 +1,11 @@
+# ==============================================================================
+# .shellcheckrc - ShellCheck Configuration for Titanfall Hyprland Dotfiles
+# ==============================================================================
+# Disable warnings that are expected/standard in dynamic desktop dotfiles:
+# - SC1090: Can't follow non-constant source. Use a directive to specify location.
+# - SC1091: Not following: file was not found (runtime-generated files like pywal).
+# - SC2154: Variable is referenced but not assigned (sourced from config/globals).
+# - SC2034: Variable appears unused (frequently exported or used in sourced configs).
+# ==============================================================================
+
+disable=SC1090,SC1091,SC2154,SC2034
