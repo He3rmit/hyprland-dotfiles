@@ -13,9 +13,9 @@
 
 window {
     transparency: "real";
-    background-color: @background;
+    background-color: var(bg-base, @background);
     border: 2px;
-    border-color: @active-background;
+    border-color: var(border-accent, @active-background);
     border-radius: 12px;
     padding: 20px;
     width: 1200px;

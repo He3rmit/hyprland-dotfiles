@@ -17,10 +17,10 @@ configuration {
     background-color: transparent;
     text-color: @foreground;
 
-    bg-base:     rgba(10, 15, 20, 0.92);
-    bg-selected: @selected-normal-background;
-    bg-alt:      rgba(255, 255, 255, 0.05);
-    accent-color: @selected-active-background;
+    bg-base:     var(bg-base, rgba(10, 15, 20, 0.92));
+    bg-selected: var(bg-selected, @selected-normal-background);
+    bg-alt:      var(bg-alt, rgba(255, 255, 255, 0.05));
+    accent-color: var(accent-color, @selected-active-background);
 
     margin: 0px;
     padding: 0px;
@@ -33,7 +33,7 @@ window {
     width: 700px;
     border-radius: 12px;
     border: 2px;
-    border-color: @accent-color;
+    border-color: var(border-accent, @accent-color);
     background-color: @bg-base;
     padding: 0px;
 }
@@ -59,8 +59,8 @@ prompt {
 
 entry {
     placeholder: "Type a command...";
-    placeholder-color: @foreground;
-    text-color: #ffffff;
+    placeholder-color: var(accent-alt, @foreground);
+    text-color: @foreground;
     expand: true;
 }
 

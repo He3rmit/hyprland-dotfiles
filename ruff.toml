@@ -1,0 +1,15 @@
+# Ruff configuration for hyprland-dotfiles
+target-version = "py310"
+line-length = 120
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+]
+
+ignore = [
+    "E501",  # Line too long (scripts contain embedded CSS styles and long desktop commands)
+    "E402",  # Module level import not at top of file (PyGObject requires gi.require_version before imports)
+]

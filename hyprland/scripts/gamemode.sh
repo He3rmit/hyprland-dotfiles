@@ -63,11 +63,8 @@ enable_gamemode() {
 }
 
 disable_gamemode() {
-    # 1. Immediately re-enable animations via live eval for instant visual feedback
-    hyprctl eval "hl.config({ animations = { enabled = true } })" >/dev/null 2>&1
-
-    # 2. Reload config to restore all user visual settings, blur, gaps & rounding
-    hyprctl reload >/dev/null 2>&1
+    # 1. Immediately re-enable animations and restore user visuals live (zero compositor reload / zero surface flicker)
+    hyprctl eval "package.loaded['modules.visuals'] = nil; require('modules.visuals'); pcall(require, 'user-visuals')" >/dev/null 2>&1
 
     # 3. Resume hypridle
     killall -CONT hypridle 2>/dev/null || true
@@ -97,6 +94,14 @@ case "$1" in
             echo '{"text":"󰊖 GAME","class":"active","tooltip":"Game Mode: ACTIVE (Performance Boosted)\nClick to restore desktop visuals"}'
         else
             echo '{"text":"","class":"inactive","tooltip":"Game Mode: Inactive"}'
+        fi
+        exit 0
+        ;;
+    --check|--is-active)
+        if is_active; then
+            echo true
+        else
+            echo false
         fi
         exit 0
         ;;

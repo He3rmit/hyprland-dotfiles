@@ -1,0 +1,192 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "feature" ]
+  pull_request:
+    branches: [ "main", "feature" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # JOB 1: Static Analysis, Linters & Syntax Verification
+  # ----------------------------------------------------------------------------
+  lint-and-syntax:
+    name: Lint & Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Shell & Lua Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck lua5.4 jq
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python Linters
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Check Shell Scripts (bash -n & ShellCheck)
+        run: |
+          echo "=== 1. Checking Shell Syntax with bash -n ==="
+          find . -name "*.sh" -not -path "./.git/*" -not -path "./main/*" -print0 | while IFS= read -r -d '' file; do
+            bash -n "$file" || exit 1
+          done
+          echo "All shell scripts passed bash -n syntax check."
+
+          echo "=== 2. Running ShellCheck ==="
+          find . -name "*.sh" -not -path "./.git/*" -not -path "./main/*" -print0 | xargs -0 -r shellcheck --severity=warning
+
+      - name: Check Lua Files (luac -p)
+        run: |
+          echo "=== 3. Checking Lua Syntax with luac -p ==="
+          find . -name "*.lua" -not -path "./.git/*" -not -path "./main/*" -print0 | while IFS= read -r -d '' file; do
+            luac -p "$file" || exit 1
+          done
+          echo "All Lua files passed luac syntax check."
+
+      - name: Check Python Files (py_compile & ruff)
+        run: |
+          echo "=== 4. Checking Python Syntax with py_compile ==="
+          find . -name "*.py" -not -path "./.git/*" -not -path "./main/*" -print0 | while IFS= read -r -d '' file; do
+            python3 -m py_compile "$file" || exit 1
+          done
+
+          echo "=== 5. Running Ruff Linter ==="
+          ruff check hyprland/scripts/
+
+      - name: Check JSON Files (jq)
+        run: |
+          echo "=== 6. Validating JSON Schemas ==="
+          find . -name "*.json" -not -path "./.git/*" -not -path "./main/*" -not -path "./.vscode/*" -print0 | while IFS= read -r -d '' file; do
+            jq empty "$file" || exit 1
+          done
+          echo "All JSON files passed validation."
+
+  # ----------------------------------------------------------------------------
+  # JOB 2: Repository Hygiene, Security & Privacy
+  # ----------------------------------------------------------------------------
+  repo-hygiene:
+    name: Repo Hygiene & Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Executable Permissions
+        run: |
+          echo "=== Checking executable bits on scripts ==="
+          fail=0
+          for file in $(git ls-files "*.sh" "*.py"); do
+            if [ ! -x "$file" ]; then
+              echo "❌ Missing executable bit (+x): $file"
+              fail=1
+            fi
+          done
+          if [ $fail -ne 0 ]; then
+            echo "Run 'chmod +x <file>' and commit the permission fix."
+            exit 1
+          fi
+          echo "✅ All shell and python scripts have executable (+x) bit set."
+
+      - name: Verify Symlink Integrity
+        run: |
+          echo "=== Checking for broken symlinks in repository ==="
+          broken=$(find . -xtype l -not -path "./.git/*" -not -path "./main/*")
+          if [ -n "$broken" ]; then
+            echo "❌ Broken symlinks found in repository:"
+            echo "$broken"
+            exit 1
+          fi
+          echo "✅ No broken symlinks detected."
+
+      - name: Verify Host Profile Privacy (.gitignore enforcement)
+        run: |
+          echo "=== Verifying no personal host profiles or secrets are tracked ==="
+          # Only hosts/_template should ever be committed under hosts/
+          leaked_hosts=$(git ls-files "hosts/" | grep -v "^hosts/_template/" || true)
+          if [ -n "$leaked_hosts" ]; then
+            echo "❌ Privacy violation: Host-specific files tracked in git:"
+            echo "$leaked_hosts"
+            exit 1
+          fi
+
+          # Ensure no secret files are tracked (ignore committed *.example templates)
+          leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
+          if [ -n "$leaked_secrets" ]; then
+            echo "❌ Security violation: Secret files tracked in git index!"
+            echo "$leaked_secrets"
+            exit 1
+          fi
+          echo "✅ Privacy rules satisfied (no personal host profiles or secrets committed)."
+
+      - name: Scan for Secret Leaks (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  # ----------------------------------------------------------------------------
+  # JOB 3: Arch Linux Dry-Run & Stowing Validation
+  # ----------------------------------------------------------------------------
+  arch-stow-test:
+    name: Arch Linux Stow & Deploy Test
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install System Test Dependencies
+        run: |
+          pacman -Syu --noconfirm git stow jq
+
+      - name: Test GNU Stow Dry-Run
+        run: |
+          echo "=== Testing GNU Stow dry-run into mock HOME ==="
+          export TEST_HOME="/tmp/mock-home"
+          mkdir -p "$TEST_HOME/.config"
+
+          # 1. Test stowing home
+          stow -v -n --no-folding -t "$TEST_HOME" home
+
+          # 2. Test stowing core into .config
+          stow -v -n --no-folding -t "$TEST_HOME/.config" core
+
+          echo "✅ Dry-run stow completed with zero collisions."
+
+      - name: Test Mock Linking with Template Profile
+        run: |
+          echo "=== Testing mock installation with hosts/_template/laptop ==="
+          export TEST_HOME="/tmp/mock-home-install"
+          export DOTFILES_DIR="$(pwd)"
+          mkdir -p "$TEST_HOME/.config/hypr" "$TEST_HOME/.config/waybar" "$TEST_HOME/.config/swaync"
+
+          # Run stow real link into test home
+          stow -v --no-folding -t "$TEST_HOME" home
+          stow -v --no-folding -t "$TEST_HOME/.config" core
+
+          # Link laptop template files
+          ln -sf "$DOTFILES_DIR/hosts/_template/laptop/hypr-host.lua" "$TEST_HOME/.config/hypr/hypr-host.lua"
+          ln -sf "$DOTFILES_DIR/hosts/_template/laptop/profile.conf" "$TEST_HOME/.config/hypr/profile.conf"
+
+          # Verify linked paths exist and are valid
+          [ -L "$TEST_HOME/.zshrc" ] || { echo "Failed: .zshrc symlink missing"; exit 1; }
+          [ -f "$TEST_HOME/.config/swaync/config.json" ] || { echo "Failed: swaync config missing"; exit 1; }
+          [ -f "$TEST_HOME/.config/hypr/hypr-host.lua" ] || { echo "Failed: hypr-host.lua missing"; exit 1; }
+
+          echo "✅ Mock deployment succeeded with valid symlinks."

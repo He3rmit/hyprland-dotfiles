@@ -135,7 +135,7 @@ while IFS= read -r wall; do
     else
         # Static images can be rendered directly by Rofi while thumbnail caches in background
         icon_path="$wall"
-        (nice -n 19 magick "$wall[0]" -resize 256x256^ -gravity center -extent 256x256 "$thumb" >/dev/null 2>&1) &
+        (nice -n 19 magick "${wall}[0]" -resize 256x256^ -gravity center -extent 256x256 "$thumb" >/dev/null 2>&1) &
     fi
     
     # Append to input list

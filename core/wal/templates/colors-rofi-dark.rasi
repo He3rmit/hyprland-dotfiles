@@ -1,0 +1,69 @@
+* {{
+    active-background: {color2};
+    active-foreground: @foreground;
+    normal-background: @background;
+    normal-foreground: @foreground;
+    urgent-background: {color1};
+    urgent-foreground: @foreground;
+
+    alternate-active-background: @background;
+    alternate-active-foreground: @foreground;
+    alternate-normal-background: @background;
+    alternate-normal-foreground: @foreground;
+    alternate-urgent-background: @background;
+    alternate-urgent-foreground: @foreground;
+
+    selected-active-background: {color1};
+    selected-active-foreground: @foreground;
+    selected-normal-background: {color2};
+    selected-normal-foreground: @foreground;
+    selected-urgent-background: {color3};
+    selected-urgent-foreground: @foreground;
+
+    background-color: @background;
+    background: #{background.strip};
+    foreground: #{foreground.strip};
+    border-color: {color2};
+    spacing: 2;
+
+    /* Pilot HUD Dynamic Wallpaper-First Tokens */
+    bg-base: rgba({background.rgb}, 0.90);
+    bg-base-solid: #{background.strip};
+    bg-alt: rgba(255, 255, 255, 0.05);
+    bg-selected: {color2};
+    accent-color: {color2};
+    accent-alt: {color6};
+    border-accent: rgba({color2.rgb}, 0.45);
+}}
+
+#window {{
+    background-color: @background;
+    border: 0;
+    padding: 2.5ch;
+}}
+
+#mainbox {{
+    border: 0;
+    padding: 0;
+}}
+
+#message {{
+    border: 2px 0px 0px;
+    border-color: @border-color;
+    padding: 1px;
+}}
+
+#textbox {{
+    text-color: @foreground;
+}}
+
+#inputbar {{
+    children:   [ prompt,textbox-prompt-colon,entry,case-indicator ];
+}}
+
+#textbox-prompt-colon {{
+    expand: false;
+    str: ":";
+    margin: 0px 0.3em 0em 0em;
+    text-color: @normal-foreground;
+}}

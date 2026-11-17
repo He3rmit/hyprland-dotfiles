@@ -1,19 +1,21 @@
+@import "../../.cache/wal/colors-waybar.css";
+
 window {
-    background-color: rgba(10, 10, 10, 0.85);
-    color: #e0e0e0;
+    background-color: alpha(@background, 0.85);
+    color: @foreground;
     font-family: "Orbitron", "Eurostile", sans-serif;
     font-size: 16px;
     border-radius: 12px;
 }
 
 button {
-    background-color: rgba(40, 40, 40, 0.9);
-    border: 2px solid #00bcd4;
+    background-color: alpha(@color0, 0.9);
+    border: 2px solid @color2;
     border-radius: 10px;
     margin: 10px;
     padding: 20px 40px;
     font-size: 18px;
-    color: #ffffff;
+    color: @foreground;
     transition: 200ms ease-in-out;
     background-repeat: no-repeat;
     background-size: 35%;
@@ -21,13 +23,13 @@ button {
 }
 
 button:hover {
-    background-color: #00bcd4;
-    color: #000000;
+    background-color: @color2;
+    color: @background;
 }
 
 button:focus {
-    border-color: #29b6f6;
-    box-shadow: 0 0 10px #29b6f6;
+    border-color: @color6;
+    box-shadow: 0 0 10px @color6;
 }
 
 #lock {

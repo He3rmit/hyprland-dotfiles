@@ -277,7 +277,7 @@ add_or_update_bind() {
 remove_bind() {
     local key_combo="$1"
     if [[ -n "${BIND_VALUES[$key_combo]}" ]]; then
-        unset BIND_VALUES["$key_combo"]
+        unset 'BIND_VALUES[$key_combo]'
         local temp_keys=()
         for k in "${BIND_KEYS[@]}"; do
             if [[ "$k" != "$key_combo" ]]; then
