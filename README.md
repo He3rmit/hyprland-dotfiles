@@ -78,7 +78,13 @@ dotfiles/
 
 ---
 
-### [v4.4.0] — Waybar Overhaul, Dual-Themed SwayNC HUD & Switcher Alignment (Current)
+### [v4.5.0] — CI/CD Automation, Pywal Glassmorphism, Gamemode & Desktop Hardening (Current)
+- **Enterprise CI/CD & Automated CD Mirroring**: Added a multi-tier GitHub Actions workflow (`.github/workflows/ci.yml`) covering static analysis (`ShellCheck`, `luac`, `ruff`, `jq`), security and repository hygiene (permissions, symlinks, host profile privacy, secret scanner), containerized Arch Linux stow dry-runs, and automated CD mirroring to GitLab (`.github/workflows/mirror.yml`). Added a zero-dependency local test runner (`tests/run-local-ci.sh`) and standardized `ruff.toml` and `.shellcheckrc`.
+- **Pywal Glassmorphism & UI Color Synchronization**: Created dynamic dark glass Rofi template (`core/wal/templates/colors-rofi-dark.rasi`), aligned all 6 Rofi themes with wallpaper-derived palette tokens, integrated dynamic Pywal theme loading in the Python Media Hub (`pilot-hydra.py`), and unified thumbnail/preview styling in `cliphist-rofi.sh` and `wlogout`.
+- **SwayNC Gamemode, Night Light & MPRIS Overhaul**: Replaced power profiles with a dedicated Game Mode quick action tile (`󰊖`) running live in-engine Lua reconfiguration (`hyprctl eval`) to eliminate window drops; decoupled script execution via background jobs to prevent UI thread freezes; added Night Light action tile; relocated MPRIS media hero below DND; and guarded against audio stream segfaults.
+- **Desktop Stability & Script Hardening**: Added GNOME Keyring Daemon startup conflict guards, cold-boot Pywal color fallbacks in `visuals.lua`, updated `refresh` alias to `swaync-start.sh`, and resolved ShellCheck / exception handling issues across control scripts.
+
+### [v4.4.0] — Waybar Overhaul, Dual-Themed SwayNC HUD & Switcher Alignment
 - **Dual-Themed SwayNC Pilot HUD**: Redesigned `core/swaync/style.css` and introduced 5 Waybar-matched theme sheets (`core/swaync/themes/*.css`) that inherit Pywal dynamic colors (`colors-waybar.css`) alongside active Waybar style syncing via `sync_swaync_theme` in `waybar-switcher.sh`.
 - **Auto-Expanding Sizing & Live Quick Toggles**: Switched SwayNC `control-center-height` to auto-expanding (`-1`) with `10px` outer margins, refined sliders/MPRIS/per-app volume/notification cards, and wired live hardware state queries (`wifi-status`, `bt-status`, `volume.sh status`) into Wi-Fi, Bluetooth, and Audio quick toggles.
 - **SwayNC Orientation Alignment**: Upgraded `waybar-switcher.sh` (`--sync-swaync`) with a JSONC parser covering multi-line `modules-*` and `group/*` nesting so SwayNC dynamically tracks Waybar's edge and notification block placement; delegated `01-stow-configs.sh` alignment to `--sync-swaync` and updated stow/uninstall handling for `theme.css`.
