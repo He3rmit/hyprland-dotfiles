@@ -386,7 +386,7 @@ case $exit_code in
 
     11) # Alt+Shift+Delete — Wipe All (Nuke)
         cliphist wipe
-        rm -rf "$CACHE_DIR"/*
+        rm -rf "${CACHE_DIR:?}"/*
         rm -rf "$HOME/.cache/pilot-hydra"/*
         notify-send -u critical -a "Titanfall Systems" "DATABASE PURGED" "History and Hydra Cache erased."
         ;;
@@ -464,7 +464,7 @@ case $exit_code in
                 rm -f "$tmp_img"
             else
                 tmp_file="/tmp/cliphist-edit-$$.txt"
-                > "$tmp_file"
+                : > "$tmp_file"
                 echo "$clip_ids" | while read -r id; do
                     [ -z "$id" ] && continue
                     cliphist decode "$id" >> "$tmp_file"
@@ -501,7 +501,7 @@ case $exit_code in
         if [ ${#urls[@]} -eq 0 ]; then
             notify_pilot "No URL Found" "No valid web link detected in this clipboard entry."
         else
-            unique_urls=($(printf "%s\n" "${urls[@]}" | sort -u))
+            mapfile -t unique_urls < <(printf "%s\n" "${urls[@]}" | sort -u)
             open_count=0
             for u in "${unique_urls[@]}"; do
                 xdg-open "$u" >/dev/null 2>&1 &

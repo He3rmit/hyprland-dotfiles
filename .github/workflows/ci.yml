@@ -124,10 +124,11 @@ jobs:
             exit 1
           fi
 
-          # Ensure no secret files are tracked
-          if git ls-files "*secret*" | grep -q .; then
+          # Ensure no secret files are tracked (ignore committed *.example templates)
+          leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
+          if [ -n "$leaked_secrets" ]; then
             echo "❌ Security violation: Secret files tracked in git index!"
-            git ls-files "*secret*"
+            echo "$leaked_secrets"
             exit 1
           fi
           echo "✅ Privacy rules satisfied (no personal host profiles or secrets committed)."

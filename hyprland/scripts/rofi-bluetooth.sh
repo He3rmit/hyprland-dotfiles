@@ -134,10 +134,10 @@ build_menu() {
 handle_device() {
     local mac="$1"
     local name="$2"
-    local is_connected="$3"
+    local conn_state="$3"
 
     local opt
-    if [[ "$is_connected" == "yes" ]]; then
+    if [[ "$conn_state" == "yes" ]]; then
         opt=$(printf "󰂲 Disconnect %s\n🔄 Reconnect %s\n🗑️ Forget / Unpair %s\nℹ️ Device Details\n🔙 Back" "$name" "$name" "$name" | rofi_cmd "Device: ${name} [Connected]")
     else
         opt=$(printf "🔗 Connect to %s\n🗑️ Forget / Unpair %s\nℹ️ Device Details\n🔙 Back" "$name" "$name" | rofi_cmd "Device: ${name} [Disconnected]")

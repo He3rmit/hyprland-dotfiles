@@ -101,30 +101,30 @@ case "$selected_effect" in
         # Lastimosa V2: Curved Visor + Teal/Orange + Dynamic Micro-Grid + Reticle
         # Neutral white-alpha allows 'Overlay' to adapt its contrast to the wall colors
         generate_micro_grid "rgba(255,255,255,0.08)" 
-        magick "$selected_path" -modulate 115,130,100 +level-colors "#1A2F1A","#E55A00" \
+        magick "$selected_path" -modulate 115,130,100 +level-colors "#1A2F1A,#E55A00" \
             \( -clone 0 -tile "$GRID_TILE" -draw "color 0,0 reset" \) -compose Overlay -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
     "BT-7274 Thermal (Red/Yellow)")
         # BT Cockpit: Curved Visor + Red/Yellow + Scanlines + Reticle
-        magick "$selected_path" -modulate 120,160,100 +level-colors "#330000","#FFB400" \
+        magick "$selected_path" -modulate 120,160,100 +level-colors "#330000,#FFB400" \
             \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) -compose multiply -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
     "Cyber HUD (Cyan/Magenta)")
         # Digital Optics: Neon Purple + Sleek Scanlines + Cyan Glow + Reticle
-        magick "$selected_path" -modulate 130,150,100 +level-colors "#1B032A","#00E0FF" \
+        magick "$selected_path" -modulate 130,150,100 +level-colors "#1B032A,#00E0FF" \
             \( -clone 0 -tile pattern:horizontal2 -draw "color 0,0 reset" \) -compose Screen -composite "$CACHE_DIR/temp_base.jpg"
         apply_helmet_optics "$CACHE_DIR/temp_base.jpg" "$EFFECT_FILE"
         ;;
     "Night Vision")
-        magick "$selected_path" -colorspace gray +level-colors "#061A06","#00FF33" \
+        magick "$selected_path" -colorspace gray +level-colors "#061A06,#00FF33" \
             -modulate 100,150,100 -sharpen 0x2 "$EFFECT_FILE"
         ;;
     "Glitch (Purge)")
         # Dynamic Chromatic aberration shift based on width
-        local w=$(magick identify -format "%w" "$selected_path")
-        local shift=$(( 15 * w / 1920 ))
+        w=$(magick identify -format "%w" "$selected_path")
+        shift=$(( 15 * w / 1920 ))
         magick "$selected_path" \
             \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \
@@ -133,8 +133,8 @@ case "$selected_effect" in
         ;;
     "CRT Retro")
         # Generates colored analog TV scanlines with dynamic shift
-        local w=$(magick identify -format "%w" "$selected_path")
-        local shift=$(( 5 * w / 1920 ))
+        w=$(magick identify -format "%w" "$selected_path")
+        shift=$(( 5 * w / 1920 ))
         magick "$selected_path" \
             \( -clone 0 -channel R -separate -roll +${shift}+0 \) \
             \( -clone 0 -channel G -separate \) \

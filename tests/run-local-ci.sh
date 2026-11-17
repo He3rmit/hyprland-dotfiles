@@ -91,7 +91,17 @@ if [[ -n "$leaked_hosts" ]]; then
 fi
 echo "  ✅ Passed: Only template host profile is tracked in git."
 
-# --- 8. GNU STOW SIMULATION ---
+# --- 8. SECRET LEAK CHECK ---
+echo "▶ Checking for Tracked Secrets..."
+leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
+if [[ -n "$leaked_secrets" ]]; then
+    echo "  ❌ Security violation: Secret file tracked in git index:"
+    echo "$leaked_secrets"
+    exit 1
+fi
+echo "  ✅ Passed: No secret files tracked."
+
+# --- 9. GNU STOW SIMULATION ---
 if command -v stow >/dev/null 2>&1; then
     echo "▶ Testing GNU Stow Dry-Run..."
     MOCK_DIR=$(mktemp -d /tmp/dotfiles-stow-test.XXXXXX)
