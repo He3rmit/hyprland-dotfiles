@@ -77,6 +77,11 @@ jobs:
           echo "=== 7. Validating CSS & Rofi RASI Style Themes ==="
           python3 tests/validate-styles.py
 
+      - name: Validate Hypridle & Hyprlock Configurations
+        run: |
+          echo "=== 8. Validating Hypridle & Hyprlock Configurations ==="
+          python3 tests/validate-hypr-configs.py
+
   # ----------------------------------------------------------------------------
   # JOB 2: Repository Hygiene, Security & Keybinding Integrity
   # ----------------------------------------------------------------------------
@@ -197,6 +202,13 @@ jobs:
           ln -sf "$TEMPLATE_DIR/profile.conf" "$TEST_HOME/.config/hypr/profile.conf"
           if [ -f "$TEMPLATE_DIR/hypridle.conf" ]; then
             ln -sf "$TEMPLATE_DIR/hypridle.conf" "$TEST_HOME/.config/hypr/hypridle.conf"
+          else
+            ln -sf "$DOTFILES_DIR/hyprland/hypridle.conf" "$TEST_HOME/.config/hypr/hypridle.conf"
+          fi
+          if [ -f "$TEMPLATE_DIR/hyprlock.conf" ]; then
+            ln -sf "$TEMPLATE_DIR/hyprlock.conf" "$TEST_HOME/.config/hypr/hyprlock.conf"
+          else
+            ln -sf "$DOTFILES_DIR/hyprland/hyprlock.conf" "$TEST_HOME/.config/hypr/hyprlock.conf"
           fi
 
           # 3. Assert link validity
@@ -204,6 +216,8 @@ jobs:
           [ -f "$TEST_HOME/.config/swaync/config.json" ] || { echo "Failed: swaync config missing"; exit 1; }
           [ -f "$TEST_HOME/.config/waybar/common.jsonc" ] || { echo "Failed: waybar common.jsonc missing"; exit 1; }
           [ -f "$TEST_HOME/.config/hypr/hypr-host.lua" ] || { echo "Failed: hypr-host.lua missing"; exit 1; }
+          [ -f "$TEST_HOME/.config/hypr/hypridle.conf" ] || { echo "Failed: hypridle.conf missing"; exit 1; }
+          [ -f "$TEST_HOME/.config/hypr/hyprlock.conf" ] || { echo "Failed: hyprlock.conf missing"; exit 1; }
 
           # 4. Check for broken links
           broken=$(find "$TEST_HOME" -xtype l)

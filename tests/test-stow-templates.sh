@@ -40,6 +40,13 @@ for template in "laptop" "desktop"; do
     ln -sf "$TEMPLATE_DIR/profile.conf" "$MOCK_HOME/.config/hypr/profile.conf"
     if [ -f "$TEMPLATE_DIR/hypridle.conf" ]; then
         ln -sf "$TEMPLATE_DIR/hypridle.conf" "$MOCK_HOME/.config/hypr/hypridle.conf"
+    else
+        ln -sf "$REPO_ROOT/hyprland/hypridle.conf" "$MOCK_HOME/.config/hypr/hypridle.conf"
+    fi
+    if [ -f "$TEMPLATE_DIR/hyprlock.conf" ]; then
+        ln -sf "$TEMPLATE_DIR/hyprlock.conf" "$MOCK_HOME/.config/hypr/hyprlock.conf"
+    else
+        ln -sf "$REPO_ROOT/hyprland/hyprlock.conf" "$MOCK_HOME/.config/hypr/hyprlock.conf"
     fi
 
     # 4. Assert integrity
@@ -47,6 +54,8 @@ for template in "laptop" "desktop"; do
     [ -f "$MOCK_HOME/.config/swaync/config.json" ] || { echo "❌ Failed: swaync config.json missing"; rm -rf "$MOCK_HOME"; exit 1; }
     [ -f "$MOCK_HOME/.config/waybar/common.jsonc" ] || { echo "❌ Failed: waybar common.jsonc missing"; rm -rf "$MOCK_HOME"; exit 1; }
     [ -f "$MOCK_HOME/.config/hypr/hypr-host.lua" ] || { echo "❌ Failed: hypr-host.lua missing"; rm -rf "$MOCK_HOME"; exit 1; }
+    [ -f "$MOCK_HOME/.config/hypr/hypridle.conf" ] || { echo "❌ Failed: hypridle.conf missing"; rm -rf "$MOCK_HOME"; exit 1; }
+    [ -f "$MOCK_HOME/.config/hypr/hyprlock.conf" ] || { echo "❌ Failed: hyprlock.conf missing"; rm -rf "$MOCK_HOME"; exit 1; }
 
     # Verify no broken symlinks inside mock home
     broken_in_mock=$(find "$MOCK_HOME" -xtype l)

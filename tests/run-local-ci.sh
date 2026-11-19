@@ -64,13 +64,16 @@ fi
 # --- 5. CSS & RASI STYLE VALIDATION ---
 "$ROOT_DIR/tests/validate-styles.py"
 
-# --- 6. KEYBINDING TARGET INTEGRITY ---
+# --- 6. HYPRIDLE & HYPRLOCK CONFIGURATION VALIDATION ---
+"$ROOT_DIR/tests/validate-hypr-configs.py"
+
+# --- 7. KEYBINDING TARGET INTEGRITY ---
 "$ROOT_DIR/tests/validate-keybind-targets.py"
 
-# --- 7. SCRIPT FUNCTIONAL SMOKE TESTS ---
+# --- 8. SCRIPT FUNCTIONAL SMOKE TESTS ---
 "$ROOT_DIR/tests/test-scripts-smoke.sh"
 
-# --- 8. PERMISSIONS CHECK ---
+# --- 9. PERMISSIONS CHECK ---
 echo "▶ Checking Executable Bits on Scripts..."
 perm_fail=0
 for f in $(git ls-files "*.sh" "*.py"); do
@@ -85,7 +88,7 @@ if [[ $perm_fail -ne 0 ]]; then
 fi
 echo "  ✅ Passed: All tracked scripts have executable (+x) permissions."
 
-# --- 9. BROKEN SYMLINKS ---
+# --- 10. BROKEN SYMLINKS ---
 echo "▶ Checking for Broken Symlinks..."
 broken=$(find . -xtype l -not -path "./.git/*" -not -path "./main/*")
 if [[ -n "$broken" ]]; then
@@ -95,7 +98,7 @@ if [[ -n "$broken" ]]; then
 fi
 echo "  ✅ Passed: Zero broken symlinks in repository."
 
-# --- 10. HOST PRIVACY ENFORCEMENT ---
+# --- 11. HOST PRIVACY ENFORCEMENT ---
 echo "▶ Checking Host Profile Privacy Rules..."
 leaked_hosts=$(git ls-files "hosts/" | grep -v "^hosts/_template/" || true)
 if [[ -n "$leaked_hosts" ]]; then
@@ -105,7 +108,7 @@ if [[ -n "$leaked_hosts" ]]; then
 fi
 echo "  ✅ Passed: Only template host profile is tracked in git."
 
-# --- 11. SECRET LEAK CHECK ---
+# --- 12. SECRET LEAK CHECK ---
 echo "▶ Checking for Tracked Secrets..."
 leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
 if [[ -n "$leaked_secrets" ]]; then
@@ -115,10 +118,10 @@ if [[ -n "$leaked_secrets" ]]; then
 fi
 echo "  ✅ Passed: No secret files tracked."
 
-# --- 12. MULTI-TEMPLATE GNU STOW SIMULATION ---
+# --- 13. MULTI-TEMPLATE GNU STOW SIMULATION ---
 "$ROOT_DIR/tests/test-stow-templates.sh"
 
 echo ""
 echo "========================================================"
-echo "  🎉 ALL 12 LOCAL CI CHECKS PASSED SUCCESSFULLY!"
+echo "  🎉 ALL 13 LOCAL CI CHECKS PASSED SUCCESSFULLY!"
 echo "========================================================"
