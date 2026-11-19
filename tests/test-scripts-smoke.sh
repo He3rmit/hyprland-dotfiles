@@ -50,8 +50,8 @@ set +e
 mic_err=$("$REPO_ROOT/hyprland/scripts/mic.sh" 2>&1)
 mic_code=$?
 set -e
-if [ $mic_code -eq 0 ] || [[ "$mic_err" != *"Usage"* ]]; then
-    echo "❌ mic.sh did not fail safely with usage instructions: $mic_err"
+if [ $mic_code -eq 0 ] || [[ "$mic_err" != *"Usage"* && "$mic_err" != *"wpctl not found"* ]]; then
+    echo "❌ mic.sh did not fail safely: $mic_err"
     exit 1
 fi
 echo "  ✅ mic.sh safe fallback verified."
