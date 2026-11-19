@@ -1,8 +1,9 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ "main", "feature" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main", "feature" ]
   workflow_dispatch:
@@ -64,21 +65,23 @@ jobs:
           done
 
           echo "=== 5. Running Ruff Linter ==="
-          ruff check hyprland/scripts/
+          ruff check hyprland/scripts/ tests/
 
-      - name: Check JSON Files (jq)
+      - name: Validate JSON & JSONC Configurations
         run: |
-          echo "=== 6. Validating JSON Schemas ==="
-          find . -name "*.json" -not -path "./.git/*" -not -path "./main/*" -not -path "./.vscode/*" -print0 | while IFS= read -r -d '' file; do
-            jq empty "$file" || exit 1
-          done
-          echo "All JSON files passed validation."
+          echo "=== 6. Validating JSON & Waybar JSONC Schemas ==="
+          python3 tests/validate-jsonc.py
+
+      - name: Validate CSS & RASI Style Themes
+        run: |
+          echo "=== 7. Validating CSS & Rofi RASI Style Themes ==="
+          python3 tests/validate-styles.py
 
   # ----------------------------------------------------------------------------
-  # JOB 2: Repository Hygiene, Security & Privacy
+  # JOB 2: Repository Hygiene, Security & Keybinding Integrity
   # ----------------------------------------------------------------------------
   repo-hygiene:
-    name: Repo Hygiene & Security
+    name: Repo Hygiene, Security & Keybind Integrity
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -116,7 +119,6 @@ jobs:
       - name: Verify Host Profile Privacy (.gitignore enforcement)
         run: |
           echo "=== Verifying no personal host profiles or secrets are tracked ==="
-          # Only hosts/_template should ever be committed under hosts/
           leaked_hosts=$(git ls-files "hosts/" | grep -v "^hosts/_template/" || true)
           if [ -n "$leaked_hosts" ]; then
             echo "❌ Privacy violation: Host-specific files tracked in git:"
@@ -124,7 +126,6 @@ jobs:
             exit 1
           fi
 
-          # Ensure no secret files are tracked (ignore committed *.example templates)
           leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
           if [ -n "$leaked_secrets" ]; then
             echo "❌ Security violation: Secret files tracked in git index!"
@@ -133,6 +134,11 @@ jobs:
           fi
           echo "✅ Privacy rules satisfied (no personal host profiles or secrets committed)."
 
+      - name: Validate Keybinding Target Integrity
+        run: |
+          echo "=== Verifying Keybind Script Targets ==="
+          python3 tests/validate-keybind-targets.py
+
       - name: Scan for Secret Leaks (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -140,13 +146,32 @@ jobs:
         continue-on-error: true
 
   # ----------------------------------------------------------------------------
-  # JOB 3: Arch Linux Dry-Run & Stowing Validation
+  # JOB 3: Functional Script Smoke Tests
   # ----------------------------------------------------------------------------
-  arch-stow-test:
-    name: Arch Linux Stow & Deploy Test
+  script-smoke-tests:
+    name: Functional Script Smoke Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Script Smoke Tests
+        run: |
+          echo "=== Running Non-Interactive Script Smoke Tests ==="
+          bash tests/test-scripts-smoke.sh
+
+  # ----------------------------------------------------------------------------
+  # JOB 4: Arch Linux Multi-Template Deployment Matrix
+  # ----------------------------------------------------------------------------
+  arch-stow-matrix:
+    name: Arch Stow Test (${{ matrix.template }})
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [laptop, desktop]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -155,38 +180,96 @@ jobs:
         run: |
           pacman -Syu --noconfirm git stow jq
 
-      - name: Test GNU Stow Dry-Run
+      - name: Run Multi-Template Stow Test
         run: |
-          echo "=== Testing GNU Stow dry-run into mock HOME ==="
-          export TEST_HOME="/tmp/mock-home"
-          mkdir -p "$TEST_HOME/.config"
-
-          # 1. Test stowing home
-          stow -v -n --no-folding -t "$TEST_HOME" home
-
-          # 2. Test stowing core into .config
-          stow -v -n --no-folding -t "$TEST_HOME/.config" core
-
-          echo "✅ Dry-run stow completed with zero collisions."
-
-      - name: Test Mock Linking with Template Profile
-        run: |
-          echo "=== Testing mock installation with hosts/_template/laptop ==="
-          export TEST_HOME="/tmp/mock-home-install"
+          echo "=== Testing Arch Linux Deployment for Template: ${{ matrix.template }} ==="
+          export TEST_HOME="/tmp/mock-home-${{ matrix.template }}"
           export DOTFILES_DIR="$(pwd)"
           mkdir -p "$TEST_HOME/.config/hypr" "$TEST_HOME/.config/waybar" "$TEST_HOME/.config/swaync"
 
-          # Run stow real link into test home
+          # 1. Stow home & core
           stow -v --no-folding -t "$TEST_HOME" home
           stow -v --no-folding -t "$TEST_HOME/.config" core
 
-          # Link laptop template files
-          ln -sf "$DOTFILES_DIR/hosts/_template/laptop/hypr-host.lua" "$TEST_HOME/.config/hypr/hypr-host.lua"
-          ln -sf "$DOTFILES_DIR/hosts/_template/laptop/profile.conf" "$TEST_HOME/.config/hypr/profile.conf"
+          # 2. Deploy specified host template
+          TEMPLATE_DIR="$DOTFILES_DIR/hosts/_template/${{ matrix.template }}"
+          ln -sf "$TEMPLATE_DIR/hypr-host.lua" "$TEST_HOME/.config/hypr/hypr-host.lua"
+          ln -sf "$TEMPLATE_DIR/profile.conf" "$TEST_HOME/.config/hypr/profile.conf"
+          if [ -f "$TEMPLATE_DIR/hypridle.conf" ]; then
+            ln -sf "$TEMPLATE_DIR/hypridle.conf" "$TEST_HOME/.config/hypr/hypridle.conf"
+          fi
 
-          # Verify linked paths exist and are valid
+          # 3. Assert link validity
           [ -L "$TEST_HOME/.zshrc" ] || { echo "Failed: .zshrc symlink missing"; exit 1; }
           [ -f "$TEST_HOME/.config/swaync/config.json" ] || { echo "Failed: swaync config missing"; exit 1; }
+          [ -f "$TEST_HOME/.config/waybar/common.jsonc" ] || { echo "Failed: waybar common.jsonc missing"; exit 1; }
           [ -f "$TEST_HOME/.config/hypr/hypr-host.lua" ] || { echo "Failed: hypr-host.lua missing"; exit 1; }
 
-          echo "✅ Mock deployment succeeded with valid symlinks."
+          # 4. Check for broken links
+          broken=$(find "$TEST_HOME" -xtype l)
+          if [ -n "$broken" ]; then
+            echo "❌ Broken symlinks found in mock deployment:"
+            echo "$broken"
+            exit 1
+          fi
+
+          echo "✅ Mock deployment succeeded for ${{ matrix.template }}."
+
+  # ----------------------------------------------------------------------------
+  # JOB 5: Continuous Delivery (CD) — Automated GitHub Release Packaging
+  # ----------------------------------------------------------------------------
+  release-automation:
+    name: Continuous Delivery & Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint-and-syntax, repo-hygiene, script-smoke-tests, arch-stow-matrix]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Package Release Distribution
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          PKG_NAME="hyprland-dotfiles-${TAG_NAME}"
+          echo "=== Packaging Release Archive: ${PKG_NAME}.tar.gz ==="
+
+          # Create clean release tarball excluding .git, caches, and untracked host secrets
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='tests' \
+              --exclude='*.pyc' \
+              --exclude='__pycache__' \
+              --exclude='main' \
+              -czvf "${PKG_NAME}.tar.gz" \
+              core home hosts/_template hyprland installer DIY_GUIDE.md MANUAL.md README.md LICENSE
+
+          # Generate SHA256 checksum
+          sha256sum "${PKG_NAME}.tar.gz" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Extract Release Notes
+        id: release_notes
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          NOTES_FILE="RELEASE_NOTES_${TAG_NAME}.md"
+          if [ -f "$NOTES_FILE" ]; then
+            echo "Found release notes file: $NOTES_FILE"
+            echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          else
+            echo "notes_file=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            hyprland-dotfiles-${{ github.ref_name }}.tar.gz
+            SHA256SUMS.txt
+          body_path: ${{ steps.release_notes.outputs.notes_file }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
