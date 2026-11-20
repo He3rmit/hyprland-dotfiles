@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # LOCAL CI VALIDATION RUNNER
-# Run this script before pushing to verify syntax, permissions, and stowing.
+# Run this script before pushing to verify syntax, permissions, configs,
+# keybind integrity, and multi-template stowing.
 # ==============================================================================
 
 set -euo pipefail
@@ -51,24 +52,28 @@ if [[ -z "$RUFF_BIN" && -x "/tmp/ruff-x86_64-unknown-linux-gnu/ruff" ]]; then
 fi
 if [[ -n "$RUFF_BIN" ]]; then
     echo "▶ Checking Python Linting (ruff check)..."
-    "$RUFF_BIN" check hyprland/scripts/ || { echo "❌ Ruff linting failed"; exit 1; }
+    "$RUFF_BIN" check hyprland/scripts/ tests/ || { echo "❌ Ruff linting failed"; exit 1; }
     echo "  ✅ Passed: Ruff linting clean."
 else
     echo "  ⚠️ ruff not found, skipping Python lint check."
 fi
 
-# --- 4. JSON VALIDATION ---
-if command -v jq >/dev/null 2>&1; then
-    echo "▶ Checking JSON Syntax (jq empty)..."
-    json_count=0
-    while IFS= read -r -d '' f; do
-        jq empty "$f" || { echo "❌ JSON syntax error in $f"; exit 1; }
-        json_count=$((json_count + 1))
-    done < <(find . -name "*.json" -not -path "./.git/*" -not -path "./main/*" -not -path "./.vscode/*" -print0)
-    echo "  ✅ Passed: $json_count JSON files validated."
-fi
+# --- 4. JSON & JSONC CONFIGURATION VALIDATION ---
+"$ROOT_DIR/tests/validate-jsonc.py"
 
-# --- 5. PERMISSIONS CHECK ---
+# --- 5. CSS & RASI STYLE VALIDATION ---
+"$ROOT_DIR/tests/validate-styles.py"
+
+# --- 6. HYPRIDLE & HYPRLOCK CONFIGURATION VALIDATION ---
+"$ROOT_DIR/tests/validate-hypr-configs.py"
+
+# --- 7. KEYBINDING TARGET INTEGRITY ---
+"$ROOT_DIR/tests/validate-keybind-targets.py"
+
+# --- 8. SCRIPT FUNCTIONAL SMOKE TESTS ---
+"$ROOT_DIR/tests/test-scripts-smoke.sh"
+
+# --- 9. PERMISSIONS CHECK ---
 echo "▶ Checking Executable Bits on Scripts..."
 perm_fail=0
 for f in $(git ls-files "*.sh" "*.py"); do
@@ -83,7 +88,7 @@ if [[ $perm_fail -ne 0 ]]; then
 fi
 echo "  ✅ Passed: All tracked scripts have executable (+x) permissions."
 
-# --- 6. BROKEN SYMLINKS ---
+# --- 10. BROKEN SYMLINKS ---
 echo "▶ Checking for Broken Symlinks..."
 broken=$(find . -xtype l -not -path "./.git/*" -not -path "./main/*")
 if [[ -n "$broken" ]]; then
@@ -93,7 +98,7 @@ if [[ -n "$broken" ]]; then
 fi
 echo "  ✅ Passed: Zero broken symlinks in repository."
 
-# --- 7. HOST PRIVACY ENFORCEMENT ---
+# --- 11. HOST PRIVACY ENFORCEMENT ---
 echo "▶ Checking Host Profile Privacy Rules..."
 leaked_hosts=$(git ls-files "hosts/" | grep -v "^hosts/_template/" || true)
 if [[ -n "$leaked_hosts" ]]; then
@@ -103,7 +108,7 @@ if [[ -n "$leaked_hosts" ]]; then
 fi
 echo "  ✅ Passed: Only template host profile is tracked in git."
 
-# --- 8. SECRET LEAK CHECK ---
+# --- 12. SECRET LEAK CHECK ---
 echo "▶ Checking for Tracked Secrets..."
 leaked_secrets=$(git ls-files "*secret*" | grep -v "\.example$" || true)
 if [[ -n "$leaked_secrets" ]]; then
@@ -113,18 +118,10 @@ if [[ -n "$leaked_secrets" ]]; then
 fi
 echo "  ✅ Passed: No secret files tracked."
 
-# --- 9. GNU STOW SIMULATION ---
-if command -v stow >/dev/null 2>&1; then
-    echo "▶ Testing GNU Stow Dry-Run..."
-    MOCK_DIR=$(mktemp -d /tmp/dotfiles-stow-test.XXXXXX)
-    mkdir -p "$MOCK_DIR/.config"
-    stow -v -n --no-folding -t "$MOCK_DIR" home >/dev/null 2>&1
-    stow -v -n --no-folding -t "$MOCK_DIR/.config" core >/dev/null 2>&1
-    rm -rf "$MOCK_DIR"
-    echo "  ✅ Passed: GNU Stow dry-run completed with zero collisions."
-fi
+# --- 13. MULTI-TEMPLATE GNU STOW SIMULATION ---
+"$ROOT_DIR/tests/test-stow-templates.sh"
 
 echo ""
 echo "========================================================"
-echo "  🎉 ALL LOCAL CI CHECKS PASSED SUCCESSFULLY!"
+echo "  🎉 ALL 13 LOCAL CI CHECKS PASSED SUCCESSFULLY!"
 echo "========================================================"

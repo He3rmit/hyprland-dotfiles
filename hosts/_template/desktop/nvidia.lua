@@ -11,7 +11,7 @@ hl.env("NVD_BACKEND", "direct")
 
 hl.config({
     cursor = {
-        no_hardware_cursors = false,
+        no_hardware_cursors = true,
     },
 })
 

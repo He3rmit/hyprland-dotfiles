@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 # ~/.config/hypr/scripts/mic.sh
+# 1. VALIDATE: Check arguments first before probing audio daemon
+ACTION="${1:-}"
+case "$ACTION" in
+  up|down|toggle) ;;
+  *)
+    echo "Usage: $0 {up|down|toggle}" >&2
+    exit 1
+    ;;
+esac
+
 WPCTL=$(command -v wpctl)
 NOTIFY=$(command -v notify-send)
 STEP="5%"
@@ -10,12 +20,11 @@ if [[ -z "$WPCTL" ]]; then
   exit 1
 fi
 
-# 1. TRANSMIT: Send the command to the audio source
-case "$1" in
-  up)    $WPCTL set-volume @DEFAULT_AUDIO_SOURCE@ "$STEP"+ ;;
-  down)  $WPCTL set-volume @DEFAULT_AUDIO_SOURCE@ "$STEP"- ;;
+# 2. TRANSMIT: Send the command to the audio source
+case "$ACTION" in
+  up)     $WPCTL set-volume @DEFAULT_AUDIO_SOURCE@ "$STEP"+ ;;
+  down)   $WPCTL set-volume @DEFAULT_AUDIO_SOURCE@ "$STEP"- ;;
   toggle) $WPCTL set-mute @DEFAULT_AUDIO_SOURCE@ toggle ;;
-  *) echo "Usage: $0 {up|down|toggle}" >&2; exit 1 ;;
 esac
 
 # 2. Query audio source state (immediate check with retry fallback for waking devices)

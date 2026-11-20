@@ -243,11 +243,14 @@ main() {
 
     case "$choice" in
         *"Bluetooth is OFF"*)
+            rfkill unblock bluetooth 2>/dev/null || true
+            sleep 0.2
             bluetoothctl power on >/dev/null 2>&1
             notify_bt "Bluetooth" "Bluetooth controller turned ON."
             ;;
         *"Turn Bluetooth OFF"*)
             bluetoothctl power off >/dev/null 2>&1
+            rfkill block bluetooth 2>/dev/null || true
             notify_bt "Bluetooth" "Bluetooth controller turned OFF."
             ;;
         *"Scan for Nearby Devices"*)

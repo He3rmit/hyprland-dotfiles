@@ -47,8 +47,9 @@ enable_gamemode() {
         }
     })" >/dev/null 2>&1
 
-    # Pause hypridle so controller/gamepad sessions don't get screens timed out
-    killall -STOP hypridle 2>/dev/null || true
+    # Terminate hypridle so gamepad/controller sessions don't get screens timed out
+    # (avoid SIGSTOP which buffers Wayland idle timeout events and triggers hyprlock on resume)
+    killall -q hypridle 2>/dev/null || true
 
     # Switch CPU power profile to performance (if available)
     if command -v powerprofilesctl >/dev/null 2>&1; then
@@ -66,8 +67,10 @@ disable_gamemode() {
     # 1. Immediately re-enable animations and restore user visuals live (zero compositor reload / zero surface flicker)
     hyprctl eval "package.loaded['modules.visuals'] = nil; require('modules.visuals'); pcall(require, 'user-visuals')" >/dev/null 2>&1
 
-    # 3. Resume hypridle
-    killall -CONT hypridle 2>/dev/null || true
+    # 3. Cleanly restart hypridle with fresh timers (prevents stale idle lock events)
+    if ! pgrep -x hypridle >/dev/null 2>&1; then
+        (nohup hypridle </dev/null >/dev/null 2>&1 &)
+    fi
 
     # 4. Restore previous power profile (with fallback to balanced)
     if command -v powerprofilesctl >/dev/null 2>&1; then
