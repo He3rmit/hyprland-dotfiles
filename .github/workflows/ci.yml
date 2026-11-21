@@ -259,7 +259,7 @@ jobs:
               --exclude='__pycache__' \
               --exclude='main' \
               -czvf "${PKG_NAME}.tar.gz" \
-              core home hosts/_template hyprland installer DIY_GUIDE.md MANUAL.md README.md LICENSE
+              core home hosts/_template hyprland installer CHANGELOG.md DIY_GUIDE.md MANUAL.md README.md LICENSE
 
           # Generate SHA256 checksum
           sha256sum "${PKG_NAME}.tar.gz" > SHA256SUMS.txt
@@ -273,6 +273,32 @@ jobs:
           if [ -f "$NOTES_FILE" ]; then
             echo "Found release notes file: $NOTES_FILE"
             echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          elif [ -f "CHANGELOG.md" ]; then
+            echo "Extracting release notes from CHANGELOG.md for $TAG_NAME..."
+            python3 -c "
+          import sys
+          tag = '${TAG_NAME}'.lstrip('v')
+          lines = open('CHANGELOG.md').readlines()
+          capturing = False
+          extracted = []
+          for line in lines:
+              if line.startswith('## [') and (f'[{tag}]' in line or f'[v{tag}]' in line):
+                  capturing = True
+                  extracted.append(line)
+              elif capturing and line.startswith('## ['):
+                  break
+              elif capturing:
+                  extracted.append(line)
+          if extracted:
+              with open('RELEASE_BODY.md', 'w') as f:
+                  f.writelines(extracted)
+              print(f'Successfully extracted {len(extracted)} lines from CHANGELOG.md')
+          "
+            if [ -f "RELEASE_BODY.md" ]; then
+              echo "notes_file=RELEASE_BODY.md" >> "$GITHUB_OUTPUT"
+            else
+              echo "notes_file=" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "notes_file=" >> "$GITHUB_OUTPUT"
           fi

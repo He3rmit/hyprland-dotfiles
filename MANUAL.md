@@ -1,4 +1,4 @@
-# 🚀 Titanfall Pilot HUD — Operator Manual (v4.0.0)
+# 🚀 Titanfall Pilot HUD — Operator Manual (v4.5.1)
 
 > *"A modular, portable, and universal desktop environment."*
 
@@ -98,7 +98,7 @@ The workspace binds use **Physical Keycodes**, not characters. Result: your hand
 | `Super + Alt + Space` | **Language / Layout** | Cycle through configured keyboard layouts (`hyprctl switchxkblayout`). |
 | `Super + M` | **Display Project** | Open Windows 11-style projection menu (Duplicate, Extend, PC/Second only). |
 | `Print` | **Screenshot** | Quick full monitor screenshot copied to clipboard. |
-| `Shift + Print` / `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Swappy. |
+| `Shift + Print` / `Ctrl + Shift + S` | **Screenshot & Annotate** | Region snip with Satty. |
 | `Super + Shift + R` | **Screen Recorder** | Toggle region recording (`~/Videos/Captures/`). |
 | `Super + Alt + R` | **Fullscreen Recorder** | Toggle full monitor screen recording. |
 
